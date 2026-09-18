@@ -1,0 +1,25 @@
+.login-page {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.login-image-panel {
+  flex: 0 0 70%;
+  min-height: 100vh;
+  background-image: url("../assets/bg1.webp");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.login-right-panel {
+  flex: 0 0 30%;
+  min-height: 100vh;
+  background-color: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+}
