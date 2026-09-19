@@ -1,16 +1,17 @@
 import HeaderLogo from "./header_logo";
+import { NavLink } from "react-router-dom";
 
 export default function Sidebar() {
   return (
     <aside className="admin-sidebar">
       <HeaderLogo />
       <nav className="sidebar-navigation" aria-label="Admin sections">
-        <a className="sidebar-link active" href="#dashboard">
-          Dashboard
-        </a>
-        <a className="sidebar-link" href="#user-management">
+        <NavLink className="sidebar-link" to="/admindb">
+          Dashboard 
+        </NavLink>
+        <NavLink className="sidebar-link" to="/usermg">
           User Management
-        </a>
+        </NavLink>
         <a className="sidebar-link" href="#request-finance">
           Request &amp; Finance
         </a>

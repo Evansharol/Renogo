@@ -1,0 +1,55 @@
+.user-management-main .page-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.page-heading h1 { margin: 0; }
+.page-heading p { margin: 8px 0 0; color: #66717d; }
+.add-user-button { padding: 11px 16px; border: 0; border-radius: 8px; background: #464feb; color: white; font-weight: 600; cursor: pointer; }
+.user-summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin-top: 24px; }
+.user-summary-card { display: flex; min-height: 112px; box-sizing: border-box; flex-direction: column; justify-content: space-between; gap: 12px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.7); border-radius: 12px; background: rgba(255, 255, 255, 0.72); box-shadow: 0 8px 20px rgba(31, 41, 55, 0.1); }
+.user-summary-card span { color: #66717d; font-size: 14px; font-weight: 600; }
+.user-summary-card strong { color: #18222d; font-size: 26px; }
+.users-table-card { margin-top: 24px; padding: 24px; border: 1px solid rgba(255, 255, 255, 0.7); border-radius: 12px; background: rgba(255, 255, 255, 0.72); box-shadow: 0 8px 20px rgba(31, 41, 55, 0.1); }
+.table-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.table-toolbar label { color: #18222d; font-size: 14px; font-weight: 600; }
+.table-toolbar input, .table-toolbar select { width: min(280px, 100%); padding: 10px 12px; border: 1px solid #d5d9dd; border-radius: 6px; background: white; color: #18222d; }
+.table-scroll-wrapper { overflow-x: auto; }
+.users-table-card table { width: 100%; min-width: 850px; border-collapse: collapse; background: white; }
+.users-table-card th, .users-table-card td { padding: 13px 12px; border: 1px solid #e6e6e6; text-align: left; white-space: nowrap; }
+.users-table-card th { background-color: #f5f5f5; color: #18222d; font-size: 13px; }
+.users-table-card td { color: #4e5a66; font-size: 14px; }
+.users-table-card td a { text-decoration: none; color: #464feb; font-weight: 600; }
+.status-badge { padding: 5px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.status-badge.active { background: #dff4ec; color: #197052; }
+.status-badge.inactive { background: #fbe3e5; color: #a33d49; }
+.user-actions { display: flex; gap: 6px; }
+.user-actions button { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; border: 1px solid #d5d9dd; border-radius: 5px; background: white; color: #464feb; cursor: pointer; font-size: 16px; }
+.user-actions button:hover { background: #f0f1ff; }
+
+.user-form-overlay { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 20px; background: rgba(17, 17, 17, 0.55); }
+.user-form { width: min(620px, 100%); box-sizing: border-box; padding: 24px; border-radius: 12px; background: #fff; box-shadow: 0 20px 50px rgba(17, 17, 17, 0.25); }
+.user-form-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.user-form-heading h2 { margin: 0; color: #18222d; }
+.user-form-heading p { margin: 6px 0 0; color: #66717d; font-size: 14px; }
+.user-form-close { border: 0; background: transparent; color: #66717d; cursor: pointer; font-size: 28px; line-height: 1; }
+.user-form-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 24px; }
+.user-form-fields label { display: flex; flex-direction: column; gap: 7px; color: #18222d; font-size: 13px; font-weight: 600; }
+.user-form-fields input, .user-form-fields select { box-sizing: border-box; width: 100%; padding: 10px 12px; border: 1px solid #d5d9dd; border-radius: 6px; color: #18222d; font: inherit; font-weight: 400; }
+.user-form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+.user-form-actions button { padding: 10px 16px; border: 1px solid #d5d9dd; border-radius: 6px; background: white; color: #464feb; cursor: pointer; font-weight: 600; }
+.user-form-actions .user-form-save { border-color: #464feb; background: #464feb; color: white; }
+
+@media (max-width: 700px) {
+    .user-summary-grid { grid-template-columns: 1fr; }
+
+    .user-management-main .page-heading,
+    .table-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .user-form-fields { grid-template-columns: 1fr; }
+}
