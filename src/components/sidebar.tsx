@@ -12,12 +12,9 @@ export default function Sidebar() {
         <NavLink className="sidebar-link" to="/usermg">
           User Management
         </NavLink>
-        <a className="sidebar-link" href="#request-finance">
-          Request &amp; Finance
-        </a>
-        <a className="sidebar-link" href="#approval">
-          Approval
-        </a>
+        <NavLink className="sidebar-link" to="/dealers">
+          Dealers
+        </NavLink>
       </nav>
     </aside>
   );

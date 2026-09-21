@@ -36,7 +36,7 @@ export default function Usermg() {
 		return matchesSearch && matchesRole;
 	});
 
-	return (
+	return ( // This is JSX everything inside this is displayed on the screen.
 		<div className="admin-layout">
 			<Sidebar />
 			<div className="admin-content">
@@ -59,7 +59,7 @@ export default function Usermg() {
 							<label htmlFor="role-filter">Filter By Role</label>
 							<select id="role-filter" value={selectedRole} onChange={(event) => setSelectedRole(event.target.value)}>
 								<option value="All Roles">All Roles</option>
-								{roles.map((role) => <option key={role} value={role}>{role}</option>)}
+								{roles.map((role) => <option key={role} value={role}>{role}</option>)} // .map is used to loop through the roles array and create an option for each role.
 							</select>
 						</div>
 						<div className="table-scroll-wrapper">
@@ -67,7 +67,7 @@ export default function Usermg() {
 								<thead><tr><th>User ID</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
 								<tbody>{filteredUsers.map((user) => (
 									<tr key={user.id}>
-										<td><a href={`#${user.id}`}>{user.id}</a></td><td>{user.name}</td><td>{user.email}</td><td>{user.role}</td>
+										<td>{user.id}</td><td>{user.name}</td><td>{user.email}</td><td>{user.role}</td>
 										<td><span className={`status-badge ${user.status.toLowerCase()}`}>{user.status}</span></td>
 										<td><div className="user-actions">
 											<button type="button" aria-label={`Edit ${user.name}`} title="Edit">✎</button>
