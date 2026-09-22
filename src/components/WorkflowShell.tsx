@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from "react";   /*Provides styling and layout of page to react boilerplate code */
 import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "./navbar";
 import Sidebar from "./sidebar";

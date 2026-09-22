@@ -16,7 +16,7 @@
 .dealers-table td { color: #000; font-size: 14px; }
 .dealers-table tbody tr:hover { background: #fafbff; }
 .request-status { display: inline-flex; align-items: center; gap: 7px; font-weight: 700; }
-.request-status > span { display: inline-grid; width: 24px; height: 24px; place-items: center; border-radius: 50%; font-size: 15px; font-weight: 800; }
+.request-status > span { display: inline-grid; width: 24px; height: 24px; place-items: center; border-radius: 50%; font-size: 15px; font-weight: 800; } /* > applies styling to direct span child. */
 .request-status.approved { color: #197052; }
 .request-status.approved > span { background: #dff4ec; }
 .request-status.pending { color: #9a6b00; }
