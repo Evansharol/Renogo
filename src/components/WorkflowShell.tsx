@@ -13,5 +13,18 @@ export default function WorkflowShell({ title, subtitle, dealerLabel, children }
 	const location = useLocation();
 	const state = location.state as LocationState | null;
 
-	return <div className="workflow-layout"><Sidebar /><div className="admin-content"><Navbar adminName={state?.name ?? "Admin"} /><main className="workflow-main"><button className="workflow-back" type="button" onClick={() => navigate("/dealers")}>← Back to Dealers</button><header className="workflow-page-header"><div><span className="workflow-kicker">{dealerLabel}</span><h1>{title}</h1><p>{subtitle}</p></div><span className="workflow-request-id">ORD-1001</span></header>{children}</main></div></div>;
+	return <div className="workflow-layout">
+		<Sidebar />
+		<div className="admin-content">
+			<Navbar adminName={state?.name ?? "Admin"} />
+			<main className="workflow-main">
+				<button className="workflow-back" type="button" onClick={() => navigate("/dealers")}>← Back to Dealers</button>
+				<header className="workflow-page-header"><div>
+					<span className="workflow-kicker">{dealerLabel}</span>
+					<h1>{title}</h1>
+					<p>{subtitle}</p>.
+					</div>
+					<span className="workflow-request-id">ORD-1001</span>
+					</header>{children}</main>
+			</div></div>;
 }
