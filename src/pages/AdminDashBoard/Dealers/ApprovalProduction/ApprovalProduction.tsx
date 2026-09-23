@@ -1,16 +1,15 @@
-import { useLocation, useParams } from "react-router-dom";
-import WorkflowShell from "./WorkflowShell";
-import { getDealer, type Dealer } from "./dealerWorkflowData";
-
-type LocationState = { dealer?: Dealer; name?: string };
+import { useParams } from "react-router-dom";
+import WorkflowShell from "../../../../components/WorkFlow/WorkFlow";
+import { useDealer } from "../../../../hooks/useDealer";
 
 const steps = ["Dealer Request", "Finance Approval", "Production Review", "Manufacturing", "Logistics", "Dealer Delivery"];
 
 export default function ApprovalProduction() {
 	const { dealerId } = useParams();
-	const location = useLocation();
-	const state = location.state as LocationState | null;
-	const dealer = getDealer(dealerId, state?.dealer);
+	const { dealer, isLoading, error } = useDealer(dealerId);
+
+	if (isLoading) return <p>Loading dealer...</p>;
+	if (error || !dealer) return <p>{error || "Dealer not found"}</p>;
 
 	return <WorkflowShell title="Approval & Production" subtitle="Track the complete workflow and take necessary actions." dealerLabel={`${dealer.id} · ${dealer.name}`}>
 		<section className="workflow-card">

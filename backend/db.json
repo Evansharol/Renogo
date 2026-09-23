@@ -1,0 +1,64 @@
+{
+  "dealers": [
+    {
+      "id": "D001",
+      "name": "ABC Motors",
+      "location": "Chennai",
+      "orders": 5,
+      "status": "In Production"
+    },
+    {
+      "id": "D002",
+      "name": "Royal Autos",
+      "location": "Bangalore",
+      "orders": 3,
+      "status": "Approved"
+    },
+    {
+      "id": "D003",
+      "name": "Chennai Cars",
+      "location": "Chennai",
+      "orders": 2,
+      "status": "Pending Approval"
+    }
+  ],
+  "users": [
+    {
+      "id": "USR-1001",
+      "name": "Amelia Martin",
+      "email": "amelia.martin@renogo.com",
+      "role": "Administrator",
+      "status": "Active"
+    }
+  ],
+  "loginUsers": [
+    {
+      "id": "LOGIN-001",
+      "name": "admin",
+      "password": "admin123",
+      "role": "admin"
+    }
+  ],
+  "orders": [
+    {
+      "id": "ORD-1001",
+      "dealerId": "D001",
+      "vehicleModel": "Renault Duster",
+      "quantity": 50,
+      "status": "In Production"
+    }
+  ],
+  "quotations": [
+    {
+      "id": "FLI-2026-0891",
+      "dealerId": "D001",
+      "vehicleModel": "Renault Duster (RXZ Petrol)",
+      "quantity": 50,
+      "basePrice": 1200000,
+      "taxRate": 18,
+      "depositRate": 5,
+      "gstNumber": "29AACDE1234F1Z5",
+      "paymentTerms": "Within 7 days"
+    }
+  ]
+}

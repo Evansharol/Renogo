@@ -1,5 +1,6 @@
-import HeaderLogo from "./header_logo";
+import HeaderLogo from "../Logo/Logo";
 import { NavLink } from "react-router-dom";
+import "./Sidebar.css";
 
 export default function Sidebar() {
   return (

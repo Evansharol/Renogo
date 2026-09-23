@@ -1,5 +1,5 @@
-import notification from "../assets/notification.png";
-import "./navbar.css";
+import notification from "../../assets/notification.png";
+import "./Navbar.css";
 
 type NavbarProps = {
   adminName: string;

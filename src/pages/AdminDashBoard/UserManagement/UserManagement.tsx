@@ -1,10 +1,9 @@
 import { useState } from "react"; // store data
 import { useLocation } from "react-router-dom"; // get data from previous page
-import Navbar from "../components/navbar";
-import Sidebar from "../components/sidebar";
-import Uform, { type User } from "../components/uform";
-import "./Admindb.css";
-import "./Usermg.css";
+import Navbar from "../../../components/Navbar/Navbar";
+import Sidebar from "../../../components/Sidebar/Sidebar";
+import Uform, { type User } from "../../../components/Form/UserForm/uform";
+import "./UserManagement.css";
 
 type LoginState = { name?: string };
 

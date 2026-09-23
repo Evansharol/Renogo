@@ -1,7 +1,7 @@
 import { useLocation } from "react-router-dom";
-import Navbar from "../components/navbar";
-import Sidebar from "../components/sidebar";
-import "./Admindb.css";
+import Navbar from "../../../components/Navbar/Navbar";
+import Sidebar from "../../../components/Sidebar/Sidebar";
+import "./Dashboard.css";
 
 type LoginState = {
     name?: string;

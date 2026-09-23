@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";   /*Provides styling and layout of page to react boilerplate code */
 import { useLocation, useNavigate } from "react-router-dom";
-import Navbar from "./navbar";
-import Sidebar from "./sidebar";
-import "./workflow.css";
+import Navbar from "../Navbar/Navbar";
+import Sidebar from "../Sidebar/Sidebar";
+import "./WorkFlow.css";
 
 type WorkflowShellProps = { title: string; subtitle: string; dealerLabel: string; children: ReactNode };
 

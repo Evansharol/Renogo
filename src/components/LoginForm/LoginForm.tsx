@@ -1,16 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./UserLoginForm.css";
+import "./LoginForm.css";
 
 const DUMMY_USERS = {
   admin: {
     name: "admin",
-    email: "admin@renogo.com",
     password: "admin123",
   },
   dealer: {
     name: "dealer",
-    email: "dealer@renogo.com",
     password: "dealer123",
   },
 };
@@ -18,7 +16,6 @@ const DUMMY_USERS = {
 export default function UserLoginForm() {
   const navigate = useNavigate();
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
   const [message, setMessage] = useState("");
@@ -31,7 +28,6 @@ export default function UserLoginForm() {
     if (
       selectedUser &&
       name.toLowerCase() === selectedUser.name &&
-      email.toLowerCase() === selectedUser.email &&
       password === selectedUser.password
     ) {
       navigate("/admindb", { state: { name: selectedUser.name } });
@@ -52,17 +48,6 @@ export default function UserLoginForm() {
           placeholder="Enter your name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-        />
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
         />
       </div>
 
