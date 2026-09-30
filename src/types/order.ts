@@ -4,4 +4,6 @@ export type Order = {
 	vehicleModel: string;
 	quantity: number;
 	status: string;
+	orderDate?: string;
+	etaDelivery?: string;
 };

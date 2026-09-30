@@ -4,20 +4,25 @@ import "./LoginForm.css";
 import Alert from '@mui/material/Alert';
 
 
-const DUMMY_USERS = {
+type DummyUser = { userId: string; name: string; password: string; dealerId?: string };
+
+const DUMMY_USERS: Record<"admin" | "dealer", DummyUser> = {
   admin: {
+    userId: "A001",
     name: "admin",
     password: "admin123",
   },
   dealer: {
+    userId: "D001",
     name: "dealer",
     password: "dealer123",
+    dealerId: "D001",
   },
 };
 
 export default function UserLoginForm() {
   const navigate = useNavigate();
-  const [name, setName] = useState("");
+  const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
   const [message, setMessage] = useState("");
@@ -26,19 +31,25 @@ export default function UserLoginForm() {
     e.preventDefault();
 
     const selectedUser = DUMMY_USERS[role as keyof typeof DUMMY_USERS];
-    const normalizedName = name.trim().toLowerCase();
+    const normalizedUserId = userId.trim().toUpperCase();
 
     if (
       selectedUser &&
-      normalizedName === selectedUser.name &&
+      normalizedUserId === selectedUser.userId &&
       password === selectedUser.password
     ) {
       setMessage("");
 
       if (role === "admin") {
-        navigate("/admindb", { state: { name: selectedUser.name } });
+        navigate("/admindb", { state: { name: selectedUser.name, userId: selectedUser.userId } });
       } else if (role === "dealer") {
-        navigate("/dealer/DashBoard", { state: { name: selectedUser.name } });
+        navigate("/dealer/DashBoard", {
+          state: {
+            name: selectedUser.name,
+            userId: selectedUser.userId,
+            dealerId: selectedUser.dealerId,
+          },
+        });
       }
     } else {
       setMessage("Enter Valid Credentials.");
@@ -50,14 +61,15 @@ export default function UserLoginForm() {
       <h2>Login</h2>
 
       <div className="form-group">
-        <label htmlFor="name">Name</label>
+        <label htmlFor="userId">User ID</label>
         <input
-          id="name"
+          id="userId"
           type="text"
-          placeholder="Enter your name"
+          placeholder="Enter your user ID"
+          autoComplete="username"
           required
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={userId}
+          onChange={(e) => setUserId(e.target.value)}
         />
       </div>
 

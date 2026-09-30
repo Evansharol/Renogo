@@ -8,7 +8,6 @@ import RequestEvaluation from "./pages/AdminDashBoard/Dealers/RequestEvaluation"
 import FinanceQuotation from "./pages/AdminDashBoard/Dealers/FinanceQuotation";
 import ApprovalProduction from "./pages/AdminDashBoard/Dealers/ApprovalProduction";
 import DealerDashboard from "./pages/Dealer/DashBoard";
-import ViewOrder from "./pages/Dealer/View_Order";
 
 function AnimatedRoutes() {
 	const location = useLocation();
@@ -24,7 +23,6 @@ function AnimatedRoutes() {
         <Route path="/dealers/finance/:dealerId" element={<FinanceQuotation />} />
         <Route path="/dealers/approval/:dealerId" element={<ApprovalProduction />} />
         <Route path="/dealer/DashBoard" element={<DealerDashboard />} />
-        <Route path="/dealer/ViewOrders" element={<ViewOrder />} />
       </Routes>
     </div>;
 }

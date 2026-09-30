@@ -50,10 +50,6 @@ export default function Sidebar({ variant = "admin" }: SidebarProps) {
             <DashboardIcon />
             <span>DashBoard</span>
           </NavLink>
-          <NavLink className="sidebar-link" to="/dealer/ViewOrders" title="View Orders">
-            <ShoppingCartIcon />
-            <span>View Orders</span>
-          </NavLink>
           </>
         ) : (
           <>

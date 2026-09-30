@@ -1,0 +1,292 @@
+.order-dialog-panel {
+  width: min(460px, 100vw);
+  box-sizing: border-box;
+  color: #1d2d38;
+  background: #f4f7f9;
+}
+.order-dialog-content {
+  display: grid;
+  align-content: start;
+  gap: 13px;
+  min-height: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+}
+.order-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 0 0 11px;
+  border-bottom: 1px solid #dfe7ec;
+}
+.order-dialog-eyebrow {
+  margin: 0 0 4px;
+  color: #657581;
+  font-size: 12px;
+  font-weight: 650;
+  text-transform: capitalize;
+}
+.order-dialog-header h2 {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: #172630;
+  font-size: 18px;
+  font-weight: 700;
+}
+.order-dialog-header .MuiIconButton-root {
+  width: 30px;
+  height: 30px;
+  margin: -5px -6px 0 0;
+}
+.order-dialog-header .MuiSvgIcon-root {
+  width: 19px;
+  height: 19px;
+}
+.order-dialog-vehicle {
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #e0e7eb;
+  border-radius: 6px;
+  background: #fff;
+}
+.order-dialog-vehicle-icon {
+  display: grid;
+  width: 60px;
+  aspect-ratio: 1.25;
+  place-items: center;
+  border-radius: 4px;
+  color: #197052;
+  background: #e8f3ef;
+}
+.order-dialog-vehicle-icon svg {
+  width: 34px;
+  height: 34px;
+}
+.order-dialog-vehicle-copy {
+  min-width: 0;
+}
+.order-dialog-vehicle-copy h3 {
+  margin: 0 0 5px;
+  overflow-wrap: anywhere;
+  color: #23343f;
+  font-size: 13px;
+  font-weight: 700;
+}
+.order-dialog-vehicle-copy p {
+  margin: 0;
+  color: #697984;
+  font-size: 11px;
+}
+.order-dialog-status {
+  display: inline-flex;
+  justify-self: end;
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: #176947;
+  background: #e4f4eb;
+  font-size: 10px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.order-dialog-status--pending-approval {
+  color: #855400;
+  background: #fff2d7;
+}
+.order-dialog-status--in-production {
+  color: #245f9c;
+  background: #e8f1fc;
+}
+.order-dialog-status--in-transit {
+  color: #6945a3;
+  background: #f1ebfb;
+}
+.order-dialog-status--approved,
+.order-dialog-status--delivered {
+  color: #176947;
+  background: #e4f4eb;
+}
+.order-dialog-section {
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid #e0e7eb;
+  border-radius: 6px;
+  background: #fff;
+}
+.order-dialog-section h3 {
+  margin: 0 0 12px;
+  color: #273944;
+  font-size: 12px;
+  font-weight: 700;
+}
+.order-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 10px;
+}
+.order-summary-metric,
+.order-summary-meta {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 8px;
+}
+.order-summary-metric {
+  flex-direction: column;
+  gap: 4px;
+}
+.order-summary-metric > span,
+.order-summary-meta span {
+  color: #75838d;
+  font-size: 10px;
+}
+.order-summary-metric strong,
+.order-summary-meta strong {
+  overflow-wrap: anywhere;
+  color: #293a45;
+  font-size: 12px;
+  font-weight: 700;
+}
+.order-summary-metric strong {
+  font-size: 16px;
+}
+.order-summary-meta > svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  color: #75838d;
+}
+.order-summary-meta > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.order-progress-list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.order-progress-list li {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  min-width: 0;
+  text-align: center;
+}
+.order-progress-list li::after {
+  position: absolute;
+  top: 8px;
+  right: calc(-50% + 10px);
+  left: calc(50% + 10px);
+  height: 2px;
+  background: #dce4e8;
+  content: "";
+}
+.order-progress-list li.is-complete::after {
+  background: #19956d;
+}
+.order-progress-marker {
+  z-index: 1;
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border-radius: 50%;
+  color: #b7c2c9;
+  background: #fff;
+}
+.order-progress-marker svg {
+  width: 17px;
+  height: 17px;
+}
+.order-progress-list li.is-complete .order-progress-marker,
+.order-progress-list li.is-current .order-progress-marker {
+  color: #19956d;
+}
+.order-progress-list li:not(.is-complete):not(.is-current) .order-progress-marker span {
+  width: 8px;
+  height: 8px;
+  border: 1px solid #bdc8ce;
+  border-radius: 50%;
+  background: #fff;
+}
+.order-progress-label {
+  max-width: 65px;
+  color: #7a8790;
+  font-size: 9px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.order-progress-list li.is-complete .order-progress-label,
+.order-progress-list li.is-current .order-progress-label {
+  color: #2d434f;
+  font-weight: 650;
+}
+.order-items-table-wrap {
+  overflow-x: auto;
+}
+.order-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+.order-items-table th {
+  padding: 0 5px 8px;
+  color: #77858e;
+  font-size: 9px;
+  font-weight: 600;
+}
+.order-items-table td {
+  padding: 8px 5px 0;
+  border-top: 1px solid #edf0f2;
+  color: #354751;
+  font-size: 10px;
+}
+.order-items-table td:first-child {
+  overflow-wrap: anywhere;
+}
+.order-dialog-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid #d9e8f1;
+  border-radius: 6px;
+  color: #285b7a;
+  background: #eef7fc;
+}
+.order-dialog-note svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+.order-dialog-note p {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.4;
+}
+@media (max-width: 380px) {
+  .order-dialog-content {
+    gap: 10px;
+    padding: 12px;
+  }
+  .order-dialog-vehicle {
+    grid-template-columns: 48px minmax(0, 1fr);
+  }
+  .order-dialog-vehicle-icon {
+    width: 48px;
+  }
+  .order-dialog-vehicle > .order-dialog-status {
+    grid-column: 2;
+    justify-self: start;
+  }
+  .order-dialog-section {
+    padding: 11px;
+  }
+}
