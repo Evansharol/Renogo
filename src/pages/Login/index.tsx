@@ -1,6 +1,6 @@
-import UserLoginForm from "../../components/LoginForm/LoginForm";
+import UserLoginForm from "../../components/LoginForm";
 import "./Login.css";
-import HeaderLogo from "../../components/Logo/Logo";
+import HeaderLogo from "../../components/Header";
 
 export default function Login() {
   return (

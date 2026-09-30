@@ -4,7 +4,7 @@
       "id": "D001",
       "name": "ABC Motors",
       "location": "Chennai",
-      "orders": 5,
+      "orders": 2,
       "status": "In Production"
     },
     {
@@ -29,6 +29,27 @@
       "email": "amelia.martin@renogo.com",
       "role": "Administrator",
       "status": "Active"
+    },
+    {
+      "id": "USR-1002",
+      "name": "Louis Bernard",
+      "email": "louis.bernard@renogo.com",
+      "role": "Manager",
+      "status": "Active"
+    },
+    {
+      "id": "USR-1003",
+      "name": "Sofia Garcia",
+      "email": "sofia.garcia@renogo.com",
+      "role": "Dealer",
+      "status": "Inactive"
+    },
+    {
+      "id": "USR-1004",
+      "name": "Noah Wilson",
+      "email": "noah.wilson@renogo.com",
+      "role": "Support",
+      "status": "Active"
     }
   ],
   "loginUsers": [
@@ -37,6 +58,12 @@
       "name": "admin",
       "password": "admin123",
       "role": "admin"
+    },
+    {
+      "id": "LOGIN-002",
+      "name": "dealer",
+      "password": "dealer123",
+      "role": "dealer"
     }
   ],
   "orders": [
@@ -46,12 +73,62 @@
       "vehicleModel": "Renault Duster",
       "quantity": 50,
       "status": "In Production"
+    },
+    {
+      "id": "ORD-1002",
+      "dealerId": "D001",
+      "vehicleModel": "Renault Kiger",
+      "quantity": 25,
+      "status": "Pending Approval"
+    },
+    {
+      "id": "ORD-2001",
+      "dealerId": "D002",
+      "vehicleModel": "Renault Arkana",
+      "quantity": 30,
+      "status": "Approved"
+    },
+    {
+      "id": "ORD-2002",
+      "dealerId": "D002",
+      "vehicleModel": "Renault Captur",
+      "quantity": 20,
+      "status": "In Production"
+    },
+    {
+      "id": "ORD-2003",
+      "dealerId": "D002",
+      "vehicleModel": "Renault Kwid",
+      "quantity": 15,
+      "status": "Approved"
+    },
+    {
+      "id": "ORD-3001",
+      "dealerId": "D003",
+      "vehicleModel": "Renault Triber",
+      "quantity": 40,
+      "status": "Pending Approval"
+    },
+    {
+      "id": "ORD-3002",
+      "dealerId": "D003",
+      "vehicleModel": "Renault Kiger",
+      "quantity": 18,
+      "status": "Pending Approval"
+    },
+    {
+      "id": "ORD-4001",
+      "dealerId": "hD7-wIuowCY",
+      "vehicleModel": "Renault Duster",
+      "quantity": 12,
+      "status": "Approved"
     }
   ],
   "quotations": [
     {
       "id": "FLI-2026-0891",
       "dealerId": "D001",
+      "orderId": "ORD-1001",
       "vehicleModel": "Renault Duster (RXZ Petrol)",
       "quantity": 50,
       "basePrice": 1200000,
@@ -59,6 +136,31 @@
       "depositRate": 5,
       "gstNumber": "29AACDE1234F1Z5",
       "paymentTerms": "Within 7 days"
+    },
+    {
+      "id": "FLI-2026-0892",
+      "dealerId": "D001",
+      "orderId": "ORD-1002",
+      "vehicleModel": "Renault Kiger",
+      "quantity": 25,
+      "basePrice": 950000,
+      "taxRate": 18,
+      "depositRate": 5,
+      "gstNumber": "29AACDE1234F1Z5",
+      "paymentTerms": "Within 7 days"
+    },
+    {
+      "id": "FLI-2026-0893",
+      "dealerId": "hD7-wIuowCY",
+      "orderId": "ORD-4001",
+      "vehicleModel": "Renault Duster",
+      "quantity": 12,
+      "basePrice": 1200000,
+      "taxRate": 18,
+      "depositRate": 5,
+      "gstNumber": "29AACDE1234F1Z5",
+      "paymentTerms": "Within 7 days"
     }
-  ]
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }

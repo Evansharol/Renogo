@@ -1,24 +1,97 @@
 .admin-sidebar {
+  position: relative;
   width: 250px;
   flex: 0 0 250px;
   box-sizing: border-box;
+  overflow: hidden;
   padding: 24px 16px;
   background: #111111;
+  transition: width 0.25s ease, flex-basis 0.25s ease;
 }
-
+.admin-sidebar.sidebar-closed {
+  width: 104px;
+  flex-basis: 104px;
+  padding-inline: 12px;
+}
+.sidebar-header {
+  position: relative;
+  display: block;
+  height: 40px;
+  margin-bottom: 32px;
+}
 .admin-sidebar .login-logo {
-  position: static;
-  margin: 0 8px 48px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  width: auto;
+  height: 40px;
+  min-width: 0;
+  margin: 0;
   color: white;
+  line-height: 1;
 }
-
+.admin-sidebar .login-logo span {
+  white-space: nowrap;
+}
+.sidebar-close-toggle {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  cursor: pointer;
+}
+.sidebar-expand-toggle {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  margin: 0;
+  padding: 0;
+  border: 0px solid rgba(6, 6, 6, 0.28);
+  background: rgba(0, 0, 0, 0.08);
+  color: white;
+  cursor: pointer;
+}
+.sidebar-close-toggle {
+  top: 0;
+  right: 0;
+}
+.sidebar-expand-toggle {
+  top: 24px;
+  right: 0px;
+}
+.sidebar-close-toggle:hover, .sidebar-expand-toggle:hover {
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.16);
+}
+.sidebar-close-toggle svg, .sidebar-expand-toggle svg {
+  width: 22px;
+  height: 22px;
+}
+.sidebar-closed .login-logo span {
+  display: none;
+}
 .sidebar-navigation {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-
 .sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   padding: 13px 14px;
   border: 1px solid transparent;
   border-radius: 10px;
@@ -27,9 +100,22 @@
   font-size: 15px;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
-
-.sidebar-link:hover,
-.sidebar-link.active {
+.sidebar-link svg {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+}
+.sidebar-link span {
+  white-space: nowrap;
+}
+.sidebar-closed .sidebar-link {
+  justify-content: center;
+  padding-inline: 0;
+}
+.sidebar-closed .sidebar-link span {
+  display: none;
+}
+.sidebar-link:hover, .sidebar-link.active {
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.16);
   color: white;

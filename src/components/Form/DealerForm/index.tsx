@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Form, { type FormField } from "../Form";
+import Form, { type FormField } from "..";
 import type { NewDealer } from "../../../types/dealer";
 
 const dealerFields: FormField[] = [

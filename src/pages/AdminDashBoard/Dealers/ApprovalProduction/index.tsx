@@ -1,26 +1,32 @@
 import { useParams } from "react-router-dom";
-import WorkflowShell from "../../../../components/WorkFlow/WorkFlow";
+import WorkflowShell from "../../../../components/WorkFlow";
 import { useDealer } from "../../../../hooks/useDealer";
+import { useOrder } from "../../../../hooks/useOrder";
 
 const steps = ["Dealer Request", "Finance Approval", "Production Review", "Manufacturing", "Logistics", "Dealer Delivery"];
 
-export default function ApprovalProduction() {
-	const { dealerId } = useParams();
+type ApprovalProductionProps = { dealerId?: string; orderId?: string; isModal?: boolean; onClose?: () => void };
+
+export default function ApprovalProduction({ dealerId: dealerIdProp, orderId, isModal, onClose }: ApprovalProductionProps) {
+	const { dealerId: routeDealerId } = useParams();
+	const dealerId = dealerIdProp ?? routeDealerId;
 	const { dealer, isLoading, error } = useDealer(dealerId);
+	const { order, isLoading: orderLoading, error: orderError } = useOrder(dealerId, orderId);
 
-	if (isLoading) return <p>Loading dealer...</p>;
+	if (isLoading || orderLoading) return <p>Loading dealer order...</p>;
 	if (error || !dealer) return <p>{error || "Dealer not found"}</p>;
+	if (orderError || !order) return <p>{orderError || "Order not found"}</p>;
 
-	return <WorkflowShell title="Approval & Production" subtitle="Track the complete workflow and take necessary actions." dealerLabel={`${dealer.id} · ${dealer.name}`}>
+	return <WorkflowShell isModal={isModal} onClose={onClose} title="Approval & Production" subtitle="Track the complete workflow and take necessary actions." dealerLabel={`${dealer.id} · ${dealer.name}`}>
 		<section className="workflow-card">
 			<div className="request-summary">
-				<div><span>Request ID</span><strong>FLI-2026-0891</strong>
+				<div><span>Request ID</span><strong>{order.id}</strong>
 				</div>
 				<div><span>Dealer Name</span><strong>{dealer.name}</strong>
 				</div>
-				<div><span>Vehicle Model</span><strong>Renault Duster (RXZ Petrol)</strong>
+				<div><span>Vehicle Model</span><strong>{order.vehicleModel}</strong>
 				</div>
-				<div><span>Quantity</span><strong>50</strong></div>
+				<div><span>Quantity</span><strong>{order.quantity}</strong></div>
 				</div>
 				</section>
 				<section className="workflow-card">

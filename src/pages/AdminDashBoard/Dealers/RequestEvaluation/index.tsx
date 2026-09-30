@@ -1,19 +1,25 @@
 import { useParams } from "react-router-dom";
-import WorkflowShell from "../../../../components/WorkFlow/WorkFlow";
+import WorkflowShell from "../../../../components/WorkFlow";
 import { useDealer } from "../../../../hooks/useDealer";
+import { useOrder } from "../../../../hooks/useOrder";
 
-export default function RequestEvaluation() {
-	const { dealerId } = useParams();
+type RequestEvaluationProps = { dealerId?: string; orderId?: string; isModal?: boolean; onClose?: () => void };
+
+export default function RequestEvaluation({ dealerId: dealerIdProp, orderId, isModal, onClose }: RequestEvaluationProps) {
+	const { dealerId: routeDealerId } = useParams();
+	const dealerId = dealerIdProp ?? routeDealerId;
 	const { dealer, isLoading, error } = useDealer(dealerId);
+	const { order, isLoading: orderLoading, error: orderError } = useOrder(dealerId, orderId);
 
-	if (isLoading) return <p>Loading dealer...</p>;
+	if (isLoading || orderLoading) return <p>Loading dealer order...</p>;
 	if (error || !dealer) return <p>{error || "Dealer not found"}</p>;
+	if (orderError || !order) return <p>{orderError || "Order not found"}</p>;
 
-	return <WorkflowShell title="Request Evaluation" subtitle="Check inventory and production requirements before qualification." dealerLabel={`${dealer.id} · ${dealer.name}`}>
+	return <WorkflowShell isModal={isModal} onClose={onClose} title="Request Evaluation" subtitle="Check inventory and production requirements before qualification." dealerLabel={`${dealer.id} · ${dealer.name}`}>
 		<section className="workflow-card"><div className="request-summary">
 			<div><span>Dealer Name</span><strong>{dealer.name}</strong></div>
-			<div><span>Vehicle Model</span><strong>Renault Duster (RXZ Petrol)</strong></div>
-			<div><span>Requested Quantity</span><strong>50</strong></div><div>
+			<div><span>Vehicle Model</span><strong>{order.vehicleModel}</strong></div>
+			<div><span>Requested Quantity</span><strong>{order.quantity}</strong></div><div>
 				<span>Delivery Estimate</span><strong>6 Weeks</strong></div></div></section>
 				<div className="workflow-two-column">
 					<section className="workflow-card">

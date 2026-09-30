@@ -1,17 +1,20 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Login from "./pages/Login/Login";
-import Admindb from "./pages/AdminDashBoard/Dashboard/Dashboard";
-import Usermg from "./pages/AdminDashBoard/UserManagement/UserManagement";
-import Dealers from "./pages/AdminDashBoard/Dealers/Dealers";
-import DealerDetails from "./pages/AdminDashBoard/Dealers/DealersDetails/DealerDetails";
-import RequestEvaluation from "./pages/AdminDashBoard/Dealers/RequestEvaluation/RequestEvaluation";
-import FinanceQuotation from "./pages/AdminDashBoard/Dealers/FinanceQuotation/FinanceQuotation";
-import ApprovalProduction from "./pages/AdminDashBoard/Dealers/ApprovalProduction/ApprovalProduction";
+import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
+import Login from "./pages/Login";
+import Admindb from "./pages/AdminDashBoard/Dashboard";
+import Usermg from "./pages/AdminDashBoard/UserManagement";
+import Dealers from "./pages/AdminDashBoard/Dealers";
+import DealerDetails from "./pages/AdminDashBoard/Dealers/DealersDetails";
+import RequestEvaluation from "./pages/AdminDashBoard/Dealers/RequestEvaluation";
+import FinanceQuotation from "./pages/AdminDashBoard/Dealers/FinanceQuotation";
+import ApprovalProduction from "./pages/AdminDashBoard/Dealers/ApprovalProduction";
+import DealerDashboard from "./pages/Dealer/DashBoard";
+import ViewOrder from "./pages/Dealer/View_Order";
 
-function App() {
-  return (
-    <Router>
-      <Routes>
+function AnimatedRoutes() {
+	const location = useLocation();
+
+	return <div className="route-transition" key={`${location.pathname}${location.search}`}>
+      <Routes location={location}>
         <Route path="/" element={<Login />} />
         <Route path="/admindb" element={<Admindb />} />
         <Route path="/usermg" element={<Usermg />} />
@@ -20,7 +23,16 @@ function App() {
         <Route path="/dealers/evaluation/:dealerId" element={<RequestEvaluation />} />
         <Route path="/dealers/finance/:dealerId" element={<FinanceQuotation />} />
         <Route path="/dealers/approval/:dealerId" element={<ApprovalProduction />} />
+        <Route path="/dealer/DashBoard" element={<DealerDashboard />} />
+        <Route path="/dealer/ViewOrders" element={<ViewOrder />} />
       </Routes>
+    </div>;
+}
+
+function App() {
+  return (
+    <Router>
+      <AnimatedRoutes />
     </Router>
   );
 }

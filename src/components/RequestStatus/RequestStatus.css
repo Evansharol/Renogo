@@ -1,0 +1,40 @@
+.request-status-chart .request-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 42px;
+}
+.request-status-chart .request-bar-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.request-status-chart .request-bar-label {
+  display: flex;
+  justify-content: space-between;
+  color: #4e5a66;
+  font-size: 14px;
+}
+.request-status-chart .request-bar-label strong {
+  color: #18222d;
+}
+.request-status-chart .request-bar-track {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e5e9ec;
+}
+.request-status-chart .request-bar {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+.request-status-chart .request-bar.completed {
+  background: #2b8a78;
+}
+.request-status-chart .request-bar.ongoing {
+  background: #d58b36;
+}
+.request-status-chart .request-bar.pending {
+  background: #b95662;
+}

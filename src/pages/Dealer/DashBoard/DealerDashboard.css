@@ -1,0 +1,74 @@
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 24px;
+}
+.summary-card {
+  display: flex;
+  min-height: 112px;
+  box-sizing: border-box;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 8px 20px rgba(31, 41, 55, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  animation: summary-card-enter 0.35s ease-out both;
+}
+.summary-card:nth-child(2) {
+  animation-delay: 0.08s;
+}
+.summary-card:nth-child(3) {
+  animation-delay: 0.16s;
+}
+.summary-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(31, 41, 55, 0.14);
+}
+@keyframes summary-card-enter {
+  from {
+    transform: translateY(7px);
+}
+  to {
+    transform: translateY(0);
+}
+}
+.summary-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #66717d;
+  font-size: 14px;
+  font-weight: 600;
+}
+.summary-label svg {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  color: #464feb;
+}
+.summary-card:nth-child(2) .summary-label svg {
+  color: #b26a00;
+}
+.summary-card:nth-child(3) .summary-label svg {
+  color: #197052;
+}
+.summary-card strong {
+  color: #18222d;
+  font-size: 26px;
+}
+@media (max-width: 700px) {
+  .summary-grid {
+    grid-template-columns: 1fr;
+}
+}
+@media (prefers-reduced-motion: reduce) {
+  .summary-card {
+    animation: none;
+    transition: none;
+}
+}

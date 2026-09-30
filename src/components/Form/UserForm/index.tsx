@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Form, { type FormField } from "../Form";
+import Form, { type FormField } from "..";
 
 export type User = {
 	id: string;
@@ -12,6 +12,7 @@ export type User = {
 type UserFormProps = {
 	onSave: (user: User) => void;
 	onClose: () => void;
+	user?: User;
 };
 
 type UserFormState = {
@@ -23,13 +24,17 @@ type UserFormState = {
 	status: User["status"];
 };
 
-const initialForm: UserFormState = {
-	id: "",
-	firstName: "",
-	lastName: "",
-	email: "",
-	role: "",
-	status: "Active",
+const getInitialForm = (user?: User): UserFormState => {
+	const [firstName = "", ...lastNameParts] = user?.name.split(" ") ?? [];
+
+	return {
+		id: user?.id ?? "",
+		firstName,
+		lastName: lastNameParts.join(" "),
+		email: user?.email ?? "",
+		role: user?.role ?? "",
+		status: user?.status ?? "Active",
+	};
 };
 
 const userFields: FormField[] = [
@@ -40,8 +45,8 @@ const userFields: FormField[] = [
 	{ name: "status", label: "Status", options: ["Active", "Inactive"] },
 ];
 
-export default function Uform({ onSave, onClose }: UserFormProps) {
-	const [form, setForm] = useState(initialForm);
+export default function Uform({ onSave, onClose, user }: UserFormProps) {
+	const [form, setForm] = useState(() => getInitialForm(user));
 
 	const updateField = (field: keyof UserFormState, value: string) => {
 		setForm((currentForm) => ({ ...currentForm, [field]: value }));
@@ -58,7 +63,7 @@ export default function Uform({ onSave, onClose }: UserFormProps) {
 		});
 	};
 
-	return <Form title="Add User" subtitle="Enter the new user's details." fields={[
+	return <Form title={user ? "Edit User" : "Add User"} subtitle={user ? "Update the user's details." : "Enter the new user's details."} fields={[
 		{ name: "id", label: "User ID", placeholder: "Enter user ID", required: true },
 		...userFields,
 	]} values={form} onChange={(field, value) => {

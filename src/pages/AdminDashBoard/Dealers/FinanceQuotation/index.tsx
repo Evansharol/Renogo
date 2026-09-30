@@ -1,13 +1,18 @@
 import { useParams } from "react-router-dom";
-import WorkflowShell from "../../../../components/WorkFlow/WorkFlow";
+import WorkflowShell from "../../../../components/WorkFlow";
 import { useEffect, useState } from "react";
-import { getQuotationByDealerId } from "../../../../api/quotations";
+import { getQuotationByDealerId, getQuotationByOrderId } from "../../../../api/quotations";
 import { useDealer } from "../../../../hooks/useDealer";
+import { useOrder } from "../../../../hooks/useOrder";
 import type { Quotation } from "../../../../types/quotation";
 
-export default function FinanceQuotation() {
-	const { dealerId } = useParams();
+type FinanceQuotationProps = { dealerId?: string; orderId?: string; isModal?: boolean; onClose?: () => void };
+
+export default function FinanceQuotation({ dealerId: dealerIdProp, orderId, isModal, onClose }: FinanceQuotationProps) {
+	const { dealerId: routeDealerId } = useParams();
+	const dealerId = dealerIdProp ?? routeDealerId;
 	const { dealer, isLoading, error } = useDealer(dealerId);
+	const { order, isLoading: orderLoading, error: orderError } = useOrder(dealerId, orderId);
 	const [quotation, setQuotation] = useState<Quotation | null>(null);
 	const [quotationLoading, setQuotationLoading] = useState(true);
 	const [quotationError, setQuotationError] = useState("");
@@ -15,14 +20,15 @@ export default function FinanceQuotation() {
 	useEffect(() => {
 		if (!dealerId) return;
 
-		getQuotationByDealerId(dealerId)
+		(orderId ? getQuotationByOrderId(orderId) : getQuotationByDealerId(dealerId))
 			.then(setQuotation)
 			.catch(() => setQuotationError("Unable to load quotation"))
 			.finally(() => setQuotationLoading(false));
 	}, [dealerId]);
 
-	if (isLoading || quotationLoading) return <p>Loading finance details...</p>;
+	if (isLoading || orderLoading || quotationLoading) return <p>Loading finance details...</p>;
 	if (error || !dealer) return <p>{error || "Dealer not found"}</p>;
+	if (orderError || !order) return <p>{orderError || "Order not found"}</p>;
 	if (quotationError || !quotation) return <p>{quotationError || "Quotation not found"}</p>;
 
 	const subtotal = quotation.basePrice * quotation.quantity;
@@ -31,7 +37,7 @@ export default function FinanceQuotation() {
 	const depositAmount = finalCost * quotation.depositRate / 100;
 	const formatCurrency = (amount: number) => `₹ ${amount.toLocaleString("en-IN")}`;
 
-	return <WorkflowShell title="Finance & Quotation" subtitle="Calculate pricing, taxes, and generate the official quotation." dealerLabel={`${dealer.id} · ${dealer.name}`}>
+	return <WorkflowShell isModal={isModal} onClose={onClose} title="Finance & Quotation" subtitle="Calculate pricing, taxes, and generate the official quotation." dealerLabel={`${dealer.id} · ${dealer.name}`}>
 		<section className="workflow-card">
 			<div className="request-summary"><div>
 				<span>Request ID</span><strong>{quotation.id}</strong></div>

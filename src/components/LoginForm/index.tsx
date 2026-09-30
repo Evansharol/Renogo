@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./LoginForm.css";
+import Alert from '@mui/material/Alert';
+
 
 const DUMMY_USERS = {
   admin: {
@@ -24,15 +26,22 @@ export default function UserLoginForm() {
     e.preventDefault();
 
     const selectedUser = DUMMY_USERS[role as keyof typeof DUMMY_USERS];
+    const normalizedName = name.trim().toLowerCase();
 
     if (
       selectedUser &&
-      name.toLowerCase() === selectedUser.name &&
+      normalizedName === selectedUser.name &&
       password === selectedUser.password
     ) {
-      navigate("/admindb", { state: { name: selectedUser.name } });
+      setMessage("");
+
+      if (role === "admin") {
+        navigate("/admindb", { state: { name: selectedUser.name } });
+      } else if (role === "dealer") {
+        navigate("/dealer/DashBoard", { state: { name: selectedUser.name } });
+      }
     } else {
-      setMessage("Invalid credentials. Try admin or dealer.");
+      setMessage("Enter Valid Credentials.");
     }
   };
 
@@ -46,6 +55,7 @@ export default function UserLoginForm() {
           id="name"
           type="text"
           placeholder="Enter your name"
+          required
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
@@ -57,6 +67,7 @@ export default function UserLoginForm() {
           id="password"
           type="password"
           placeholder="Enter your password"
+          required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
@@ -66,6 +77,7 @@ export default function UserLoginForm() {
         <label htmlFor="role">Choose</label>
         <select
           id="role"
+          required
           value={role}
           onChange={(e) => setRole(e.target.value)}
         >
@@ -81,7 +93,11 @@ export default function UserLoginForm() {
         Login
       </button>
 
-      {message && <p className="login-message">{message}</p>}
+      {message && (
+        <Alert className="login-alert" severity="warning" variant="filled">
+          {message}
+        </Alert>
+      )}
     </form>
   );
 }
