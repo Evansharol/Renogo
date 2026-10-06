@@ -134,9 +134,6 @@ export default function ViewOrder() {
 					<section className="dealer-orders" aria-labelledby="dealer-orders-heading">
 						<div className="dealer-orders-heading">
 							<h2 id="dealer-orders-heading">My Orders</h2>
-							<button className="order-view-button" type="button" onClick={() => { setRequestSent(""); setShowOrderForm(true); }}>
-								Add Order
-							</button>
 						</div>
 						{requestSent && <p className="order-request-success" role="status">{requestSent}</p>}
 						<Dialog open={showOrderForm} onClose={() => !isCreatingOrder && setShowOrderForm(false)} fullWidth maxWidth="sm" aria-labelledby="request-order-title">
