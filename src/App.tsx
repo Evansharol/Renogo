@@ -8,7 +8,7 @@ import DealerDetails from "./pages/AdminDashBoard/Dealers/DealersDetails";
 import RequestEvaluation from "./pages/AdminDashBoard/Dealers/RequestEvaluation";
 import FinanceQuotation from "./pages/AdminDashBoard/Dealers/FinanceQuotation";
 import ApprovalProduction from "./pages/AdminDashBoard/Dealers/ApprovalProduction";
-import DealerDashboard from "./pages/Dealer/DashBoard";
+import DealerDashboard from "./pages/Dealer";
 
 function AnimatedRoutes() {
 	const location = useLocation();
@@ -24,7 +24,12 @@ function AnimatedRoutes() {
         <Route path="/dealers/evaluation/:dealerId" element={<RequestEvaluation />} />
         <Route path="/dealers/finance/:dealerId" element={<FinanceQuotation />} />
         <Route path="/dealers/approval/:dealerId" element={<ApprovalProduction />} />
-        <Route path="/dealer/DashBoard" element={<DealerDashboard />} />
+        <Route path="/dealer/DashBoard" element={<DealerDashboard initialTab="dashboard" />} />
+        <Route path="/dealer/dashboard" element={<DealerDashboard initialTab="dashboard" />} />
+        <Route path="/dealer/catalog" element={<DealerDashboard initialTab="catalog" />} />
+        <Route path="/dealer/order-request" element={<DealerDashboard initialTab="order-request" />} />
+        <Route path="/dealer/my-requests" element={<DealerDashboard initialTab="my-requests" />} />
+        <Route path="/dealer/profile" element={<DealerDashboard initialTab="profile" />} />
       </Routes>
     </div>;
 }
