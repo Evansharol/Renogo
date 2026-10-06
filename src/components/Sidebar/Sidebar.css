@@ -1,122 +1,276 @@
+/* =========================================================
+   SIDEBAR COMPONENT — FIXED POSITIONING & LAYOUT SYSTEM
+   All sidebar styles live here. Do NOT add .admin-sidebar
+   rules in page-level CSS files.
+   ========================================================= */
+
+/* ── Fixed Sidebar Shell ── */
 .admin-sidebar {
-  position: relative;
-  width: 250px;
-  flex: 0 0 250px;
-  box-sizing: border-box;
-  overflow: hidden;
-  padding: 24px 16px;
-  background: #111111;
-  transition: width 0.25s ease, flex-basis 0.25s ease;
-}
-.admin-sidebar.sidebar-closed {
-  width: 104px;
-  flex-basis: 104px;
-  padding-inline: 12px;
-}
-.sidebar-header {
-  position: relative;
-  display: block;
-  height: 40px;
-  margin-bottom: 32px;
-}
-.admin-sidebar .login-logo {
-  position: absolute;
+  position: fixed !important;
   top: 0;
   left: 0;
+  bottom: 0;
+  width: 250px;
+  height: 100vh;
+  box-sizing: border-box;
   display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 24px 16px;
+  background: #111111;
+  transition: width 0.25s ease, padding 0.25s ease;
+  z-index: 1000;
+}
+
+/* Custom scrollbar */
+.admin-sidebar::-webkit-scrollbar { width: 4px; }
+.admin-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+/* ── Structural spacer: reserves space beside fixed sidebar ── */
+.sidebar-layout-spacer {
+  width: 250px;
+  flex: 0 0 250px;
+  height: 100vh;
+  box-sizing: border-box;
+  transition: width 0.25s ease, flex-basis 0.25s ease;
+  pointer-events: none;
+  visibility: hidden;
+  flex-shrink: 0;
+}
+
+/* ── Collapsed State ── */
+.admin-sidebar.sidebar-closed {
+  width: 72px;
+  padding-inline: 10px;
+}
+
+.sidebar-layout-spacer.spacer-closed {
+  width: 72px;
+  flex: 0 0 72px;
+}
+
+/* ── Header Area (Logo + Close Button) ── */
+.sidebar-header {
+  display: flex;
+  flex-direction: row;
   align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 48px;
+  margin-bottom: 28px;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+/* Logo inside sidebar */
+.admin-sidebar .login-logo {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
   width: auto;
-  height: 40px;
   min-width: 0;
   margin: 0;
+  padding: 0;
   color: white;
+  font-size: 20px;
+  font-weight: 700;
   line-height: 1;
+  position: static !important; /* prevent Header's absolute rule from applying */
 }
+
+.admin-sidebar .login-logo img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .admin-sidebar .login-logo span {
   white-space: nowrap;
+  overflow: hidden;
 }
+
+/* Hide text in collapsed state */
+.sidebar-closed .login-logo span {
+  display: none;
+}
+
+/* ── Close & Expand Toggle Buttons ── */
 .sidebar-close-toggle {
-  position: absolute;
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  flex: 0 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
   margin: 0;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.08);
   color: white;
   cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
 }
+
 .sidebar-expand-toggle {
-  position: absolute;
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  flex: 0 0 40px;
-  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin: 0 auto 20px;
   padding: 0;
-  border: 0px solid rgba(6, 6, 6, 0.28);
-  background: rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
   color: white;
   cursor: pointer;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
-.sidebar-close-toggle {
-  top: 0;
-  right: 0;
-}
-.sidebar-expand-toggle {
-  top: 24px;
-  right: 0px;
-}
-.sidebar-close-toggle:hover, .sidebar-expand-toggle:hover {
+
+.sidebar-close-toggle:hover,
+.sidebar-expand-toggle:hover {
   border-color: rgba(255, 255, 255, 0.6);
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.18);
 }
-.sidebar-close-toggle svg, .sidebar-expand-toggle svg {
-  width: 22px;
-  height: 22px;
+
+.sidebar-close-toggle svg,
+.sidebar-expand-toggle svg {
+  width: 18px;
+  height: 18px;
+  display: block;
 }
-.sidebar-closed .login-logo span {
-  display: none;
-}
+
+/* ── Navigation Links Container ── */
 .sidebar-navigation {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
+  flex-shrink: 0;
+  width: 100%;
 }
+
+/* ── Individual Nav Link ── */
 .sidebar-link {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 12px;
-  padding: 13px 14px;
+  padding: 11px 13px;
   border: 1px solid transparent;
   border-radius: 10px;
   color: rgba(255, 255, 255, 0.72);
   text-decoration: none;
-  font-size: 15px;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
 }
+
 .sidebar-link svg {
-  width: 22px;
-  height: 22px;
-  flex: 0 0 22px;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  display: block;
+  color: rgba(255, 255, 255, 0.7);
+  transition: color 0.2s;
 }
+
 .sidebar-link span {
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
+/* Collapsed: center icon, hide text */
 .sidebar-closed .sidebar-link {
   justify-content: center;
-  padding-inline: 0;
+  padding: 11px 0;
 }
+
 .sidebar-closed .sidebar-link span {
   display: none;
 }
-.sidebar-link:hover, .sidebar-link.active {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.16);
+
+/* Hover & Active States */
+.sidebar-link:hover,
+.sidebar-link.active {
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 255, 255, 0.15);
   color: white;
 }
+
+.sidebar-link:hover svg,
+.sidebar-link.active svg {
+  color: white;
+}
+
+/* =========================================================
+   DEALER PORTAL SPECIFIC STYLING
+   ========================================================= */
+
+.dealer-sidebar-theme {
+  background: #111111;
+}
+
+/* Active Dealer Tab — Renault signature yellow */
+.sidebar-link.active-dealer-tab {
+  background: rgba(255, 209, 0, 0.12);
+  border-color: rgba(255, 209, 0, 0.28);
+  color: #ffd100;
+  font-weight: 600;
+}
+
+.sidebar-link.active-dealer-tab svg {
+  color: #ffd100;
+}
+
+/* ── Dealer Footer (pushed to bottom) ── */
+.dealer-sidebar-footer {
+  margin-top: auto;
+  padding-top: 20px;
+  padding-bottom: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.renault-yellow-accent {
+  width: 28px;
+  height: 3px;
+  background-color: #ffd100;
+  border-radius: 2px;
+  margin-bottom: 10px;
+}
+
+.renault-footer-title {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  margin-bottom: 2px;
+}
+
+.renault-footer-tagline {
+  color: rgba(255, 255, 255, 0.50);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+/* ── Unused brand header classes (kept for compatibility) ── */
+.dealer-brand-header { display: flex; align-items: center; gap: 12px; }
+.renault-diamond-icon { display: flex; align-items: center; justify-content: center; width: 32px; height: 40px; }
+.renault-diamond-icon svg { width: 28px; height: 36px; }
+.dealer-brand-copy { display: flex; flex-direction: column; line-height: 1.15; }
+.dealer-brand-copy .brand-main { color: #fff; font-size: 15px; font-weight: 800; letter-spacing: 2px; }
+.dealer-brand-copy .brand-sub { color: rgba(255,255,255,.65); font-size: 10px; font-weight: 600; letter-spacing: 1.2px; }

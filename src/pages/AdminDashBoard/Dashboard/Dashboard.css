@@ -4,37 +4,7 @@
   background: #eae8e8;
   color: #18222d;
 }
-.admin-sidebar {
-  width: 250px;
-  flex: 0 0 250px;
-  box-sizing: border-box;
-  padding: 24px 16px;
-  background: #111111;
-}
-.admin-sidebar .login-logo {
-  position: static;
-  margin: 0 8px 48px;
-  color: white;
-}
-.sidebar-navigation {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.sidebar-link {
-  padding: 13px 14px;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  color: rgba(255, 255, 255, 0.72);
-  text-decoration: none;
-  font-size: 15px;
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-.sidebar-link:hover, .sidebar-link.active {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.16);
-  color: white;
-}
+/* Sidebar styles are controlled by src/components/Sidebar/Sidebar.css */
 .admin-content {
   min-width: 0;
   flex: 1;
@@ -205,17 +175,7 @@
   .admin-layout {
     display: block;
 }
-  .admin-sidebar {
-    width: 100%;
-    padding: 16px;
-}
-  .admin-sidebar .login-logo {
-    margin-bottom: 24px;
-}
-  .sidebar-navigation {
-    flex-direction: row;
-    flex-wrap: wrap;
-}
+  /* Sidebar responsive styles are in Sidebar.css */
   .admin-content {
     width: 100%;
 }

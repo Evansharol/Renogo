@@ -1,4 +1,7 @@
 .navbar {
+  position: sticky;
+  top: 0;
+  z-index: 500;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -71,3 +74,109 @@
   border-color: rgba(8, 8, 8, 0.6);
   background: rgba(255, 255, 255, 0.2);
 }
+
+/* Dealer Navbar Style */
+.dealer-navbar-style {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.notification-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: #374151;
+  transition: background-color 0.15s ease;
+}
+
+.notification-button:hover {
+  background: #f3f4f6;
+}
+
+.notification-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background-color: #ef4444;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  border: 1.5px solid #ffffff;
+}
+
+.dealer-profile-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 6px 4px 4px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.dealer-profile-pill:hover {
+  background-color: #f3f4f6;
+}
+
+.dealer-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #111827;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.dealer-user-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.dealer-name-text {
+  color: #111827;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.dealer-location-text {
+  color: #6b7280;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.dealer-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  padding: 2px;
+  color: #6b7280;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.dealer-dropdown-trigger:hover {
+  color: #111827;
+}
+

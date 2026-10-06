@@ -1,0 +1,85 @@
+/* MyRequests.css — table & filter-specific styles only.
+   Common styles (page title, buttons, status pills) live in Dealer.css */
+
+.my-requests-filter-bar {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.filter-search-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 240px;
+  padding: 0 14px;
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  height: 42px;
+}
+
+.filter-search-box svg   { color: #9ca3af; font-size: 20px; }
+.filter-search-box input { width: 100%; border: 0; outline: 0; font-size: 13.5px; color: #111827; background: transparent; }
+
+.filter-select-group { display: flex; gap: 10px; }
+
+.filter-select-group select {
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #374151;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.my-requests-table-wrapper {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow-x: auto;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.my-requests-full-table { width: 100%; border-collapse: collapse; text-align: left; }
+
+.my-requests-full-table th {
+  padding: 12px 18px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #6b7280;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.my-requests-full-table td {
+  padding: 15px 18px;
+  font-size: 13.5px;
+  color: #1f2937;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.my-requests-full-table tr:hover td { background-color: #fbfcfd; }
+
+.id-font { font-family: monospace; font-size: 14px; }
+
+.table-action-track-btn {
+  padding: 6px 12px;
+  background-color: #111827;
+  color: #ffffff;
+  border: 0;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.table-action-track-btn:hover { background-color: #374151; }
+
+.no-records-cell { text-align: center; padding: 36px 18px !important; color: #6b7280; }

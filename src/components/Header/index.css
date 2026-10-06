@@ -1,16 +1,22 @@
 .login-logo {
-  position:absolute;
-  top: 24px;
-  left: 24px;
-  z-index: 1;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 10px;
   color: white;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
+  user-select: none;
 }
+
 .login-logo img {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.login-image-panel .login-logo {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  z-index: 10;
 }

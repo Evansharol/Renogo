@@ -1,0 +1,184 @@
+/* =========================================================
+   DEALER PORTAL — Common Styles
+   Shared across all Dealer sub-pages.
+   ========================================================= */
+
+/* ── Root layout ── */
+.dealer-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #f8fafc;
+}
+
+.dealer-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.dealer-main-scroll {
+  flex: 1;
+  height: calc(100vh - 65px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 24px 28px 48px;
+  background-color: #f8fafc;
+}
+
+/* ── Page title row (used by Catalog, My Requests, Profile) ── */
+.dealer-page-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.dealer-page-title-row h1 {
+  margin: 0 0 4px;
+  font-size: 26px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.dealer-page-title-row p {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* ── Success toast ── */
+.dealer-banner-toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  margin-bottom: 20px;
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 10px;
+  color: #065f46;
+  font-size: 14px;
+  font-weight: 500;
+  animation: slideDown 0.3s ease;
+}
+
+.dealer-banner-toast svg { color: #059669; flex-shrink: 0; }
+
+.dealer-banner-toast button {
+  margin-left: auto;
+  background: transparent;
+  border: 0;
+  font-size: 18px;
+  color: #065f46;
+  cursor: pointer;
+  line-height: 1;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Primary CTA button (yellow) ── */
+.primary-request-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #ffd100;
+  color: #111827;
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(255, 209, 0, 0.35);
+  transition: background-color 0.15s ease;
+}
+
+.primary-request-btn:hover { background-color: #e6bc00; }
+
+/* ── Status pills (shared across dashboard & my-requests) ── */
+.req-status-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-badge-pending   { background-color: #fef9c3; color: #854d0e; }
+.status-badge-review    { background-color: #e0f2fe; color: #0369a1; }
+.status-badge-quotation { background-color: #ede9fe; color: #6d28d9; }
+.status-badge-approved  { background-color: #dcfce7; color: #15803d; }
+.status-badge-rejected  { background-color: #fee2e2; color: #991b1b; }
+.status-badge-default   { background-color: #f3f4f6; color: #4b5563; }
+
+/* ── Dialog shared styles ── */
+.dialog-header-custom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 14px !important;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.dialog-header-custom strong {
+  font-size: 18px;
+  font-weight: 800;
+  color: #111827;
+  display: block;
+}
+
+.dialog-header-custom p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.dialog-actions-custom {
+  padding: 14px 24px 20px !important;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.btn-cancel {
+  padding: 9px 18px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 20px;
+  border: 0;
+  border-radius: 8px;
+  background-color: #ffd100;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.btn-submit:hover    { background-color: #e6bc00; }
+.btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .dealer-main-scroll { padding: 16px; }
+}
