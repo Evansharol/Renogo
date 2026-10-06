@@ -21,7 +21,9 @@ type LoginState = { name?: string; userId?: string; dealerId?: string };
 
 export default function ViewOrder() {
 	const location = useLocation();
-	const loginState = location.state as LoginState | null;
+	const storedLoginState = localStorage.getItem("loginState");
+	const loginState = (location.state as LoginState | null) ??
+		(storedLoginState ? JSON.parse(storedLoginState) as LoginState : null);
 	const [orders, setOrders] = useState<Order[]>([]);
 	const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 	const [isLoading, setIsLoading] = useState(Boolean(loginState?.dealerId));

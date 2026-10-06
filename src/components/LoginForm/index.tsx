@@ -5,6 +5,7 @@ import Alert from '@mui/material/Alert';
 
 
 type DummyUser = { userId: string; name: string; password: string; dealerId?: string };
+type ManagedUser = { id: string; name: string; password: string; role: string; status: "Active" | "Inactive" };
 
 const DUMMY_USERS: Record<"admin" | "dealer", DummyUser> = {
   admin: {
@@ -20,6 +21,17 @@ const DUMMY_USERS: Record<"admin" | "dealer", DummyUser> = {
   },
 };
 
+function getManagedUsers(): ManagedUser[] {
+  const storedUsers = localStorage.getItem("managed-users");
+  if (!storedUsers) return [];
+
+  try {
+    return JSON.parse(storedUsers) as ManagedUser[];
+  } catch {
+    return [];
+  }
+}
+
 export default function UserLoginForm() {
   const navigate = useNavigate();
   const [userId, setUserId] = useState("");
@@ -30,8 +42,15 @@ export default function UserLoginForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const selectedUser = DUMMY_USERS[role as keyof typeof DUMMY_USERS];
     const normalizedUserId = userId.trim().toUpperCase();
+    const managedUser = getManagedUsers().find((user) =>
+      user.id.toUpperCase() === normalizedUserId &&
+      user.status === "Active" &&
+      (role === "dealer" ? user.role.toLowerCase() === "dealer" : user.role.toLowerCase() === "administrator")
+    );
+    const selectedUser = managedUser
+      ? { userId: managedUser.id, name: managedUser.name, password: managedUser.password, dealerId: role === "dealer" ? managedUser.id : undefined }
+      : DUMMY_USERS[role as keyof typeof DUMMY_USERS];
 
     if (
       selectedUser &&
@@ -39,16 +58,18 @@ export default function UserLoginForm() {
       password === selectedUser.password
     ) {
       setMessage("");
+      const loginState = {
+        name: selectedUser.name,
+        userId: selectedUser.userId,
+        dealerId: selectedUser.dealerId,
+      };
+      localStorage.setItem("loginState", JSON.stringify(loginState));
 
       if (role === "admin") {
-        navigate("/admindb", { state: { name: selectedUser.name, userId: selectedUser.userId } });
+        navigate("/admindb", { state: loginState });
       } else if (role === "dealer") {
         navigate("/dealer/DashBoard", {
-          state: {
-            name: selectedUser.name,
-            userId: selectedUser.userId,
-            dealerId: selectedUser.dealerId,
-          },
+          state: loginState,
         });
       }
     } else {

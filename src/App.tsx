@@ -3,6 +3,7 @@ import Login from "./pages/Login";
 import Admindb from "./pages/AdminDashBoard/Dashboard";
 import Usermg from "./pages/AdminDashBoard/UserManagement";
 import Dealers from "./pages/AdminDashBoard/Dealers";
+import VehicleCatalog from "./pages/AdminDashBoard/VehicleCatalog";
 import DealerDetails from "./pages/AdminDashBoard/Dealers/DealersDetails";
 import RequestEvaluation from "./pages/AdminDashBoard/Dealers/RequestEvaluation";
 import FinanceQuotation from "./pages/AdminDashBoard/Dealers/FinanceQuotation";
@@ -18,6 +19,7 @@ function AnimatedRoutes() {
         <Route path="/admindb" element={<Admindb />} />
         <Route path="/usermg" element={<Usermg />} />
         <Route path="/dealers" element={<Dealers />} />
+        <Route path="/vehiclecatalog" element={<VehicleCatalog />} />
         <Route path="/dealers/details/:dealerId" element={<DealerDetails />} />
         <Route path="/dealers/evaluation/:dealerId" element={<RequestEvaluation />} />
         <Route path="/dealers/finance/:dealerId" element={<FinanceQuotation />} />

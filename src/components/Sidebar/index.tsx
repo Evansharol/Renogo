@@ -65,6 +65,10 @@ export default function Sidebar({ variant = "admin" }: SidebarProps) {
               <DirectionsCarIcon />
               <span>Dealer Management</span>
             </NavLink>
+            <NavLink className="sidebar-link" to="/vehiclecatalog" title="Vehicle Catalog">
+              <ShoppingCartIcon />
+              <span>Vehicle Catalog</span>
+            </NavLink>
           </>
         )}
       </nav>

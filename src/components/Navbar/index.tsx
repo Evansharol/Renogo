@@ -13,6 +13,7 @@ export default function Navbar({ adminName }: NavbarProps) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    localStorage.removeItem("loginState");
     navigate("/", { replace: true });
   };
 

@@ -14,15 +14,26 @@ import "./UserManagement.css";
 type LoginState = { name?: string };
 
 const initialUsers: User[] = [
-	{ id: "USR-1001", name: "Amelia Martin", email: "amelia.martin@renogo.com", role: "Administrator", status: "Active" },
-	{ id: "USR-1002", name: "Louis Bernard", email: "louis.bernard@renogo.com", role: "Manager", status: "Active" },
-	{ id: "USR-1003", name: "Sofia Garcia", email: "sofia.garcia@renogo.com", role: "Dealer", status: "Inactive" },
-	{ id: "USR-1004", name: "Noah Wilson", email: "noah.wilson@renogo.com", role: "Support", status: "Active" },
+	{ id: "USR-1001", name: "Amelia Martin", email: "amelia.martin@renogo.com", role: "Administrator", password: "admin123", status: "Active" },
+	{ id: "USR-1002", name: "Louis Bernard", email: "louis.bernard@renogo.com", role: "Manager", password: "manager123", status: "Active" },
+	{ id: "USR-1003", name: "Sofia Garcia", email: "sofia.garcia@renogo.com", role: "Dealer", password: "dealer123", status: "Inactive" },
+	{ id: "USR-1004", name: "Noah Wilson", email: "noah.wilson@renogo.com", role: "Support", password: "support123", status: "Active" },
 ];
 
+const loadUsers = () => {
+	const storedUsers = localStorage.getItem("managed-users");
+	if (!storedUsers) return initialUsers;
+
+	try {
+		return JSON.parse(storedUsers) as User[];
+	} catch {
+		return initialUsers;
+	}
+};
+
 export default function Usermg() {
-	const [users, setUsers] = useState(initialUsers);
-	const [searchTerm, setSearchTerm] = useState(() => sessionStorage.getItem("user-search") ?? "");
+	const [users, setUsers] = useState<User[]>(loadUsers);
+	const [searchTerm, setSearchTerm] = useState(() => localStorage.getItem("user-search") ?? "");
 	const [selectedRole, setSelectedRole] = useState("All Roles");
 	const [isUserFormOpen, setIsUserFormOpen] = useState(false);
 	const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -34,8 +45,12 @@ export default function Usermg() {
 	const inactiveUsers = users.length - activeUsers;
 
 	useEffect(() => {
-		sessionStorage.setItem("user-search", searchTerm);
+		localStorage.setItem("user-search", searchTerm);
 	}, [searchTerm]);
+
+	useEffect(() => {
+		localStorage.setItem("managed-users", JSON.stringify(users));
+	}, [users]);
 
 	const handleSaveUser = (user: User) => {
 		setUsers((currentUsers) => editingUser
