@@ -15,9 +15,9 @@ type LoginState = { name?: string };
 
 const initialUsers: User[] = [
 	{ id: "USR-1001", name: "Amelia Martin", email: "amelia.martin@renogo.com", role: "Administrator", password: "admin123", status: "Active" },
-	{ id: "USR-1002", name: "Louis Bernard", email: "louis.bernard@renogo.com", role: "Manager", password: "manager123", status: "Active" },
+	{ id: "USR-1002", name: "Louis Bernard", email: "louis.bernard@renogo.com", role: "Manufacturer", password: "manufacturer123", status: "Active" },
 	{ id: "USR-1003", name: "Sofia Garcia", email: "sofia.garcia@renogo.com", role: "Dealer", password: "dealer123", status: "Inactive" },
-	{ id: "USR-1004", name: "Noah Wilson", email: "noah.wilson@renogo.com", role: "Support", password: "support123", status: "Active" },
+	{ id: "USR-1004", name: "Noah Wilson", email: "noah.wilson@renogo.com", role: "Supervisor", password: "supervisor123", status: "Active" },
 ];
 
 const loadUsers = () => {
@@ -105,10 +105,10 @@ export default function Usermg() {
 						</div>
 						<div className="table-scroll-wrapper">
 							<table>
-								<thead><tr><th>User ID</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+								<thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
 								<tbody>{filteredUsers.map((user) => (
 									<tr key={user.id}>
-										<td>{user.id}</td><td>{user.name}</td><td>{user.email}</td><td>{user.role}</td>
+										<td>{user.name}</td><td>{user.email}</td><td>{user.role}</td>
 										<td><span className={`status-badge ${user.status.toLowerCase()}`}>{user.status}</span></td>
 										<td><div className="user-actions">
 												<button type="button" aria-label={`Edit ${user.name}`} title="Edit" onClick={() => handleEditUser(user)}> <EditIcon /> </button>

@@ -9,4 +9,11 @@ export type Quotation = {
 	depositRate: number;
 	gstNumber: string;
 	paymentTerms: string;
+	bankDetails?: {
+		beneficiaryName: string;
+		accountNumber: string;
+		ifscCode: string;
+		bankBranch: string;
+	};
+	status?: string;
 };

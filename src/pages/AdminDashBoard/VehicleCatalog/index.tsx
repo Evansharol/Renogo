@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
@@ -11,6 +11,8 @@ type LoginState = {
     name?: string;
 };
 
+type VehicleStatus = "Available" | "Low Stock" | "Limited";
+
 type Vehicle = {
     name: string;
     code: string;
@@ -18,19 +20,8 @@ type Vehicle = {
     color: string;
     colorClass: string;
     quantity: number;
-    status: "Available" | "Low Stock" | "Limited";
+    status: VehicleStatus;
 };
-
-const vehicles: Vehicle[] = [
-    { name: "Renault Kwid", code: "KWID001", variant: "RXL", color: "Fiery Red", colorClass: "red", quantity: 120, status: "Available" },
-    { name: "Renault Kwid", code: "KWID002", variant: "RXT", color: "Ice Cool White", colorClass: "white", quantity: 85, status: "Available" },
-    { name: "Renault Triber", code: "TRB001", variant: "RXT", color: "Caspian Blue", colorClass: "blue", quantity: 60, status: "Available" },
-    { name: "Renault Triber", code: "TRB002", variant: "RXZ", color: "Moonlight Silver", colorClass: "silver", quantity: 40, status: "Low Stock" },
-    { name: "Renault Kiger", code: "KGR001", variant: "RXL", color: "Radiant Orange", colorClass: "orange", quantity: 75, status: "Available" },
-    { name: "Renault Kiger", code: "KGR002", variant: "RXZ Turbo", color: "Metallic Black", colorClass: "black", quantity: 30, status: "Low Stock" },
-    { name: "Renault Duster", code: "DST001", variant: "RXL", color: "Glacier White", colorClass: "white", quantity: 18, status: "Limited" },
-    { name: "Renault Duster", code: "DST002", variant: "RXZ", color: "Slate Grey", colorClass: "grey", quantity: 25, status: "Available" },
-];
 
 export default function Admindb() {
     const location = useLocation();
@@ -40,6 +31,32 @@ export default function Admindb() {
     const [selectedVariant, setSelectedVariant] = useState("all");
     const [selectedColor, setSelectedColor] = useState("all");
     const [selectedAvailability, setSelectedAvailability] = useState("all");
+    const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const loadVehicles = async () => {
+            try {
+                const response = await fetch("/api/vehicle.json");
+                if (!response.ok) {
+                    throw new Error(`Unable to load vehicle catalog (${response.status})`);
+                }
+                const data: unknown = await response.json();
+                if (!Array.isArray(data)) {
+                    throw new Error("Vehicle catalog response is invalid");
+                }
+                setVehicles(data as Vehicle[]);
+            } catch (loadError) {
+                setError(loadError instanceof Error ? loadError.message : "Unable to load vehicle catalog");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        void loadVehicles();
+    }, []);
+
     const filteredVehicles = useMemo(() => {
         return vehicles.filter((vehicle) => (
             (selectedModel === "all" || vehicle.name === selectedModel) &&
@@ -47,7 +64,7 @@ export default function Admindb() {
             (selectedColor === "all" || vehicle.color === selectedColor) &&
             (selectedAvailability === "all" || vehicle.status === selectedAvailability)
         ));
-    }, [selectedAvailability, selectedColor, selectedModel, selectedVariant]);
+    }, [selectedAvailability, selectedColor, selectedModel, selectedVariant, vehicles]);
     const models = [...new Set(vehicles.map((vehicle) => vehicle.name))];
     const variants = [...new Set(vehicles.map((vehicle) => vehicle.variant))];
     const colors = [...new Set(vehicles.map((vehicle) => vehicle.color))];
@@ -74,12 +91,14 @@ export default function Admindb() {
                     </section>
 
                     <section className="catalog-summary" aria-label="Catalog summary">
-                        <div className="catalog-summary-card vehicles-card"><DirectionsCarIcon /><span>Total Vehicles<strong>12</strong></span></div>
-                        <div className="catalog-summary-card stock-card"><Inventory2OutlinedIcon /><span>Total Available Stock<strong>428</strong></span></div>
-                        <div className="catalog-summary-card models-card"><DirectionsCarIcon /><span>Models Available<strong>6</strong></span></div>
+                        <div className="catalog-summary-card vehicles-card"><DirectionsCarIcon /><span>Total Vehicles<strong>{vehicles.length}</strong></span></div>
+                        <div className="catalog-summary-card stock-card"><Inventory2OutlinedIcon /><span>Total Available Stock<strong>{vehicles.reduce((total, vehicle) => total + vehicle.quantity, 0)}</strong></span></div>
+                        <div className="catalog-summary-card models-card"><DirectionsCarIcon /><span>Models Available<strong>{models.length}</strong></span></div>
                     </section>
 
                     <section className="catalog-table-card" aria-label="Vehicle catalog table">
+                        {isLoading && <p>Loading vehicle catalog...</p>}
+                        {error && <p role="alert">{error}</p>}
                         <table className="catalog-table">
                         <thead><tr><th>Vehicle Name</th><th>Model</th><th>Colour</th><th>Quantity</th><th>status</th></tr></thead>
                             <tbody>

@@ -19,9 +19,32 @@
   overflow-y: auto;
   overflow-x: hidden;
   padding: 24px 16px;
-  background: #111111;
+  isolation: isolate;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.42), rgba(30, 29, 29, 0.9)),
+    url("../../assets/sb.png");
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  box-shadow: 2px 0 24px rgba(0, 0, 0, 0.38);
   transition: width 0.25s ease, padding 0.25s ease;
   z-index: 1000;
+}
+
+.admin-sidebar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 30% 8%, rgba(255, 209, 0, 0.12), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent 25%, rgba(0, 0, 0, 0.30));
+  pointer-events: none;
+  z-index: 0;
+}
+
+.admin-sidebar > button {
+  position: relative;
+  z-index: 1;
 }
 
 /* Custom scrollbar */
@@ -65,6 +88,8 @@
   margin-bottom: 28px;
   flex-shrink: 0;
   gap: 8px;
+  position: relative;
+  z-index: 1;
 }
 
 /* Logo inside sidebar */
@@ -83,7 +108,6 @@
   line-height: 1;
   position: static !important; /* prevent Header's absolute rule from applying */
 }
-
 .admin-sidebar .login-logo img {
   width: 36px;
   height: 36px;
@@ -155,6 +179,8 @@
   gap: 4px;
   flex-shrink: 0;
   width: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 /* ── Individual Nav Link ── */
@@ -220,7 +246,7 @@
    ========================================================= */
 
 .dealer-sidebar-theme {
-  background: #111111;
+  border-right: 1px solid rgba(255, 209, 0, 0.16);
 }
 
 /* Active Dealer Tab — Renault signature yellow */
@@ -242,6 +268,8 @@
   padding-bottom: 4px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .renault-yellow-accent {
@@ -268,7 +296,11 @@
 }
 
 /* ── Unused brand header classes (kept for compatibility) ── */
-.dealer-brand-header { display: flex; align-items: center; gap: 12px; }
+.dealer-brand-header { 
+  display: flex; 
+  align-items: center; 
+  gap: 12px; 
+}
 .renault-diamond-icon { display: flex; align-items: center; justify-content: center; width: 32px; height: 40px; }
 .renault-diamond-icon svg { width: 28px; height: 36px; }
 .dealer-brand-copy { display: flex; flex-direction: column; line-height: 1.15; }

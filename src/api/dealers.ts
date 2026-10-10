@@ -1,6 +1,6 @@
 import type { Dealer, NewDealer } from "../types/dealer";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "/api";
 
 export async function getDealers(): Promise<Dealer[]> {
 	const response = await fetch(`${API_URL}/dealers`);

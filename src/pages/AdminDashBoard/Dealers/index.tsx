@@ -12,12 +12,10 @@ import "./Dealers.css";
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import PendingIcon from '@mui/icons-material/Pending';
 import DealerDetails from "./DealersDetails";
-import FinanceQuotation from "./FinanceQuotation";
-import RequestEvaluation from "./RequestEvaluation";
 import ApprovalProduction from "./ApprovalProduction";
 
 type LoginState = { name?: string };
-type WorkflowView = "details" | "evaluation" | "finance" | "approval";
+type WorkflowView = "details" | "approval";
 
 export default function Dealers() {
 	const location = useLocation();
@@ -77,11 +75,35 @@ export default function Dealers() {
 						<article className="dealer-summary-card"><span><PeopleIcon /> Total Dealers</span><strong>{dealerList.length}</strong></article>
 					<article className="dealer-summary-card"><span><ShoppingCartIcon /> Total Orders</span><strong>{totalOrders}</strong></article>
 					<article className="dealer-summary-card"><span><PendingIcon /> Pending Requests</span><strong>{pendingRequests}</strong></article></section>
-					<section className="dealers-table-card" aria-label="Dealer workflow table"><div className="table-scroll-wrapper"><table className="dealers-table"><thead><tr><th>Dealer ID</th><th>Dealer Name</th><th>Orders</th><th>Dealer Details</th><th>Request Evaluation</th><th>Finance &amp; Quotation</th><th>Approval &amp; Production</th></tr></thead><tbody>{visibleDealerList.map((dealer) => { const dealerOrders = ordersByDealer[dealer.id] ?? []; return <tr key={dealer.id}><td className="dealer-id">{dealer.id}</td><td><strong>{dealer.name}</strong><span className="dealer-location">{dealer.location}</span></td><td><select className="order-select" aria-label={`Select order for ${dealer.name}`} value={selectedOrderByDealer[dealer.id] ?? ""} onChange={(event) => setSelectedOrderByDealer((current) => ({ ...current, [dealer.id]: event.target.value }))}><option value="">No orders</option>{dealerOrders.map((order) => <option value={order.id} key={order.id}>{order.id} · {order.vehicleModel}</option>)}</select></td><td><button className="workflow-link details-link" type="button" disabled={!selectedOrderByDealer[dealer.id]} onClick={() => openWorkflowView("details", dealer.id)}><span>View</span><small>Profile &amp; orders</small></button></td><td><button className="workflow-link evaluation-link" type="button" disabled={!selectedOrderByDealer[dealer.id]} onClick={() => openWorkflowView("evaluation", dealer.id)}><span>View</span><small>Stock review</small></button></td><td><button className="workflow-link finance-link" type="button" disabled={!selectedOrderByDealer[dealer.id]} onClick={() => openWorkflowView("finance", dealer.id)}><span>View</span><small>Quotation</small></button></td><td><button className="workflow-link approval-link" type="button" disabled={!selectedOrderByDealer[dealer.id]} onClick={() => openWorkflowView("approval", dealer.id)}><span>View</span><small>Production status</small></button></td></tr>; })}</tbody></table></div></section>
+					<section className="dealers-table-card" aria-label="Dealer workflow table">
+						<div className="table-scroll-wrapper">
+							<table className="dealers-table">
+								<thead>
+									<tr>
+										<th>Dealer ID</th>
+										<th>Dealer Name</th>
+										<th>Orders</th>
+										<th>Dealer Details</th>
+										<th>Track Request</th>
+										</tr>
+									</thead>
+						        <tbody>{visibleDealerList.map((dealer) => { const dealerOrders = ordersByDealer[dealer.id] ?? []; 
+									return <tr key={dealer.id}>
+										<td className="dealer-id">{dealer.id}</td>
+										<td><strong>{dealer.name}</strong>
+										<span className="dealer-location">{dealer.location}</span></td>
+										<td><select className="order-select" aria-label={`Select order for ${dealer.name}`} value={selectedOrderByDealer[dealer.id] ?? ""} onChange={(event) => setSelectedOrderByDealer((current) => ({ ...current, [dealer.id]: event.target.value }))}>
+											<option value="">No orders</option>{dealerOrders.map((order) => <option value={order.id} key={order.id}>{order.id} · {order.vehicleModel}</option>)}</select></td>
+											<td>
+												<button className="workflow-link details-link" type="button" disabled={!selectedOrderByDealer[dealer.id]} onClick={() => openWorkflowView("details", dealer.id)}>
+												<span>View</span><small>Profile &amp; orders</small></button></td>
+												<td><button className="workflow-link approval-link" type="button" disabled={!selectedOrderByDealer[dealer.id]} onClick={() => openWorkflowView("approval", dealer.id)}>
+												<span>View</span><small>Production status</small></button></td></tr>; 
+											})}
+										</tbody>
+							</table></div></section>
 					{isFormOpen && <DealerForm onSave={handleAddDealer} onClose={() => setIsFormOpen(false)} />}
 					{workflowView?.type === "details" && <DealerDetails dealerId={workflowView.dealerId} orderId={workflowView.orderId} isModal onClose={closeWorkflowView} />}
-					{workflowView?.type === "evaluation" && <RequestEvaluation dealerId={workflowView.dealerId} orderId={workflowView.orderId} isModal onClose={closeWorkflowView} />}
-					{workflowView?.type === "finance" && <FinanceQuotation dealerId={workflowView.dealerId} orderId={workflowView.orderId} isModal onClose={closeWorkflowView} />}
 					{workflowView?.type === "approval" && <ApprovalProduction dealerId={workflowView.dealerId} orderId={workflowView.orderId} isModal onClose={closeWorkflowView} />}
 				</main>
 			</div>

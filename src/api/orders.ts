@@ -1,6 +1,6 @@
 import type { Order } from "../types/order";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "/api";
 
 export async function getOrders(): Promise<Order[]> {
 	const response = await fetch(`${API_URL}/orders`);

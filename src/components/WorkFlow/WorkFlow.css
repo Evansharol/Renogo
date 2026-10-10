@@ -50,7 +50,7 @@
 .workflow-modal-overlay { 
     position: fixed; 
     inset: 0; 
-    z-index: 20; 
+    z-index: 2000; 
     display: grid; 
     place-items: center; 
     padding: 24px; 
@@ -358,14 +358,6 @@
     background: #eef5ff; 
     color: #1769aa; 
     font-size: 22px; 
-}
-.approval-actions > div { 
-    display: flex; 
-    gap: 12px; 
-    margin-top: 14px; 
-}
-.approval-actions button { 
-    flex: 1; 
 }
 .history-table { 
     width: 100%; 

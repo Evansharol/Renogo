@@ -1,0 +1,27 @@
+.sales-manager-review-overlay { position: fixed; z-index: 2000; inset: 0; display: flex; align-items: center; justify-content: center; padding: 24px; background: rgba(15, 23, 42, .55); }
+.sales-manager-review-modal { display: flex; flex-direction: column; width: min(900px, 94vw); max-height: 92vh; overflow: hidden; border-radius: 16px; background: #f8fafc; box-shadow: 0 24px 70px rgba(15, 23, 42, .3); }
+.sales-manager-review-header { display: flex; justify-content: space-between; padding: 20px 24px; background: #fff; border-bottom: 1px solid #e2e8f0; }
+.sales-manager-review-header p { margin: 0 0 4px; color: #a16207; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+.sales-manager-review-header h2 { margin: 0; color: #1e293b; font-size: 22px; }
+.sales-manager-review-header span { color: #64748b; font-size: 12px; }
+.sales-manager-review-header button { width: 36px; height: 36px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: #475569; cursor: pointer; }
+.sales-manager-review-body { overflow-y: auto; padding: 20px; }
+.sales-manager-review-card { margin-bottom: 14px; padding: 17px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; }
+.sales-manager-review-card h3 { margin: 0 0 14px; color: #1e293b; font-size: 15px; }
+.sales-manager-detail-grid, .sales-manager-finance-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.sales-manager-detail-grid span, .sales-manager-finance-grid span { color: #64748b; font-size: 11px; text-transform: uppercase; }
+.sales-manager-detail-grid strong, .sales-manager-finance-grid strong { display: block; margin-top: 4px; color: #334155; font-size: 13px; text-transform: none; }
+.sales-manager-stock-summary { display: flex; justify-content: space-between; color: #64748b; font-size: 12px; }
+.sales-manager-stock-summary strong { display: block; color: #334155; font-size: 15px; }
+.sales-manager-review-card p { margin: 0; color: #64748b; font-size: 13px; }
+.sales-manager-field { display: block; margin-top: 12px; color: #475569; font-size: 12px; font-weight: 700; }
+.sales-manager-field:first-child { margin-top: 0; }
+.sales-manager-field textarea { display: block; width: 100%; min-height: 65px; box-sizing: border-box; margin-top: 6px; padding: 10px; resize: vertical; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; }
+.sales-manager-review-footer { display: flex; justify-content: space-between; gap: 12px; padding: 16px 20px; border-top: 1px solid #e2e8f0; background: #fff; }
+.sales-manager-review-footer > div { display: flex; gap: 10px; }
+.sales-manager-secondary, .sales-manager-danger, .sales-manager-primary { padding: 10px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
+.sales-manager-secondary { border: 1px solid #cbd5e1; background: #fff; color: #475569; }
+.sales-manager-danger { border: 1px solid #fecaca; background: #fff1f2; color: #b91c1c; }
+.sales-manager-danger:disabled { cursor: not-allowed; opacity: .5; }
+.sales-manager-primary { border: 1px solid #f2c400; background: #ffcc00; color: #111827; }
+@media (max-width: 700px) { .sales-manager-detail-grid, .sales-manager-finance-grid { grid-template-columns: repeat(2, 1fr); } .sales-manager-review-footer { flex-direction: column; } .sales-manager-review-footer > div { justify-content: flex-end; flex-wrap: wrap; } }

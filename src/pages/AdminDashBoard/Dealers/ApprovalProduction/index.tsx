@@ -17,7 +17,7 @@ export default function ApprovalProduction({ dealerId: dealerIdProp, orderId, is
 	if (error || !dealer) return <p>{error || "Dealer not found"}</p>;
 	if (orderError || !order) return <p>{orderError || "Order not found"}</p>;
 
-	return <WorkflowShell isModal={isModal} onClose={onClose} title="Approval & Production" subtitle="Track the complete workflow and take necessary actions." dealerLabel={`${dealer.id} · ${dealer.name}`}>
+	return <WorkflowShell isModal={isModal} onClose={onClose} title="Track Request" subtitle="Track the complete workflow and take necessary actions." dealerLabel={`${dealer.id} · ${dealer.name}`}>
 		<section className="workflow-card">
 			<div className="request-summary">
 				<div><span>Request ID</span><strong>{order.id}</strong>
@@ -42,10 +42,6 @@ export default function ApprovalProduction({ dealerId: dealerIdProp, orderId, is
 								<div><h2>Manufacturing</h2>
 								<p>Vehicle production is in progress at the factory.</p></div>
 								<strong>Expected Date<br />20 Sep 2026</strong></div></section>
-								<section className="workflow-card approval-actions">
-									<span className="workflow-section-label">Actions (Marketing Head)</span>
-									<div><button className="primary-action" type="button">Approve Fleet Request</button>
-									<button className="secondary-action" type="button">Request Finance Quotation</button></div></section>
 									<section className="workflow-card"><div className="workflow-card-heading"><div>
 										<span className="workflow-section-label">Audit trail</span>
 										<h2>Workflow History</h2></div></div>

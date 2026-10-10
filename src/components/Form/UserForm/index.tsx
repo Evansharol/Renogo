@@ -50,10 +50,10 @@ const getInitialForm = (user?: User): UserFormState => {
 };
 
 const permissionGroups = [
-	{ title: "Administrator", items: ["View Fleet Requests", "Approve/Reject Requests", "Assign Orders to Production & Finance Team" ,"Manage Users & Roles","Manage Vehicle Data","View Reports & Dashboards","Monitor Order Progress"] },
-	{ title: "Production", items: ["Review Assigned Orders","Check Vehicle Availabilty","Generate Quotations", "Provide Delivery Timelines"] },
-	{ title: "Finance", items: ["Prepare Pricing", "Generate Quotation", "Track Expenses"] },
-	{ title: "Dealer", items: ["Create Fleet Orders", "View & Edit Own Orders","Submit & Track Orders","Download Quotations & Invoices"] },
+	{ title: "Administrator", items: ["View Fleet Requests", "Assign Orders to Teams", "Manage Users & Roles", "Manage Vehicle Data", "Monitor Order Progress"] },
+	{ title: "Manufacturer", items: ["View Dealer Requests", "Check Vehicle Availability", "Allocate Orders for Production", "Send Allocated Orders to Supervisor"] },
+	{ title: "Supervisor", items: ["View Allocated Orders", "Review Dealer Requests", "Prepare Pricing & Quotations", "Edit Bank Details", "Generate Quotation PDF", "Send Quotations to Sales Manager"] },
+	{ title: "Dealer", items: ["Create Fleet Orders", "View & Edit Own Orders", "Submit & Track Orders", "Download Quotations & Invoices"] },
 ];
 
 export default function Uform({ onSave, onClose, user }: UserFormProps) {
@@ -104,7 +104,6 @@ export default function Uform({ onSave, onClose, user }: UserFormProps) {
 						}} /></label>
 						<label>Email Address<input required type="email" value={form.email} placeholder="name@company.com" onChange={(event) => updateField("email", event.target.value)} /></label>
 						<label>Phone Number<input value={form.phone} placeholder="Enter phone number" onChange={(event) => updateField("phone", event.target.value)} /></label>
-						<label>User ID<input required value={form.id} placeholder="Enter login user ID" onChange={(event) => updateField("id", event.target.value)} /></label>
 						<label>Initial Password<input required type="password" value={form.password} placeholder="Set initial password" onChange={(event) => updateField("password", event.target.value)} /></label>
 					</div>
 				</section>
@@ -112,8 +111,20 @@ export default function Uform({ onSave, onClose, user }: UserFormProps) {
 				<section className="user-drawer-section">
 					<h3>Role &amp; Department</h3>
 					<div className="user-drawer-grid">
-						<label>Role<select required value={form.role} onChange={(event) => updateField("role", event.target.value)}><option value="">Select role</option><option>Administrator</option><option>Dealer</option><option>Manager</option><option>Support</option></select></label>
-						<label>Department<select value={form.department} onChange={(event) => updateField("department", event.target.value)}><option value="">Select department</option><option>Marketing</option><option>Sales</option><option>Finance</option><option>Operations</option><option>Administration</option></select></label>
+						<label>Role<select required value={form.role} onChange={(event) => updateField("role", event.target.value)}>
+							<option value="">Select role</option>
+							<option>Administrator</option>
+							<option>Manufacturer</option>
+							<option>Supervisor</option>
+							<option>Dealer</option>
+						</select></label>
+						<label>Department<select value={form.department} onChange={(event) => updateField("department", event.target.value)}>
+							<option value="">Select department</option>
+							<option>Sales</option>
+							<option>Finance</option>
+							<option>Operations</option>
+							<option>Administration</option>
+						</select></label>
 					</div>
 				</section>
 

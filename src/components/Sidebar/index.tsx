@@ -9,25 +9,17 @@ import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import DirectionsCarOutlinedIcon from "@mui/icons-material/DirectionsCarOutlined";
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
+import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import HeaderLogo from "../Header";
 import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
 
 type SidebarProps = {
-  variant?: "admin" | "dealer";
-  activeTab?: string;
-  onTabSelect?: (tab: string) => void;
-};
+  variant?: "admin" | "dealer" | "manufacturer" | "supervisor" | "salesmanager" | "dealermanager";
+}
 
-export default function Sidebar({ variant = "admin", activeTab, onTabSelect }: SidebarProps) {
+export default function Sidebar({ variant = "admin" }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(true);
-
-  const handleDealerNav = (tab: string, e: React.MouseEvent) => {
-    if (onTabSelect) {
-      e.preventDefault();
-      onTabSelect(tab);
-    }
-  };
 
   return (
     <>
@@ -39,7 +31,7 @@ export default function Sidebar({ variant = "admin", activeTab, onTabSelect }: S
 
       {/* Permanently fixed sidebar */}
       <aside
-        className={`admin-sidebar ${variant === "dealer" ? "dealer-sidebar-theme" : ""} ${
+        className={`admin-sidebar ${variant !== "admin" ? "dealer-sidebar-theme" : ""} ${
           isOpen ? "sidebar-open" : "sidebar-closed"
         }`}
       >
@@ -69,24 +61,22 @@ export default function Sidebar({ variant = "admin", activeTab, onTabSelect }: S
           </button>
         )}
 
-        <nav className="sidebar-navigation" aria-label={variant === "dealer" ? "Dealer sections" : "Admin sections"}>
+        <nav className="sidebar-navigation" aria-label={`${variant} sections`}>
           {variant === "dealer" ? (
             <>
               <NavLink
-                className={`sidebar-link ${activeTab === "dashboard" ? "active-dealer-tab" : ""}`}
-                to="/dealer/DashBoard"
+                className={({ isActive }) => `sidebar-link ${isActive ? "active-dealer-tab" : ""}`}
+                to="/dealer/dashboard"
                 title="Dashboard"
-                onClick={(e) => handleDealerNav("dashboard", e)}
               >
                 <HomeOutlinedIcon />
                 <span>Dashboard</span>
               </NavLink>
 
               <NavLink
-                className={`sidebar-link ${activeTab === "catalog" ? "active-dealer-tab" : ""}`}
+                className={({ isActive }) => `sidebar-link ${isActive ? "active-dealer-tab" : ""}`}
                 to="/dealer/catalog"
                 title="Vehicle Catalog"
-                onClick={(e) => handleDealerNav("catalog", e)}
               >
                 <DirectionsCarOutlinedIcon />
                 <span>Vehicle Catalog</span>
@@ -94,26 +84,64 @@ export default function Sidebar({ variant = "admin", activeTab, onTabSelect }: S
 
 
               <NavLink
-                className={`sidebar-link ${activeTab === "my-requests" ? "active-dealer-tab" : ""}`}
+                className={({ isActive }) => `sidebar-link ${isActive ? "active-dealer-tab" : ""}`}
                 to="/dealer/my-requests"
                 title="My Requests"
-                onClick={(e) => handleDealerNav("my-requests", e)}
               >
                 <AssignmentOutlinedIcon />
                 <span>My Requests</span>
               </NavLink>
 
               <NavLink
-                className={`sidebar-link ${activeTab === "profile" ? "active-dealer-tab" : ""}`}
+                className={({ isActive }) => `sidebar-link ${isActive ? "active-dealer-tab" : ""}`}
                 to="/dealer/profile"
                 title="Profile"
-                onClick={(e) => handleDealerNav("profile", e)}
               >
                 <PersonOutlinedIcon />
                 <span>Profile</span>
               </NavLink>
             </>
-          ) : (
+          ) : variant === "manufacturer" ? (
+            <>
+              <NavLink className="sidebar-link" to="/manufacturer/dashboard" title="Dashboard">
+                <DashboardIcon />
+                <span>Dashboard</span>
+              </NavLink>
+              <NavLink className="sidebar-link" to="/manufacturer/view-requests" title="View Requests">
+                <AssignmentOutlinedIcon />
+                <span>View Requests</span>
+              </NavLink>
+              <NavLink className="sidebar-link" to="/manufacturer/stocks" title="Stocks">
+                <Inventory2OutlinedIcon />
+                <span>Stocks</span>
+              </NavLink>
+            </>
+          ) : variant === "supervisor" ? (
+            <>
+              <NavLink className="sidebar-link" to="/supervisor/dashboard" title="Dashboard">
+                <DashboardIcon />
+                <span>Dashboard</span>
+              </NavLink>
+              <NavLink end className="sidebar-link" to="/supervisor" title="View Requests">
+                <AssignmentOutlinedIcon />
+                <span>View Requests</span>
+              </NavLink>
+            </>
+          ) : variant === "salesmanager" ? (
+            <>
+              <NavLink className="sidebar-link" to="/salesmanager/dashboard" title="Dashboard">
+                <DashboardIcon />
+                <span>Dashboard</span>
+              </NavLink>
+            </>
+          ) : variant === "dealermanager" ? (
+            <>
+              <NavLink className="sidebar-link" to="/dealermanager/dashboard" title="Dashboard">
+                <DashboardIcon />
+                <span>Dashboard</span>
+              </NavLink>
+            </>
+          ):(
             <>
               <NavLink className="sidebar-link" to="/admindb" title="Dashboard">
                 <DashboardIcon />
@@ -135,7 +163,7 @@ export default function Sidebar({ variant = "admin", activeTab, onTabSelect }: S
           )}
         </nav>
 
-        {variant === "dealer" && isOpen && (
+        {variant !== "admin" && isOpen && (
           <div className="dealer-sidebar-footer">
             <div className="renault-yellow-accent" />
             <div className="renault-footer-title">RENAULT</div>

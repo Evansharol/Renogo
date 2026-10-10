@@ -7,9 +7,11 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import IconButton from "@mui/material/IconButton";
+import { useOutletContext } from "react-router-dom";
 
 import { POPULAR_MODELS } from "../DashBoard/types";
 import type { VehicleModelData } from "../DashBoard/types";
+import type { DealerOutletContext } from "../index";
 import "../Dealer.css";
 import "./VehicleCatalog.css";
 
@@ -17,7 +19,9 @@ type Props = {
   onOrderRequest: (vehicleName: string) => void;
 };
 
-export default function DealerVehicleCatalog({ onOrderRequest }: Props) {
+export default function DealerVehicleCatalog({ onOrderRequest }: Partial<Props>) {
+  const { openRequest } = useOutletContext<DealerOutletContext>();
+  const requestOrder = onOrderRequest ?? openRequest;
   const [viewing, setViewing] = useState<VehicleModelData | null>(null);
 
   return (
@@ -28,7 +32,7 @@ export default function DealerVehicleCatalog({ onOrderRequest }: Props) {
           <h1>Renault Vehicle Catalog</h1>
           <p>Explore current lineup, specifications, and raise fleet allocations directly.</p>
         </div>
-        <button type="button" className="primary-request-btn" onClick={() => onOrderRequest(POPULAR_MODELS[0].name)}>
+        <button type="button" className="primary-request-btn" onClick={() => requestOrder(POPULAR_MODELS[0].name)}>
           <AddIcon /> Request Fleet Order
         </button>
       </div>
@@ -59,7 +63,7 @@ export default function DealerVehicleCatalog({ onOrderRequest }: Props) {
               </div>
               <div className="catalog-actions-bar">
                 <button type="button" className="catalog-details-btn" onClick={() => setViewing(car)}>View Details</button>
-                <button type="button" className="catalog-order-btn"   onClick={() => onOrderRequest(car.name)}>Order for Fleet</button>
+                <button type="button" className="catalog-order-btn"   onClick={() => requestOrder(car.name)}>Order for Fleet</button>
               </div>
             </div>
           </article>
@@ -110,7 +114,7 @@ export default function DealerVehicleCatalog({ onOrderRequest }: Props) {
 
             <DialogActions className="dialog-actions-custom">
               <button type="button" className="btn-cancel" onClick={() => setViewing(null)}>Close</button>
-              <button type="button" className="btn-submit" onClick={() => { setViewing(null); onOrderRequest(viewing.name); }}>
+              <button type="button" className="btn-submit" onClick={() => { setViewing(null); requestOrder(viewing.name); }}>
                 <LocalShippingOutlinedIcon /> Raise Procurement Request
               </button>
             </DialogActions>

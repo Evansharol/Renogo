@@ -34,7 +34,7 @@
       "id": "USR-1002",
       "name": "Louis Bernard",
       "email": "louis.bernard@renogo.com",
-      "role": "Manager",
+      "role": "Supervisor",
       "status": "Active"
     },
     {
@@ -48,7 +48,7 @@
       "id": "USR-1004",
       "name": "Noah Wilson",
       "email": "noah.wilson@renogo.com",
-      "role": "Support",
+      "role": "Manufacturer",
       "status": "Active"
     }
   ],
@@ -64,6 +64,12 @@
       "name": "dealer",
       "password": "dealer123",
       "role": "dealer"
+    },
+    {
+      "id": "LOGIN-003",
+      "name": "manufacturer",
+      "password": "Mr123",
+      "role": "manufacturer"
     }
   ],
   "orders": [
@@ -80,7 +86,7 @@
       "id": "ORD-1002",
       "dealerId": "D001",
       "vehicleModel": "Renault Kiger",
-      "quantity": 25,
+      "quantity": 50,
       "status": "Pending Approval",
       "orderDate": "2026-09-20T00:00:00.000Z",
       "etaDelivery": "2026-10-25"
@@ -138,6 +144,15 @@
       "status": "Approved",
       "orderDate": "2026-09-10T00:00:00.000Z",
       "etaDelivery": "2026-10-05"
+    },
+    {
+      "dealerId": "D001",
+      "vehicleModel": "Renault Kiger",
+      "quantity": 50,
+      "status": "Pending",
+      "orderDate": "2026-10-07T06:59:09.814Z",
+      "etaDelivery": "2026-10-13",
+      "id": "okZFy7fi5pI"
     }
   ],
   "quotations": [
@@ -151,19 +166,33 @@
       "taxRate": 18,
       "depositRate": 5,
       "gstNumber": "29AACDE1234F1Z5",
-      "paymentTerms": "Within 7 days"
+      "paymentTerms": "Within 7 days",
+      "bankDetails": {
+        "beneficiaryName": "Renault India Pvt Ltd",
+        "accountNumber": "XXXXXXXXX1234",
+        "ifscCode": "HDFC0001234",
+        "bankBranch": "HDFC Bank Ltd., Chennai Main Branch"
+      },
+      "status": "Quotation Generated"
     },
     {
       "id": "FLI-2026-0892",
       "dealerId": "D001",
       "orderId": "ORD-1002",
       "vehicleModel": "Renault Kiger",
-      "quantity": 25,
+      "quantity": 50,
       "basePrice": 950000,
       "taxRate": 18,
       "depositRate": 5,
       "gstNumber": "29AACDE1234F1Z5",
-      "paymentTerms": "Within 7 days"
+      "paymentTerms": "Within 7 days",
+      "bankDetails": {
+        "beneficiaryName": "Renault India Pvt Ltd",
+        "accountNumber": "XXXXXXXXX1234",
+        "ifscCode": "HDFC0001234",
+        "bankBranch": "HDFC Bank Ltd., Chennai Main Branch"
+      },
+      "status": "Quotation Generated"
     },
     {
       "id": "FLI-2026-0893",
@@ -175,7 +204,52 @@
       "taxRate": 18,
       "depositRate": 5,
       "gstNumber": "29AACDE1234F1Z5",
-      "paymentTerms": "Within 7 days"
+      "paymentTerms": "Within 7 days",
+      "bankDetails": {
+        "beneficiaryName": "Renault India Pvt Ltd",
+        "accountNumber": "XXXXXXXXX1234",
+        "ifscCode": "HDFC0001234",
+        "bankBranch": "HDFC Bank Ltd., Chennai Main Branch"
+      },
+      "status": "Quotation Generated"
+    },
+    {
+      "id": "FLI-2026-0894",
+      "dealerId": "D003",
+      "orderId": "ORD-3001",
+      "vehicleModel": "Renault Triber",
+      "quantity": 40,
+      "basePrice": 750000,
+      "taxRate": 18,
+      "depositRate": 5,
+      "gstNumber": "29AACDE1234F1Z5",
+      "paymentTerms": "Within 7 days",
+      "bankDetails": {
+        "beneficiaryName": "Renault India Pvt Ltd",
+        "accountNumber": "XXXXXXXXX1234",
+        "ifscCode": "HDFC0001234",
+        "bankBranch": "HDFC Bank Ltd., Chennai Main Branch"
+      },
+      "status": "Quotation Generated"
+    },
+    {
+      "id": "FLI-2026-0895",
+      "dealerId": "D002",
+      "orderId": "ORD-2003",
+      "vehicleModel": "Renault Kwid",
+      "quantity": 15,
+      "basePrice": 460000,
+      "taxRate": 18,
+      "depositRate": 5,
+      "gstNumber": "29AACDE1234F1Z5",
+      "paymentTerms": "Within 7 days",
+      "bankDetails": {
+        "beneficiaryName": "Renault India Pvt Ltd",
+        "accountNumber": "XXXXXXXXX1234",
+        "ifscCode": "HDFC0001234",
+        "bankBranch": "HDFC Bank Ltd., Chennai Main Branch"
+      },
+      "status": "Quotation Generated"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

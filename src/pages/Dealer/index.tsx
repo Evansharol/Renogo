@@ -5,7 +5,7 @@
  * Renders: Sidebar + Navbar shell, then delegates each tab to its own component
  */
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
 
 import Sidebar from "../../components/Sidebar";
@@ -14,18 +14,11 @@ import OrderDetailsDialog from "../../components/OrderDetailsDialog";
 import { getOrdersByDealerId } from "../../api/orders";
 import type { Order } from "../../types/order";
 
-import DashboardHome from "./DashBoard";
-import DealerVehicleCatalog from "./VehicleCatalog";
-import DealerMyRequests from "./MyRequests";
-import DealerProfile from "./Profile";
 import CreateRequestDialog from "./CreateRequest";
 
 import "./Dealer.css";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-
-import type { TabType } from "./DashBoard/types";
-export type { TabType };
 
 type LoginState = {
   name?: string;
@@ -43,19 +36,19 @@ const SEED_ORDERS: Order[] = [
   { id: "REQ004", dealerId: "D001", vehicleModel: "Kwid",   quantity: 25,  status: "Approved",       orderDate: "2024-10-01T00:00:00.000Z", etaDelivery: "2024-11-05" },
 ];
 
-const TAB_ROUTES: Record<TabType, string> = {
-  dashboard:       "/dealer/DashBoard",
-  catalog:         "/dealer/catalog",
-  "order-request": "/dealer/order-request",
-  "my-requests":   "/dealer/my-requests",
-  profile:         "/dealer/profile",
+export type DealerOutletContext = {
+  dealerName: string;
+  dealerId: string;
+  dealerLocation: string;
+  orders: Order[];
+  openRequest: (vehicleName?: string) => void;
+  onViewOrder: (order: Order) => void;
 };
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function DealerPortal({ initialTab = "dashboard" }: { initialTab?: TabType }) {
+export default function DealerPortal() {
   const location = useLocation();
-  const navigate  = useNavigate();
 
   // Resolve dealer identity: route state → localStorage → defaults
   const stored     = localStorage.getItem("loginState");
@@ -64,15 +57,11 @@ export default function DealerPortal({ initialTab = "dashboard" }: { initialTab?
   const dealerId       = loginState?.dealerId ?? "D001";
   const dealerLocation = loginState?.location ?? "Chennai, TN";
 
-  const [activeTab,      setActiveTab]      = useState<TabType>(initialTab);
   const [orders,         setOrders]         = useState<Order[]>(SEED_ORDERS);
   const [selectedOrder,  setSelectedOrder]  = useState<Order | null>(null);
   const [requestVehicle, setRequestVehicle] = useState("");
   const [isRequestOpen,  setIsRequestOpen]  = useState(false);
   const [successMsg,     setSuccessMsg]     = useState("");
-
-  // Sync tab when the route changes (e.g. user navigates via browser back/forward)
-  useEffect(() => { setActiveTab(initialTab); }, [initialTab]);
 
   // Merge backend orders with seed data
   useEffect(() => {
@@ -90,11 +79,6 @@ export default function DealerPortal({ initialTab = "dashboard" }: { initialTab?
     return () => { active = false; };
   }, [dealerId]);
 
-  const goToTab = (tab: TabType) => {
-    setActiveTab(tab);
-    navigate(TAB_ROUTES[tab]);
-  };
-
   const openRequest = (vehicleName = "") => {
     setRequestVehicle(vehicleName);
     setIsRequestOpen(true);
@@ -111,17 +95,15 @@ export default function DealerPortal({ initialTab = "dashboard" }: { initialTab?
     <div className="dealer-layout">
       <Sidebar
         variant="dealer"
-        activeTab={activeTab}
-        onTabSelect={(tab) => goToTab(tab as TabType)}
       />
 
       <div className="dealer-content">
         <Navbar
           adminName={dealerName}
-          variant="dealer"
+        /* variant="dealer"
           dealerLocation={dealerLocation}
           dealerAvatar="DK"
-          notificationsCount={3}
+          notificationsCount={3} */
         />
 
         <main className="dealer-main-scroll">
@@ -133,10 +115,7 @@ export default function DealerPortal({ initialTab = "dashboard" }: { initialTab?
             </div>
           )}
 
-          {activeTab === "dashboard"    && <DashboardHome dealerName={dealerName} orders={orders} onTabChange={goToTab} onNewRequest={openRequest} onViewOrder={setSelectedOrder} />}
-          {activeTab === "catalog"      && <DealerVehicleCatalog onOrderRequest={openRequest} />}
-          {activeTab === "my-requests"  && <DealerMyRequests orders={orders} onNewRequest={() => openRequest()} onTrack={setSelectedOrder} />}
-          {activeTab === "profile"      && <DealerProfile dealerName={dealerName} dealerId={dealerId} dealerLocation={dealerLocation} />}
+          <Outlet context={{ dealerName, dealerId, dealerLocation, orders, openRequest, onViewOrder: setSelectedOrder } satisfies DealerOutletContext} />
         </main>
       </div>
 

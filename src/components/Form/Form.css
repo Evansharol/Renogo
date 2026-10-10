@@ -1,7 +1,7 @@
 .form-overlay {
   position: fixed;
   inset: 0;
-  z-index: 10;
+  z-index: 2000;
   display: grid;
   place-items: center;
   padding: 20px;
@@ -16,17 +16,6 @@
   box-shadow: 0 20px 50px rgba(17, 17, 17, 0.25);
 }
 .form-heading {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-}
-.form-heading h2 {
-  margin: 0;
-  color: #18222d;
-}
-.form-heading p {
-  margin: 6px 0 0;
   color: #66717d;
   font-size: 14px;
 }
@@ -91,7 +80,7 @@
 .user-drawer-overlay {
   position: fixed;
   inset: 0;
-  z-index: 10;
+  z-index: 2000;
   display: flex;
   justify-content: flex-end;
   background: rgba(17, 24, 39, 0.42);

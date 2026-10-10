@@ -7,25 +7,15 @@ import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import DirectionsCarOutlinedIcon from "@mui/icons-material/DirectionsCarOutlined";
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
+import { useNavigate, useOutletContext } from "react-router-dom";
 
 import { POPULAR_MODELS } from "./types";
 import { formatDate, statusBadgeClass, deriveStats } from "../utils";
-import type { Order } from "../../../types/order";
-import type { TabType } from "./types";
+import type { DealerOutletContext } from "../index";
 import heroBannerImg from "../../../assets/dealer/hero_banner.jpg";
 import fleetPromoImg from "../../../assets/dealer/fleet_promo.jpg";
 import "../Dealer.css";
 import "./DashBoard.css";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type Props = {
-  dealerName: string;
-  orders: Order[];
-  onTabChange: (tab: TabType) => void;
-  onNewRequest: (vehicleName?: string) => void;
-  onViewOrder: (order: Order) => void;
-};
 
 // ── StatCard sub-component ────────────────────────────────────────────────────
 
@@ -53,13 +43,15 @@ function StatCard({ icon, color, value, label, linkLabel = "View", onClick }: St
 
 // ── DashboardHome ─────────────────────────────────────────────────────────────
 
-export default function DashboardHome({ dealerName, orders, onTabChange, onNewRequest, onViewOrder }: Props) {
+export default function DashboardHome() {
+  const navigate = useNavigate();
+  const { orders, openRequest, onViewOrder } = useOutletContext<DealerOutletContext>();
   const stats = deriveStats(orders);
 
   const quickActions = [
-    { cls: "action-yellow", icon: <AddIcon />, circle: "black", title: "Create New Request", sub: "Request vehicles for your fleet", action: () => onNewRequest(POPULAR_MODELS[0].name) },
-    { cls: "action-white", icon: <DirectionsCarOutlinedIcon />, circle: "gray", title: "Browse Vehicle Catalog", sub: "Explore Renault\u2019s full range", action: () => onTabChange("catalog") },
-    { cls: "action-white", icon: <AssignmentOutlinedIcon />, circle: "gray", title: "View My Requests", sub: "Track the status of your requests", action: () => onTabChange("my-requests") },
+    { cls: "action-yellow", icon: <AddIcon />, circle: "black", title: "Create New Request", sub: "Request vehicles for your fleet", action: () => openRequest(POPULAR_MODELS[0].name) },
+    { cls: "action-white", icon: <DirectionsCarOutlinedIcon />, circle: "gray", title: "Browse Vehicle Catalog", sub: "Explore Renault\u2019s full range", action: () => navigate("/dealer/catalog") },
+    { cls: "action-white", icon: <AssignmentOutlinedIcon />, circle: "gray", title: "View My Requests", sub: "Track the status of your requests", action: () => navigate("/dealer/my-requests") },
   ];
 
   return (
@@ -81,10 +73,10 @@ export default function DashboardHome({ dealerName, orders, onTabChange, onNewRe
 
       {/* ── Stats Row ── */}
       <section className="dealer-stats-row" aria-label="Request Statistics">
-        <StatCard icon={<DescriptionOutlinedIcon />} color="blue" value={stats.total} label="Total Requests" linkLabel="View All" onClick={() => onTabChange("my-requests")} />
-        <StatCard icon={<AccessTimeOutlinedIcon />} color="yellow" value={stats.pending} label="Pending" onClick={() => onTabChange("my-requests")} />
-        <StatCard icon={<CheckCircleOutlinedIcon />} color="green" value={stats.approved} label="Approved" onClick={() => onTabChange("my-requests")} />
-        <StatCard icon={<CancelOutlinedIcon />} color="red" value={stats.rejected} label="Rejected" onClick={() => onTabChange("my-requests")} />
+        <StatCard icon={<DescriptionOutlinedIcon />} color="blue" value={stats.total} label="Total Requests" linkLabel="View All" onClick={() => navigate("/dealer/my-requests")} />
+        <StatCard icon={<AccessTimeOutlinedIcon />} color="yellow" value={stats.pending} label="Pending" onClick={() => navigate("/dealer/my-requests")} />
+        <StatCard icon={<CheckCircleOutlinedIcon />} color="green" value={stats.approved} label="Approved" onClick={() => navigate("/dealer/my-requests")} />
+        <StatCard icon={<CancelOutlinedIcon />} color="red" value={stats.rejected} label="Rejected" onClick={() => navigate("/dealer/my-requests")} />
       </section>
 
       {/* ── Two-column grid ── */}
@@ -96,7 +88,7 @@ export default function DashboardHome({ dealerName, orders, onTabChange, onNewRe
           <section className="dealer-card-panel" aria-labelledby="popular-models-title">
             <header className="panel-header">
               <h2 id="popular-models-title">Popular Renault Models</h2>
-              <button type="button" className="panel-view-all" onClick={() => onTabChange("catalog")}>
+              <button type="button" className="panel-view-all" onClick={() => navigate("/dealer/catalog")}>
                 View All Vehicles <ChevronRightIcon />
               </button>
             </header>
@@ -109,7 +101,7 @@ export default function DashboardHome({ dealerName, orders, onTabChange, onNewRe
                   <div className="vehicle-card-info">
                     <h3>{model.name}</h3>
                     <p className="vehicle-tagline">{model.tagline}</p>
-                    <button type="button" className="vehicle-view-details-btn" onClick={() => onTabChange("catalog")}>
+                    <button type="button" className="vehicle-view-details-btn" onClick={() => navigate("/dealer/catalog")}>
                       View Details
                     </button>
                   </div>
@@ -121,7 +113,7 @@ export default function DashboardHome({ dealerName, orders, onTabChange, onNewRe
           <section className="dealer-card-panel" aria-labelledby="recent-requests-title">
             <header className="panel-header">
               <h2 id="recent-requests-title">Recent Requests</h2>
-              <button type="button" className="panel-view-all" onClick={() => onTabChange("my-requests")}>
+              <button type="button" className="panel-view-all" onClick={() => navigate("/dealer/my-requests")}>
                 View All <ChevronRightIcon />
               </button>
             </header>

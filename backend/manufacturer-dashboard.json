@@ -1,0 +1,25 @@
+{
+  "kpis": [
+    { "label": "Total Orders", "value": 128, "subtitle": "All Fleet Requests", "icon": "orders", "variant": "blue" },
+    { "label": "Pending Requests", "value": 42, "subtitle": "Awaiting Allocation", "icon": "pending", "variant": "orange" },
+    { "label": "Fully Allocated", "value": 61, "subtitle": "Stock Available & Mapped", "icon": "allocated", "variant": "green" },
+    { "label": "Sent to Supervisor", "value": 25, "subtitle": "Awaiting Final Approval", "icon": "supervisor", "variant": "purple" }
+  ],
+  "models": [
+    { "name": "Renault Kwid", "image": "kwid", "units": 120, "stockLevel": 100, "availability": "available" },
+    { "name": "Renault Kiger", "image": "kiger", "units": 85, "stockLevel": 71, "availability": "available" },
+    { "name": "Renault Triber", "image": "triber", "units": 60, "stockLevel": 50, "availability": "low" },
+    { "name": "Renault Rafale", "image": "rafale", "units": 30, "stockLevel": 25, "availability": "low" },
+    { "name": "Renault Zoe", "image": "zoe", "units": 40, "stockLevel": 33, "availability": "low" },
+    { "name": "Renault Clio", "image": "clio", "units": 40, "stockLevel": 33, "availability": "low" },
+    { "name": "Renault Mégane", "image": "megane", "units": 40, "stockLevel": 33, "availability": "low" },
+    { "name": "Renault twingo", "image": "twingo", "units": 40, "stockLevel": 33, "availability": "low" },
+    { "name": "Renault Mégane E-Tech Electric", "image": "etech", "units": 40, "stockLevel": 33, "availability": "low" }
+  ],
+  "dealerRequests": [
+    { "requestId": "REQ001", "orderId": "ORD-1002", "dealerId": "D001", "dealerName": "ABC Motors", "model": "Kiger", "color": "White", "quantity": 50, "requestDate": "2026-10-07", "stockBreakdown": { "White": 30, "Black": 12, "Grey": 18 }, "priority": "High", "stockStatus": "available", "manufacturerStatus": "Partially Allocated" },
+    { "requestId": "REQ002", "orderId": "ORD-3001", "dealerId": "D003", "dealerName": "Chennai Cars", "model": "Triber", "color": "Grey", "quantity": 40, "requestDate": "2026-10-07", "stockBreakdown": { "White": 20, "Black": 10, "Grey": 10 }, "priority": "High", "stockStatus": "available", "manufacturerStatus": "Fully Allocated" },
+    { "requestId": "REQ003", "orderId": "ORD-2003", "dealerId": "D002", "dealerName": "Royal Autos", "model": "Kwid", "color": "Red", "quantity": 15, "requestDate": "2026-10-06", "stockBreakdown": { "White": 8, "Black": 4, "Grey": 3, "Red": 15 }, "priority": "Medium", "stockStatus": "available", "manufacturerStatus": "Fully Allocated" },
+    { "requestId": "REQ004", "orderId": "ORD-1001", "dealerId": "D001", "dealerName": "ABC Motors", "model": "Duster", "color": "Black", "quantity": 30, "requestDate": "2026-10-05", "stockBreakdown": { "White": 8, "Black": 6, "Grey": 4 }, "priority": "Medium", "stockStatus": "low", "manufacturerStatus": "Not Allocated" }
+  ]
+}

@@ -1,18 +1,13 @@
 import { useState } from "react";
-import AddIcon from "@mui/icons-material/Add";
+import { useOutletContext } from "react-router-dom";
 import SearchIcon from "@mui/icons-material/Search";
 import { formatDate, statusBadgeClass } from "../utils";
-import type { Order } from "../../../types/order";
+import type { DealerOutletContext } from "../index";
 import "../../Dealer/Dealer.css";
 import "./MyRequests.css";
 
-type Props = {
-  orders: Order[];
-  onNewRequest: () => void;
-  onTrack: (order: Order) => void;
-};
-
-export default function DealerMyRequests({ orders, onNewRequest, onTrack }: Props) {
+export default function DealerMyRequests() {
+  const { orders, onViewOrder } = useOutletContext<DealerOutletContext>();
   const [search,  setSearch]  = useState("");
   const [model,   setModel]   = useState("all");
   const [status,  setStatus]  = useState("all");
@@ -85,7 +80,7 @@ export default function DealerMyRequests({ orders, onNewRequest, onTrack }: Prop
                   <td>{formatDate(o.etaDelivery)}</td>
                   <td><span className={`req-status-pill ${statusBadgeClass(o.status)}`}>{o.status}</span></td>
                   <td>
-                    <button type="button" className="table-action-track-btn" onClick={() => onTrack(o)}>
+                    <button type="button" className="table-action-track-btn" onClick={() => onViewOrder(o)}>
                       Track Lifecycle
                     </button>
                   </td>

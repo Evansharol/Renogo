@@ -7,7 +7,11 @@ type Props = {
   dealerLocation: string;
 };
 
-export default function DealerProfile({ dealerName, dealerId, dealerLocation }: Props) {
+export default function DealerProfile({ dealerName: providedName, dealerId: providedId, dealerLocation: providedLocation }: Partial<Props>) {
+  const context = useOutletContext<DealerOutletContext>();
+  const dealerName = providedName ?? context.dealerName;
+  const dealerId = providedId ?? context.dealerId;
+  const dealerLocation = providedLocation ?? context.dealerLocation;
   return (
     <div className="dealer-profile-view">
       <div className="dealer-page-title-row">
@@ -58,3 +62,5 @@ export default function DealerProfile({ dealerName, dealerId, dealerLocation }: 
     </div>
   );
 }
+import { useOutletContext } from "react-router-dom";
+import type { DealerOutletContext } from "../index";
