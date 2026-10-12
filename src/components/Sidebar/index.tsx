@@ -31,9 +31,8 @@ export default function Sidebar({ variant = "admin" }: SidebarProps) {
 
       {/* Permanently fixed sidebar */}
       <aside
-        className={`admin-sidebar ${variant !== "admin" ? "dealer-sidebar-theme" : ""} ${
-          isOpen ? "sidebar-open" : "sidebar-closed"
-        }`}
+        className={`admin-sidebar ${variant !== "admin" ? "dealer-sidebar-theme" : ""} ${isOpen ? "sidebar-open" : "sidebar-closed"
+          }`}
       >
         <div className="sidebar-header">
           <HeaderLogo />
@@ -140,8 +139,12 @@ export default function Sidebar({ variant = "admin" }: SidebarProps) {
                 <DashboardIcon />
                 <span>Dashboard</span>
               </NavLink>
+              <NavLink className="sidebar-link" to="/dealermanager/requests" title="Dashboard">
+                <AssignmentOutlinedIcon />
+                <span>Approval&Request</span>
+              </NavLink>
             </>
-          ):(
+          ) : (
             <>
               <NavLink className="sidebar-link" to="/admindb" title="Dashboard">
                 <DashboardIcon />

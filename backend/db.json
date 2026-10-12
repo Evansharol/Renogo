@@ -252,5 +252,62 @@
       "status": "Quotation Generated"
     }
   ],
+  "dmRequests": [
+    {
+      "id": "ORD-1001",
+      "dealerId": "D001",
+      "dealerName": "ABC Motors",
+      "vehicleModel": "Renault Duster",
+      "totalQuantity": 50,
+      "quotationAmount": "₹ 7,08,00,000",
+      "status": "Awaiting Acknowledgement",
+      "paymentStatus": "Pending",
+      "orderDate": "2026-09-12T00:00:00.000Z"
+    },
+    {
+      "id": "ORD-1002",
+      "dealerId": "D001",
+      "dealerName": "ABC Motors",
+      "vehicleModel": "Renault Kiger",
+      "totalQuantity": 50,
+      "quotationAmount": "₹ 5,60,50,000",
+      "status": "Ready for Payment",
+      "paymentStatus": "Pending",
+      "orderDate": "2026-09-20T00:00:00.000Z"
+    },
+    {
+      "id": "ORD-2003",
+      "dealerId": "D002",
+      "dealerName": "Royal Autos",
+      "vehicleModel": "Renault Kwid",
+      "totalQuantity": 15,
+      "quotationAmount": "₹ 81,39,000",
+      "status": "Payment Submitted",
+      "paymentStatus": "Submitted",
+      "orderDate": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "id": "ORD-3001",
+      "dealerId": "D003",
+      "dealerName": "Chennai Cars",
+      "vehicleModel": "Renault Triber",
+      "totalQuantity": 40,
+      "quotationAmount": "₹ 3,54,00,000",
+      "status": "Payment Verified",
+      "paymentStatus": "Completed",
+      "orderDate": "2026-09-02T00:00:00.000Z"
+    },
+    {
+      "id": "ORD-4001",
+      "dealerId": "hD7-wIuowCY",
+      "dealerName": "Dealer HD7",
+      "vehicleModel": "Renault Duster",
+      "totalQuantity": 12,
+      "quotationAmount": "₹ 1,69,92,000",
+      "status": "Completed",
+      "paymentStatus": "Completed",
+      "orderDate": "2026-09-10T00:00:00.000Z"
+    }
+  ],
   "$schema": "./node_modules/json-server/schema.json"
 }
