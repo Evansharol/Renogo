@@ -30,10 +30,11 @@ type LoginState = {
 // ── Seed orders (shown while backend is offline) ──────────────────────────────
 
 const SEED_ORDERS: Order[] = [
-  { id: "REQ001", dealerId: "D001", vehicleModel: "Kiger",  quantity: 50,  status: "Pending",        orderDate: "2024-10-12T00:00:00.000Z", etaDelivery: "2024-11-20" },
-  { id: "REQ002", dealerId: "D001", vehicleModel: "Triber", quantity: 100, status: "Under Review",   orderDate: "2024-10-10T00:00:00.000Z", etaDelivery: "2024-11-28" },
-  { id: "REQ003", dealerId: "D001", vehicleModel: "Duster", quantity: 30,  status: "Quotation Sent", orderDate: "2024-10-05T00:00:00.000Z", etaDelivery: "2024-11-15" },
-  { id: "REQ004", dealerId: "D001", vehicleModel: "Kwid",   quantity: 25,  status: "Approved",       orderDate: "2024-10-01T00:00:00.000Z", etaDelivery: "2024-11-05" },
+  { id: "REQ001", dealerId: "D001", vehicleModel: "Kiger",  quantity: 50,  status: "Supervisor Review",       orderDate: "2024-10-12T00:00:00.000Z", etaDelivery: "2024-11-20" },
+  { id: "REQ002", dealerId: "D001", vehicleModel: "Triber", quantity: 100, status: "Manufacturer Review",     orderDate: "2024-10-10T00:00:00.000Z", etaDelivery: "2024-11-28" },
+  { id: "REQ003", dealerId: "D001", vehicleModel: "Duster", quantity: 30,  status: "Sales Manager Approval",  orderDate: "2024-10-05T00:00:00.000Z", etaDelivery: "2024-11-15" },
+  { id: "REQ004", dealerId: "D001", vehicleModel: "Kwid",   quantity: 25,  status: "Delivered",               orderDate: "2024-10-01T00:00:00.000Z", etaDelivery: "2024-11-05" },
+  { id: "REQ005", dealerId: "D001", vehicleModel: "Triber", quantity: 15,  status: "Rejected",                orderDate: "2024-09-24T00:00:00.000Z", etaDelivery: "2024-10-30" },
 ];
 
 export type DealerOutletContext = {
@@ -43,6 +44,7 @@ export type DealerOutletContext = {
   orders: Order[];
   openRequest: (vehicleName?: string) => void;
   onViewOrder: (order: Order) => void;
+  onOrderSubmitted?: (order: Order) => void;
 };
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -115,7 +117,7 @@ export default function DealerPortal() {
             </div>
           )}
 
-          <Outlet context={{ dealerName, dealerId, dealerLocation, orders, openRequest, onViewOrder: setSelectedOrder } satisfies DealerOutletContext} />
+          <Outlet context={{ dealerName, dealerId, dealerLocation, orders, openRequest, onViewOrder: setSelectedOrder, onOrderSubmitted: handleOrderSubmitted } satisfies DealerOutletContext} />
         </main>
       </div>
 

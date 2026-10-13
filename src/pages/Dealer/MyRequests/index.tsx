@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useOutletContext } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useLocation, useOutletContext, useSearchParams } from "react-router-dom";
 import SearchIcon from "@mui/icons-material/Search";
 import { formatDate, statusBadgeClass } from "../utils";
 import type { DealerOutletContext } from "../index";
@@ -7,16 +7,57 @@ import "../../Dealer/Dealer.css";
 import "./MyRequests.css";
 
 export default function DealerMyRequests() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
+  const queryStatus = searchParams.get("status");
+  const stateStatus = (location.state as { initialStatus?: string } | null)?.initialStatus;
+  const initialStatus = queryStatus ?? stateStatus ?? "all";
+
   const { orders, onViewOrder } = useOutletContext<DealerOutletContext>();
   const [search,  setSearch]  = useState("");
   const [model,   setModel]   = useState("all");
-  const [status,  setStatus]  = useState("all");
+  const [status,  setStatus]  = useState(initialStatus);
+
+  useEffect(() => {
+    const q = searchParams.get("status");
+    const s = (location.state as { initialStatus?: string } | null)?.initialStatus;
+    const target = q ?? s;
+    if (target !== undefined && target !== null) {
+      setStatus(target);
+    }
+  }, [searchParams, location.state]);
+
+  const handleStatusChange = (newStatus: string) => {
+    setStatus(newStatus);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (newStatus === "all") {
+        next.delete("status");
+      } else {
+        next.set("status", newStatus);
+      }
+      return next;
+    });
+  };
 
   const filtered = orders.filter((o) => {
     const q = search.toLowerCase();
     const matchSearch = o.id.toLowerCase().includes(q) || o.vehicleModel.toLowerCase().includes(q);
     const matchModel  = model  === "all" || o.vehicleModel.toLowerCase().includes(model.toLowerCase());
-    const matchStatus = status === "all" || o.status.toLowerCase().replace(/\s+/g, "") === status.replace(/\s+/g, "");
+
+    let matchStatus = true;
+    if (status !== "all") {
+      const s = o.status.toLowerCase();
+      if (status === "pending") {
+        matchStatus = s.includes("pending") || s.includes("review") || s.includes("quotation");
+      } else if (status === "approved") {
+        matchStatus = s.includes("approv");
+      } else if (status === "rejected") {
+        matchStatus = s.includes("reject");
+      } else {
+        matchStatus = s.includes(status.toLowerCase().trim());
+      }
+    }
     return matchSearch && matchModel && matchStatus;
   });
 
@@ -48,7 +89,7 @@ export default function DealerMyRequests() {
               <option key={m} value={m}>Renault {m}</option>
             ))}
           </select>
-          <select value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Filter by status">
+          <select value={status} onChange={(e) => handleStatusChange(e.target.value)} aria-label="Filter by status">
             <option value="all">All Statuses</option>
             {["pending", "under review", "quotation sent", "approved", "rejected"].map((s) => (
               <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>

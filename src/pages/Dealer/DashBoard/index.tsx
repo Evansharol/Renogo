@@ -7,6 +7,7 @@ import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import DirectionsCarOutlinedIcon from "@mui/icons-material/DirectionsCarOutlined";
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
+import { useMemo, useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 
 import { POPULAR_MODELS } from "./types";
@@ -25,17 +26,24 @@ type StatCardProps = {
   value: number;
   label: string;
   linkLabel?: string;
+  isActive?: boolean;
   onClick: () => void;
 };
 
-function StatCard({ icon, color, value, label, linkLabel = "View", onClick }: StatCardProps) {
+function StatCard({ icon, color, value, label, linkLabel = "Filter", isActive, onClick }: StatCardProps) {
   return (
-    <article className="dealer-stat-card" onClick={onClick} role="button" tabIndex={0}>
+    <article
+      className={`dealer-stat-card ${isActive ? "active" : ""}`}
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      title={`Filter requests by ${label}`}
+    >
       <div className={`stat-icon-wrapper stat-icon-${color}`}>{icon}</div>
       <div className="stat-data">
         <span className="stat-number">{value}</span>
         <span className="stat-label">{label}</span>
-        <span className="stat-link-action">{linkLabel} <ArrowForwardIcon /></span>
+        <span className="stat-link-action">{isActive ? "Active Filter" : linkLabel} <ArrowForwardIcon /></span>
       </div>
     </article>
   );
@@ -43,10 +51,24 @@ function StatCard({ icon, color, value, label, linkLabel = "View", onClick }: St
 
 // ── DashboardHome ─────────────────────────────────────────────────────────────
 
+type StatusFilter = "all" | "pending" | "approved" | "rejected";
+
 export default function DashboardHome() {
   const navigate = useNavigate();
   const { orders, openRequest, onViewOrder } = useOutletContext<DealerOutletContext>();
+  const [selectedStatus, setSelectedStatus] = useState<StatusFilter>("all");
   const stats = deriveStats(orders);
+
+  const filteredOrders = useMemo(() => {
+    if (selectedStatus === "all") return orders;
+    return orders.filter((o) => {
+      const s = o.status.toLowerCase();
+      if (selectedStatus === "pending") return s.includes("pending") || s.includes("review") || s.includes("quotation");
+      if (selectedStatus === "approved") return s.includes("approv");
+      if (selectedStatus === "rejected") return s.includes("reject");
+      return true;
+    });
+  }, [orders, selectedStatus]);
 
   const quickActions = [
     { cls: "action-yellow", icon: <AddIcon />, circle: "black", title: "Create New Request", sub: "Request vehicles for your fleet", action: () => openRequest(POPULAR_MODELS[0].name) },
@@ -73,10 +95,38 @@ export default function DashboardHome() {
 
       {/* ── Stats Row ── */}
       <section className="dealer-stats-row" aria-label="Request Statistics">
-        <StatCard icon={<DescriptionOutlinedIcon />} color="blue" value={stats.total} label="Total Requests" linkLabel="View All" onClick={() => navigate("/dealer/my-requests")} />
-        <StatCard icon={<AccessTimeOutlinedIcon />} color="yellow" value={stats.pending} label="Pending" onClick={() => navigate("/dealer/my-requests")} />
-        <StatCard icon={<CheckCircleOutlinedIcon />} color="green" value={stats.approved} label="Approved" onClick={() => navigate("/dealer/my-requests")} />
-        <StatCard icon={<CancelOutlinedIcon />} color="red" value={stats.rejected} label="Rejected" onClick={() => navigate("/dealer/my-requests")} />
+        <StatCard
+          icon={<DescriptionOutlinedIcon />}
+          color="blue"
+          value={stats.total}
+          label="Total Requests"
+          linkLabel="View All"
+          onClick={() => navigate("/dealer/my-requests?status=all", { state: { initialStatus: "all" } })}
+        />
+        <StatCard
+          icon={<AccessTimeOutlinedIcon />}
+          color="yellow"
+          value={stats.pending}
+          label="Pending"
+          linkLabel="View Pending"
+          onClick={() => navigate("/dealer/my-requests?status=pending", { state: { initialStatus: "pending" } })}
+        />
+        <StatCard
+          icon={<CheckCircleOutlinedIcon />}
+          color="green"
+          value={stats.approved}
+          label="Approved"
+          linkLabel="View Approved"
+          onClick={() => navigate("/dealer/my-requests?status=approved", { state: { initialStatus: "approved" } })}
+        />
+        <StatCard
+          icon={<CancelOutlinedIcon />}
+          color="red"
+          value={stats.rejected}
+          label="Rejected"
+          linkLabel="View Rejected"
+          onClick={() => navigate("/dealer/my-requests?status=rejected", { state: { initialStatus: "rejected" } })}
+        />
       </section>
 
       {/* ── Two-column grid ── */}
@@ -112,8 +162,27 @@ export default function DashboardHome() {
 
           <section className="dealer-card-panel" aria-labelledby="recent-requests-title">
             <header className="panel-header">
-              <h2 id="recent-requests-title">Recent Requests</h2>
-              <button type="button" className="panel-view-all" onClick={() => navigate("/dealer/my-requests")}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                <h2 id="recent-requests-title">Recent Requests</h2>
+                {selectedStatus !== "all" && (
+                  <span className="requests-filter-tag">
+                    Filtered by: <strong>{selectedStatus}</strong> ({filteredOrders.length})
+                    <button
+                      type="button"
+                      onClick={() => setSelectedStatus("all")}
+                      title="Clear status filter"
+                      className="requests-filter-clear-btn"
+                    >
+                      ×
+                    </button>
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                className="panel-view-all"
+                onClick={() => navigate("/dealer/my-requests", { state: { initialStatus: selectedStatus } })}
+              >
                 View All <ChevronRightIcon />
               </button>
             </header>
@@ -125,16 +194,31 @@ export default function DashboardHome() {
                   </tr>
                 </thead>
                 <tbody>
-                  {orders.slice(0, 4).map((req) => (
-                    <tr key={req.id}>
-                      <td className="req-id-cell">{req.id}</td>
-                      <td className="req-model-cell">{req.vehicleModel}</td>
-                      <td>{req.quantity}</td>
-                      <td className="req-date-cell">{formatDate(req.orderDate)}</td>
-                      <td><span className={`req-status-pill ${statusBadgeClass(req.status)}`}>{req.status}</span></td>
-                      <td><button type="button" className="req-view-link" onClick={() => onViewOrder(req)}>View</button></td>
+                  {filteredOrders.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} style={{ textAlign: "center", padding: "28px", color: "#64748b" }}>
+                        No requests found with status &quot;{selectedStatus}&quot;.{" "}
+                        <button
+                          type="button"
+                          onClick={() => setSelectedStatus("all")}
+                          style={{ color: "#2563eb", background: "none", border: "none", cursor: "pointer", textDecoration: "underline", fontWeight: 600 }}
+                        >
+                          Show All
+                        </button>
+                      </td>
                     </tr>
-                  ))}
+                  ) : (
+                    filteredOrders.slice(0, 5).map((req) => (
+                      <tr key={req.id}>
+                        <td className="req-id-cell">{req.id}</td>
+                        <td className="req-model-cell">{req.vehicleModel}</td>
+                        <td>{req.quantity}</td>
+                        <td className="req-date-cell">{formatDate(req.orderDate)}</td>
+                        <td><span className={`req-status-pill ${statusBadgeClass(req.status)}`}>{req.status}</span></td>
+                        <td><button type="button" className="req-view-link" onClick={() => onViewOrder(req)}>Track</button></td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

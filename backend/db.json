@@ -153,6 +153,15 @@
       "orderDate": "2026-10-07T06:59:09.814Z",
       "etaDelivery": "2026-10-13",
       "id": "okZFy7fi5pI"
+    },
+    {
+      "dealerId": "D001",
+      "vehicleModel": "Renault Kiger",
+      "quantity": 25,
+      "status": "Pending",
+      "orderDate": "2026-10-13T06:28:48.397Z",
+      "etaDelivery": "2026-11-14",
+      "id": "k4k8e1GIqeQ"
     }
   ],
   "quotations": [

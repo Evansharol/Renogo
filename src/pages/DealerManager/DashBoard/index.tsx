@@ -7,6 +7,7 @@ import KpiCards from "./components/KpiCards";
 import RequestOverviewChart from "./components/OverviewChart";
 import RecentNotifications from "./components/NotificationsCard";
 import RecentRequestsTable from "../components/RecentRequestsTable";
+import RecentRequestsNotification from "../../../components/RecentRequestsNotification";
 import { DM_KPI, DM_NOTIFICATIONS, CHART_DATA, type DmRequest } from "../types";
 import { getDmRequests } from "../../../api/dmRequests";
 import "../DealerManager.css";
@@ -42,7 +43,10 @@ export default function DealerManagerDashboard() {
                 <Navbar adminName="Dealer Manager" />
                 <main className="dealer-main-scroll">
                     {/* ── Page Header ── */}
-                    <h1> Dashboard </h1>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                        <h1 style={{ margin: 0 }}> Dashboard </h1>
+                        <RecentRequestsNotification showLabel={true} customLabel="Recent Dealer Requests" />
+                    </Box>
 
                     {loading && <Typography sx={{ color: "#64748b", mt: 2 }}>Loading dashboard...</Typography>}
                     {error && <Typography sx={{ color: "#dc2626", mt: 2 }}>{error}</Typography>}

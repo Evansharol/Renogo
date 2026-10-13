@@ -36,8 +36,56 @@ export default function DealerDetails({ dealerId: dealerIdProp, orderId, isModal
 						<div className="info-grid"><div><span>Order ID</span>
 						<strong>{order.id}</strong></div><div><span>Vehicle Model</span>
 						<strong>{order.vehicleModel}</strong></div><div><span>Requested Quantity</span>
-						<strong>{order.quantity}</strong></div><div><span>Vehicles Built</span>
-						<strong>60</strong></div><div><span>Expected Delivery</span>
-						<strong>25 Sep 2026</strong></div><div><span>Total Orders</span>
-						<strong>{dealer.orders}</strong></div></div></section></WorkflowShell>;
+						<strong>{order.quantity} units</strong></div><div><span>Order Status</span>
+						<strong>{order.status}</strong></div><div><span>Expected Delivery</span>
+						<strong>25 Sep 2026</strong></div><div><span>Total Dealer Orders</span>
+						<strong>{dealer.orders}</strong></div></div></section>
+				{order.items && order.items.length > 0 && (
+					<section className="workflow-card">
+						<div className="workflow-card-heading">
+							<div>
+								<span className="workflow-section-label">Procurement Package</span>
+								<h2>Selected Vehicles Breakdown ({order.items.length} Models)</h2>
+							</div>
+						</div>
+						<table className="history-table" style={{ width: "100%", marginTop: "12px" }}>
+							<thead>
+								<tr>
+									<th>Model</th>
+									<th>Variant</th>
+									<th>Colour</th>
+									<th>Specifications</th>
+									<th style={{ textAlign: "right" }}>Quantity</th>
+								</tr>
+							</thead>
+							<tbody>
+								{order.items.map((item, idx) => (
+									<tr key={item.id || idx}>
+										<td><strong>{item.model}</strong></td>
+										<td>
+											<span style={{ backgroundColor: "#fef3c7", color: "#b45309", padding: "2px 8px", borderRadius: "4px", fontSize: "11px", fontWeight: 700 }}>
+												{item.variant}
+											</span>
+										</td>
+										<td>
+											{item.color ? (
+												<span style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "12px", fontWeight: 600, color: "#334155" }}>
+													<span style={{ display: "inline-block", width: 12, height: 12, borderRadius: "50%", backgroundColor: item.colorHex ?? "#888", border: "1.5px solid rgba(0,0,0,0.15)", flexShrink: 0 }} />
+													{item.color}
+												</span>
+											) : "—"}
+										</td>
+										<td>
+											{item.specs?.engine && <span>{item.specs.engine}</span>}
+											{item.specs?.transmission && <span> • {item.specs.transmission}</span>}
+											{item.specs?.fuel && <span> • {item.specs.fuel}</span>}
+										</td>
+										<td style={{ textAlign: "right" }}><strong>{item.quantity}</strong> units</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</section>
+				)}
+			</WorkflowShell>;
 }

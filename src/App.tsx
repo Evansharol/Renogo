@@ -9,6 +9,7 @@ import ApprovalProduction from "./pages/AdminDashBoard/Dealers/ApprovalProductio
 import DealerPortal from "./pages/Dealer";
 import DashboardHome from "./pages/Dealer/DashBoard";
 import DealerVehicleCatalog from "./pages/Dealer/VehicleCatalog";
+import ReviewOrder from "./pages/Dealer/ReviewOrder";
 import MyRequests from "./pages/Dealer/MyRequests";
 import DealerProfile from "./pages/Dealer/Profile";
 import ManufacturerDashboard from "./pages/Manufacturer/DashBoard";
@@ -39,6 +40,7 @@ function AnimatedRoutes() {
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<DashboardHome />} />
         <Route path="catalog" element={<DealerVehicleCatalog />} />
+        <Route path="review-order" element={<ReviewOrder />} />
         <Route path="my-requests" element={<MyRequests />} />
         <Route path="profile" element={<DealerProfile />} />
       </Route>
