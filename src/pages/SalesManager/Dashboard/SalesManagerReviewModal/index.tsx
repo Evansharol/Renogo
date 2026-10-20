@@ -3,6 +3,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import type { Order } from "../../../../types/order";
 import type { Quotation } from "../../../../types/quotation";
 import AvailabilityProgressBar from "../../../../components/AvailabilityProgressBar";
+import "./SalesManagerReviewModal.css";
 
 type Allocation = {
     dealerId?: string;

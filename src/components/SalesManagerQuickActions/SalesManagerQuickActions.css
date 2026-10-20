@@ -1,0 +1,147 @@
+.quick-actions-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  border: 1px solid #f0f0f4;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.quick-actions-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.quick-actions-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.quick-actions-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background-color: #fef9c3;
+  color: #ca8a04;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quick-actions-icon {
+  font-size: 20px !important;
+}
+
+.quick-actions-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.quick-actions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.qa-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.qa-item--primary {
+  background-color: #ffc72c; /* Renault yellow */
+  color: #0f172a;
+}
+
+.qa-item--primary:hover {
+  background-color: #f5bc20;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 199, 44, 0.3);
+}
+
+.qa-item--secondary {
+  background-color: #ffffff;
+  border: 1px solid #f1f5f9;
+}
+
+.qa-item--secondary:hover {
+  background-color: #f8fafc;
+  border-color: #e2e8f0;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.qa-item-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.qa-icon-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qa-icon-circle--black {
+  background-color: #0f172a;
+  color: #ffffff;
+}
+
+.qa-icon-circle--light {
+  background-color: #f1f5f9;
+  color: #334155;
+}
+
+.qa-item-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.qa-item-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin: 0;
+  color: inherit;
+}
+
+.qa-item--secondary .qa-item-title {
+  color: #0f172a;
+}
+
+.qa-item-subtitle {
+  font-size: 0.775rem;
+  margin: 2px 0 0 0;
+  opacity: 0.85;
+}
+
+.qa-item--secondary .qa-item-subtitle {
+  color: #64748b;
+}
+
+.qa-item-chevron {
+  color: inherit;
+  font-size: 20px !important;
+  opacity: 0.7;
+  transition: transform 0.2s ease;
+}
+
+.qa-item:hover .qa-item-chevron {
+  transform: translateX(3px);
+  opacity: 1;
+}

@@ -18,6 +18,7 @@ import ManufacturerStocks from "./pages/Manufacturer/Stocks";
 import ViewRequests from "./pages/Supervisor/ViewRequests";
 import SupervisorDashboard from "./pages/Supervisor/Dashboard";
 import SalesManagerDashboard from "./pages/SalesManager/Dashboard";
+import SalesManagerVerificationApproval from "./pages/SalesManager/Verification&Approval";
 import DealerManagerDashboard from "./pages/DealerManager/DashBoard";
 import ApprovalRequests from "./pages/DealerManager/Approvals";
 
@@ -43,14 +44,14 @@ function AnimatedRoutes() {
         <Route path="review-order" element={<ReviewOrder />} />
         <Route path="my-requests" element={<MyRequests />} />
         <Route path="profile" element={<DealerProfile />} />
-      </Route>
-      <Route path="/supervisor/dashboard" element={<SupervisorDashboard />} />
-      <Route path="/supervisor" element={<ViewRequests />} />
-      <Route path="/salesmanager/dashboard" element={<SalesManagerDashboard />} />
-      <Route path="/dealermanager/dashboard" element={<DealerManagerDashboard />} />
-      <Route path="/dealermanager/requests" element={<ApprovalRequests />} />
-    </Routes>
-  </div>;
+        </Route>
+        <Route path="/supervisor/dashboard" element={<SupervisorDashboard />} />
+        <Route path="/supervisor" element={<ViewRequests />} />
+        <Route path="/salesmanager/dashboard" element={<SalesManagerDashboard />} />
+        <Route path="/salesmanager/verification-approval" element={<SalesManagerVerificationApproval />} />
+        <Route path="/dealermanager/dashboard" element={<DealerManagerDashboard />} />
+      </Routes>
+    </div>;
 }
 
 function App() {

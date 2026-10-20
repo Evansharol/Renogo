@@ -1,0 +1,248 @@
+.recent-requests-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  border: 1px solid #f0f0f4;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.recent-requests-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.recent-requests-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.recent-requests-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background-color: #f1f5f9;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.recent-requests-icon {
+  font-size: 20px !important;
+}
+
+.recent-requests-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.recent-requests-sub {
+  margin: 2px 0 0;
+  color: #64748b;
+  font-size: 0.775rem;
+}
+
+.supervisor-review-link {
+  border: 0;
+  background: transparent;
+  color: #2563eb;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.supervisor-review-link:hover {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.recent-requests-view-all {
+  background: transparent;
+  border: none;
+  color: #2563eb;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.recent-requests-view-all:hover {
+  background: #eff6ff;
+}
+
+.recent-requests-table-container {
+  overflow-x: auto;
+  flex: 1;
+}
+
+.recent-requests-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.recent-requests-table th {
+  padding: 12px 16px;
+  font-size: 0.775rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid #f1f5f9;
+  background: #fafafa;
+}
+
+.recent-requests-table td {
+  padding: 14px 16px;
+  font-size: 0.875rem;
+  color: #334155;
+  border-bottom: 1px solid #f8fafc;
+  vertical-align: middle;
+}
+
+.recent-requests-table tr:last-child td {
+  border-bottom: none;
+}
+
+.recent-requests-table tr:hover td {
+  background-color: #f8fafc;
+}
+
+.req-id-cell {
+  font-weight: 700;
+  color: #0f172a !important;
+}
+
+.req-dealer-cell {
+  font-weight: 500;
+}
+
+.req-vehicles-cell {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.sm-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.sm-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.sm-status-chip--new {
+  background-color: #e0f2fe;
+  color: #0369a1;
+
+  .sm-status-dot {
+    background-color: #0284c7;
+  }
+}
+
+.sm-status-chip--pending {
+  background-color: #fef3c7;
+  color: #b45309;
+
+  .sm-status-dot {
+    background-color: #d97706;
+  }
+}
+
+.sm-status-chip--review {
+  background-color: #f1f5f9;
+  color: #475569;
+
+  .sm-status-dot {
+    background-color: #64748b;
+  }
+}
+
+.sm-status-chip--approved {
+  background-color: #dcfce7;
+  color: #15803d;
+
+  .sm-status-dot {
+    background-color: #16a34a;
+  }
+}
+
+.sm-status-chip--rejected {
+  background-color: #fee2e2;
+  color: #b91c1c;
+
+  .sm-status-dot {
+    background-color: #dc2626;
+  }
+}
+
+.req-date-cell {
+  color: #64748b;
+}
+
+.req-action-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.req-view-btn {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.req-view-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.req-more-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.req-more-btn:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.req-empty-cell {
+  text-align: center;
+  color: #94a3b8;
+  padding: 30px !important;
+}
