@@ -8,7 +8,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import Uform, { type User } from "../../../components/Form/UserForm";
+import Uform, { type User } from "../../../components/Form/Admin_UserForm";
 import { getUsers, createUser, updateUser, deleteUser } from "../../../api/users";
 import "./UserManagement.css";
 

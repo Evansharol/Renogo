@@ -120,10 +120,11 @@ export default function Uform({ onSave, onClose, user }: UserFormProps) {
 						</select></label>
 						<label>Department<select value={form.department} onChange={(event) => updateField("department", event.target.value)}>
 							<option value="">Select department</option>
-							<option>Sales</option>
-							<option>Finance</option>
-							<option>Operations</option>
 							<option>Administration</option>
+							<option>Dealer Operations</option>
+							<option>Production & Inventory Management</option>
+							<option>Sales & Business Development</option>
+							<option>Commercial & Approval Management</option>
 						</select></label>
 					</div>
 				</section>

@@ -13,6 +13,7 @@ export async function getUsers(): Promise<User[]> {
 export async function getUserById(id: string): Promise<User> {
 	const response = await fetch(`${API_URL}/users/${encodeURIComponent(id)}`);
 	if (!response.ok) {
+		
 		throw new Error(`User not found: ${response.statusText}`);
 	}
 	return (await response.json()) as User;

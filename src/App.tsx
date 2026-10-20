@@ -50,6 +50,7 @@ function AnimatedRoutes() {
         <Route path="/salesmanager/dashboard" element={<SalesManagerDashboard />} />
         <Route path="/salesmanager/verification-approval" element={<SalesManagerVerificationApproval />} />
         <Route path="/dealermanager/dashboard" element={<DealerManagerDashboard />} />
+        <Route path="/dealermanager/requests" element={<ApprovalRequests />} />
       </Routes>
     </div>;
 }

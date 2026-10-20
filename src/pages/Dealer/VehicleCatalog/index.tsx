@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
@@ -81,6 +81,8 @@ export default function DealerVehicleCatalog({ onOrderRequest }: Props) {
 
   const [viewing, setViewing] = useState<VehicleModelData | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [showAddedSnackbar, setShowAddedSnackbar] = useState(false);
+  const snackbarTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Per-card states
   const [quantities, setQuantities] = useState<Record<string, number>>(() =>
@@ -100,6 +102,10 @@ export default function DealerVehicleCatalog({ onOrderRequest }: Props) {
 
   // Added animation state per car
   const [addedMap, setAddedMap] = useState<Record<string, boolean>>({});
+
+  useEffect(() => () => {
+    if (snackbarTimer.current) clearTimeout(snackbarTimer.current);
+  }, []);
 
   const getPalette = (carId: string) => MODEL_COLOURS[carId] ?? DEFAULT_COLOURS;
 
@@ -145,6 +151,10 @@ export default function DealerVehicleCatalog({ onOrderRequest }: Props) {
     };
 
     addToCart(item);
+
+    setShowAddedSnackbar(true);
+    if (snackbarTimer.current) clearTimeout(snackbarTimer.current);
+    snackbarTimer.current = setTimeout(() => setShowAddedSnackbar(false), 5000);
 
     setAddedMap((prev) => ({ ...prev, [car.id]: true }));
     setTimeout(() => setAddedMap((prev) => ({ ...prev, [car.id]: false })), 1500);
@@ -310,6 +320,22 @@ export default function DealerVehicleCatalog({ onOrderRequest }: Props) {
 
       {/* Cart Drawer */}
       <FleetCartDrawer open={isCartOpen} onClose={() => setIsCartOpen(false)} />
+
+      {showAddedSnackbar && (
+        <div className="dealer-cart-snackbar" role="status">
+          <CheckIcon fontSize="small" />
+          <span>Item added</span>
+          <button
+            type="button"
+            onClick={() => {
+              setShowAddedSnackbar(false);
+              setIsCartOpen(true);
+            }}
+          >
+            View cart
+          </button>
+        </div>
+      )}
 
       {/* Vehicle Details Modal */}
       <Dialog open={Boolean(viewing)} onClose={() => setViewing(null)} fullWidth maxWidth="md" aria-labelledby="vehicle-spec-title">

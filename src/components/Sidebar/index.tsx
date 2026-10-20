@@ -143,7 +143,7 @@ export default function Sidebar({ variant = "admin" }: SidebarProps) {
                 <DashboardIcon />
                 <span>Dashboard</span>
               </NavLink>
-              <NavLink className="sidebar-link" to="/dealermanager/requests" title="Dashboard">
+              <NavLink className="sidebar-link" to="/dealermanager/requests" title="Approval & Request">
                 <AssignmentOutlinedIcon />
                 <span>Approval&Request</span>
               </NavLink>

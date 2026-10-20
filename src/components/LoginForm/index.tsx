@@ -4,7 +4,7 @@ import { getUsers } from "../../api/users";
 import "./LoginForm.css";
 import Alert from '@mui/material/Alert';
 
-type LoginRole = "admin" | "dealer" | "manufacturer" |"supervisor" | "salesmanager" |"dealermanager";
+type LoginRole = "admin" | "dealer" | "manufacturer" | "financehead" | "salesmanager" | "dealermanager";
 type DummyUser = { userId: string; name: string; password: string; dealerId?: string };
 type ManagedUser = { id: string; name: string; password: string; role: string; status: "Active" | "Inactive" };
 
@@ -25,10 +25,10 @@ const DUMMY_USERS: Record<LoginRole, DummyUser> = {
     name: "manufacturer",
     password: "Mr123",
   },
-  supervisor: {
-    userId: "S001",
-    name: "supervisor",
-    password: "sp123",
+  financehead: {
+    userId: "F001",
+    name: "financehead",
+    password: "f123",
   },
   salesmanager: {
     userId: "SM001",
@@ -77,7 +77,7 @@ export default function UserLoginForm() {
     const managedUser = getManagedUsers().find((user) =>
       user.id.toUpperCase() === normalizedUserId &&
       user.status === "Active" &&
-      (role === "dealer" ? user.role.toLowerCase() === "dealer" : role === "manufacturer" ? user.role.toLowerCase() === "manufacturer" :role === "supervisor" ? user.role.toLowerCase() === "supervisor" : user.role.toLowerCase() === "administrator")
+      (role === "dealer" ? user.role.toLowerCase() === "dealer" : role === "manufacturer" ? user.role.toLowerCase() === "manufacturer" : role === "financehead" ? ["supervisor", "finance head", "financehead"].includes(user.role.toLowerCase()) : user.role.toLowerCase() === "administrator")
     );
     const selectedUser = managedUser
       ? { userId: managedUser.id, name: managedUser.name, password: managedUser.password, dealerId: role === "dealer" ? managedUser.id : undefined }
@@ -106,7 +106,7 @@ export default function UserLoginForm() {
         navigate("/manufacturer/dashboard", {
           state: loginState,
         });
-      } else if (role === "supervisor") {
+      } else if (role === "financehead") {
         navigate("/supervisor/dashboard", {
           state: loginState,
         });
@@ -167,7 +167,7 @@ export default function UserLoginForm() {
           <option value="admin">Admin</option>
           <option value="dealer">Dealer</option>
           <option value="manufacturer">Manufacturer</option>
-          <option value="supervisor">Supervisor</option>
+          <option value="financehead">Finance Head</option>
           <option value="salesmanager">Sales Manager</option>
           <option value="dealermanager">Dealer Manager</option>
         </select>

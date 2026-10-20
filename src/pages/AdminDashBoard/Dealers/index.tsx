@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import DealerForm from "../../../components/Form/DealerForm";
+import DealerForm from "../../../components/Form/Admin_DealerForm";
 import Navbar from "../../../components/Navbar";
 import PeopleIcon from '@mui/icons-material/People';
 import Sidebar from "../../../components/Sidebar";
@@ -16,6 +16,8 @@ import ApprovalProduction from "./ApprovalProduction";
 
 type LoginState = { name?: string };
 type WorkflowView = "details" | "approval";
+
+const confirmedOrderStatuses = new Set(["In Production", "Completed"]);
 
 export default function Dealers() {
 	const location = useLocation();
@@ -83,17 +85,26 @@ export default function Dealers() {
 										<th>Dealer ID</th>
 										<th>Dealer Name</th>
 										<th>Orders</th>
+										<th>Status</th>
 										<th>Dealer Details</th>
 										<th>Track Request</th>
 										</tr>
 									</thead>
-						        <tbody>{visibleDealerList.map((dealer) => { const dealerOrders = ordersByDealer[dealer.id] ?? []; 
+						        <tbody>{visibleDealerList.map((dealer) => { const dealerOrders = ordersByDealer[dealer.id] ?? [];
+									const selectedOrder = dealerOrders.find((order) => order.id === selectedOrderByDealer[dealer.id]);
+									const isOrderConfirmed = selectedOrder ? confirmedOrderStatuses.has(selectedOrder.status) : false;
 									return <tr key={dealer.id}>
 										<td className="dealer-id">{dealer.id}</td>
 										<td><strong>{dealer.name}</strong>
 										<span className="dealer-location">{dealer.location}</span></td>
 										<td><select className="order-select" aria-label={`Select order for ${dealer.name}`} value={selectedOrderByDealer[dealer.id] ?? ""} onChange={(event) => setSelectedOrderByDealer((current) => ({ ...current, [dealer.id]: event.target.value }))}>
 											<option value="">No orders</option>{dealerOrders.map((order) => <option value={order.id} key={order.id}>{order.id} · {order.vehicleModel}</option>)}</select></td>
+											<td>
+												<span className={`request-status ${isOrderConfirmed ? "approved" : "pending"}`}>
+													<span aria-hidden="true">{isOrderConfirmed ? "✓" : "!"}</span>
+													{isOrderConfirmed ? "Order Confirmed" : "Pending"}
+												</span>
+											</td>
 											<td>
 												<button className="workflow-link details-link" type="button" disabled={!selectedOrderByDealer[dealer.id]} onClick={() => openWorkflowView("details", dealer.id)}>
 												<span>View</span><small>Profile &amp; orders</small></button></td>
@@ -110,4 +121,3 @@ export default function Dealers() {
 		</div>
 	);
 }
-

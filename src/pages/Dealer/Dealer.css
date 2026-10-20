@@ -688,8 +688,50 @@
   line-height: 1;
 }
 
+.dealer-cart-snackbar {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1400;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px;
+  border-radius: 8px;
+  background: #1f2937;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.24);
+  color: #fff;
+  font-size: 14px;
+  animation: slideUp 0.25s ease;
+}
+
+.dealer-cart-snackbar svg {
+  color: #6ee7b7;
+}
+
+.dealer-cart-snackbar button {
+  margin-left: 8px;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: #93c5fd;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.dealer-cart-snackbar button:hover {
+  color: #bfdbfe;
+  text-decoration: underline;
+}
+
 @keyframes slideDown {
   from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 

@@ -12,6 +12,7 @@ type NavbarProps = {
   dealerLocation?: string;
   dealerAvatar?: string;
   notificationsCount?: number;
+  showRecentRequests?: boolean;
 };
 
 export default function Navbar({
@@ -19,6 +20,7 @@ export default function Navbar({
   variant = "admin",
   dealerLocation = "Chennai, TN",
   dealerAvatar = "DK",
+  showRecentRequests = false,
 }: NavbarProps) {
   const navigate = useNavigate();
 
@@ -30,7 +32,9 @@ export default function Navbar({
   return (
     <nav className={`navbar ${variant === "dealer" ? "dealer-navbar-style" : ""}`}>
       <div className="navbar-actions">
-        <RecentRequestsNotification showLabel={true} customLabel="Recent Requests" />
+        {showRecentRequests && (
+          <RecentRequestsNotification showLabel={true} customLabel="Recent Requests" />
+        )}
 
         {variant === "dealer" ? (
           <div className="dealer-profile-pill">
@@ -69,4 +73,3 @@ export default function Navbar({
     </nav>
   );
 }
-

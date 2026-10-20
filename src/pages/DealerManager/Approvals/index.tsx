@@ -54,7 +54,7 @@ export default function ApprovalRequests() {
         <div className="dealer-layout">
             <Sidebar variant="dealermanager" />
             <div className="dealer-content">
-                <Navbar adminName="Dealer Manager" />
+                <Navbar adminName="Dealer Manager" showRecentRequests />
                 <main className="dealer-main-scroll">
                     {/* ── Page Header ── */}
                     <Box sx={{ mb: 3 }}>
