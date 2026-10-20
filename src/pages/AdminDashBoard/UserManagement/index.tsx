@@ -40,7 +40,7 @@ export default function Usermg() {
 	const [editingUser, setEditingUser] = useState<User | null>(null);
 	const location = useLocation();
 	const loginState = location.state as LoginState | null;
-	const adminName = loginState?.name ?? "Admin";
+	const adminName = loginState?.name ?? "Amelia Martin";
 	const roles = [...new Set(users.map((user) => user.role).filter(Boolean))];
 	const activeUsers = users.filter((user) => user.status === "Active").length;
 	const inactiveUsers = users.length - activeUsers;
@@ -117,7 +117,7 @@ export default function Usermg() {
 		<div className="admin-layout">
 			<Sidebar />
 			<div className="admin-content">
-				<Navbar adminName={adminName} />
+				<Navbar adminName={adminName} role="Administrator" />
 				<main className="admin-main user-management-main" id="user-management">
 					<div className="page-heading">
 						<div><h1>User Management</h1><p>Manage people who can log in to the system.</p></div>

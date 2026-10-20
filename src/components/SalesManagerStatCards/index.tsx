@@ -15,6 +15,7 @@ export type StatCardData = {
 
 interface SalesManagerStatCardsProps {
   stats?: StatCardData[];
+  activeId?: string | null;
   onCardClick?: (cardId: string) => void;
 }
 
@@ -55,6 +56,7 @@ const defaultStats: StatCardData[] = [
 
 export default function SalesManagerStatCards({
   stats = defaultStats,
+  activeId,
   onCardClick,
 }: SalesManagerStatCardsProps) {
   const renderIcon = (type: StatCardData["icon"]) => {
@@ -77,7 +79,7 @@ export default function SalesManagerStatCards({
       {stats.map((stat) => (
         <div
           key={stat.id}
-          className="sm-stat-card"
+          className={`sm-stat-card ${activeId === stat.id ? "is-active" : ""}`}
           onClick={() => onCardClick?.(stat.id)}
           role="button"
           tabIndex={0}

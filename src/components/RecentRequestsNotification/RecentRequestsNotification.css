@@ -345,6 +345,7 @@
   border-top: 1px dashed #f1f5f9;
 }
 
+.recent-view-details-action-btn,
 .recent-review-action-btn {
   display: inline-flex;
   align-items: center;
@@ -360,6 +361,7 @@
   transition: all 0.15s ease;
 }
 
+.recent-view-details-action-btn:hover,
 .recent-review-action-btn:hover {
   background: #0284c7;
   color: #ffffff;

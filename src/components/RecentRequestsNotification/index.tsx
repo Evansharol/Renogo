@@ -7,7 +7,9 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import IconButton from "@mui/material/IconButton";
 import { getOrders } from "../../api/orders";
 import type { Order } from "../../types/order";
-import OrderDetailsDialog from "../OrderDetailsDialog";
+import { getDmRequests, FALLBACK_DM_REQUESTS } from "../../api/dmRequests";
+import type { DmRequest } from "../../pages/DealerManager/types";
+import RequestDetailsModal from "../../pages/DealerManager/components/RequestDetailsModal/RequestDetailsModal";
 import "./RecentRequestsNotification.css";
 
 const DEALER_NAMES: Record<string, string> = {
@@ -32,8 +34,8 @@ const FALLBACK_DEALER_ORDERS: Order[] = [
 		vehicleModel: "Renault Duster",
 		quantity: 50,
 		status: "Supervisor Review",
-		orderDate: "2026-09-12T00:00:00.000Z",
-		etaDelivery: "2026-10-18",
+		orderDate: "2026-10-15T00:00:00.000Z",
+		etaDelivery: "2026-11-20",
 	},
 	{
 		id: "ORD-3001",
@@ -66,11 +68,20 @@ export default function RecentRequestsNotification({
 }: RecentRequestsNotificationProps) {
 	const [isOpen, setIsOpen] = useState(false);
 	const [orders, setOrders] = useState<Order[]>(FALLBACK_DEALER_ORDERS);
-	const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+	const [dmRequests, setDmRequests] = useState<DmRequest[]>(FALLBACK_DM_REQUESTS);
+	const [selectedRequest, setSelectedRequest] = useState<DmRequest | null>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		let isMounted = true;
+		getDmRequests()
+			.then((data) => {
+				if (isMounted && Array.isArray(data) && data.length > 0) {
+					setDmRequests(data);
+				}
+			})
+			.catch(() => {});
+
 		getOrders()
 			.then((data) => {
 				if (isMounted && Array.isArray(data) && data.length > 0) {
@@ -134,6 +145,30 @@ export default function RecentRequestsNotification({
 	const getStatusClass = (status: string) => {
 		const s = (status || "").toLowerCase().replace(/[^a-z0-9]+/g, "-");
 		return `recent-status--${s}`;
+	};
+
+	const handleOpenRequestDetails = (order: Order) => {
+		const matched =
+			dmRequests.find((r) => r.id === order.id) ||
+			FALLBACK_DM_REQUESTS.find((r) => r.id === order.id);
+
+		if (matched) {
+			setSelectedRequest(matched);
+		} else {
+			const fallbackReq: DmRequest = {
+				id: order.id,
+				dealerId: order.dealerId,
+				dealerName: DEALER_NAMES[order.dealerId] || order.dealerId || "ABC Motors Pvt. Ltd.",
+				vehicleModel: order.vehicleModel,
+				totalQuantity: order.quantity || 1,
+				quotationAmount: (order as unknown as { quotationAmount?: string }).quotationAmount || "₹ 4,13,00,000",
+				status: "Awaiting Acknowledgement",
+				paymentStatus: "Pending",
+				orderDate: order.orderDate || new Date().toISOString(),
+			};
+			setSelectedRequest(fallbackReq);
+		}
+		setIsOpen(false);
 	};
 
 	const messageOnIcon = customLabel || `${pendingCount} New Requests`;
@@ -203,10 +238,7 @@ export default function RecentRequestsNotification({
 								<div
 									key={req.id}
 									className="recent-request-card"
-									onClick={() => {
-										setSelectedOrder(req);
-										setIsOpen(false);
-									}}
+									onClick={() => handleOpenRequestDetails(req)}
 								>
 									<div className="recent-card-top">
 										<div className="recent-req-id-badge">
@@ -236,14 +268,13 @@ export default function RecentRequestsNotification({
 									<div className="recent-card-action">
 										<button
 											type="button"
-											className="recent-review-action-btn"
+											className="recent-view-details-action-btn"
 											onClick={(e) => {
 												e.stopPropagation();
-												setSelectedOrder(req);
-												setIsOpen(false);
+												handleOpenRequestDetails(req);
 											}}
 										>
-											Review <OpenInNewIcon sx={{ fontSize: 13 }} />
+											View Details <OpenInNewIcon sx={{ fontSize: 13 }} />
 										</button>
 									</div>
 								</div>
@@ -260,11 +291,12 @@ export default function RecentRequestsNotification({
 				</div>
 			)}
 
-			{/* Modal to view order details & track lifecycle when clicked */}
-			{selectedOrder && (
-				<OrderDetailsDialog
-					order={selectedOrder}
-					onClose={() => setSelectedOrder(null)}
+			{/* Request Details & Payment Modal */}
+			{selectedRequest && (
+				<RequestDetailsModal
+					open={Boolean(selectedRequest)}
+					onClose={() => setSelectedRequest(null)}
+					request={selectedRequest}
 				/>
 			)}
 		</div>

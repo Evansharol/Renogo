@@ -13,75 +13,108 @@
   color: rgb(14, 14, 14);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08), 0 8px 20px rgba(0, 0, 0, 0.12);
 }
+
 .navbar-actions {
   display: flex;
   align-items: center;
   margin-left: auto;
-}
-.navbar-actions {
   gap: 16px;
 }
-.notification-button {
+
+/* User Profile Pill showing Name and Occupation */
+.navbar-user-profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 14px 4px 5px;
+  border: 1px solid rgba(0, 0, 0, 0.09);
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.navbar-user-profile:hover {
+  border-color: rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.navbar-user-avatar {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25);
 }
+
+.navbar-user-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: left;
+  line-height: 1.2;
+}
+
+.navbar-user-name {
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.navbar-user-occupation {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+
+/* Fallback admin-name for backwards compatibility */
+.admin-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Logout action button */
 .logout-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   padding: 0;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  color: inherit;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 50%;
+  background: #ffffff;
+  color: #475569;
   cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
 }
-.logout-button:hover, .logout-button:focus-visible, .notification-button:hover, .notification-button:focus-visible {
-  background: rgba(0, 0, 0, 0.08);
+
+.logout-button:hover,
+.logout-button:focus-visible {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fca5a5;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.15);
   outline: none;
 }
-.notification-button img {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-}
-.admin-name {
-  display: inline-flex;
-  align-items: center;
-  min-height: 36px;
-  padding: 0 16px;
-  border: 1px solid rgba(156, 154, 154, 0.35);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
- /* box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25), 0 6px 18px rgba(0, 0, 0, 0.25); */
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  font-weight: 600;
-  transition: background 0.2s ease, border-color 0.2s ease;
-  gap: 8px;
-  /* space between icon and text */
-}
-.admin-name:hover {
-  border-color: rgba(8, 8, 8, 0.6);
-  background: rgba(255, 255, 255, 0.2);
-}
 
-/* Dealer Navbar Style */
-.dealer-navbar-style {
-  background-color: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
+/* Notification Button */
 .notification-button {
   position: relative;
   display: flex;
@@ -91,11 +124,20 @@
   height: 40px;
   border-radius: 50%;
   color: #374151;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
   transition: background-color 0.15s ease;
 }
 
 .notification-button:hover {
   background: #f3f4f6;
+}
+
+.notification-button img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
 .notification-badge {
@@ -117,66 +159,9 @@
   border: 1.5px solid #ffffff;
 }
 
-.dealer-profile-pill {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 4px 6px 4px 4px;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: background-color 0.15s ease;
+/* Dealer Navbar Style */
+.dealer-navbar-style {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
-
-.dealer-profile-pill:hover {
-  background-color: #f3f4f6;
-}
-
-.dealer-avatar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background-color: #111827;
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-
-.dealer-user-info {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-  text-align: left;
-}
-
-.dealer-name-text {
-  color: #111827;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.dealer-location-text {
-  color: #6b7280;
-  font-size: 11px;
-  font-weight: 500;
-}
-
-.dealer-dropdown-trigger {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: 0;
-  padding: 2px;
-  color: #6b7280;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.dealer-dropdown-trigger:hover {
-  color: #111827;
-}
-

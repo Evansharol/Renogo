@@ -12,14 +12,14 @@ type LoginState = {
 export default function Admindb() {
     const location = useLocation();
     const loginState = location.state as LoginState | null;
-    const adminName = loginState?.name ?? "Admin";
+    const adminName = loginState?.name ?? "Amelia Martin";
 
     return (
         <div className="admin-layout">
             <Sidebar />
 
             <div className="admin-content">
-                <Navbar adminName={adminName} />
+                <Navbar adminName={adminName} role="Administrator" />
                 <main className="admin-main" id="dashboard">
                     <h1>Overview</h1>
                     <section className="summary-grid" aria-label="Dashboard summary">

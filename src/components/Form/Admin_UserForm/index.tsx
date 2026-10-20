@@ -115,8 +115,11 @@ export default function Uform({ onSave, onClose, user }: UserFormProps) {
 							<option value="">Select role</option>
 							<option>Administrator</option>
 							<option>Manufacturer</option>
-							<option>Supervisor</option>
+							<option>Sales Manager</option>
 							<option>Dealer</option>
+							<option>Finance Manager</option>
+							<option>Dealer Manager</option>
+
 						</select></label>
 						<label>Department<select value={form.department} onChange={(event) => updateField("department", event.target.value)}>
 							<option value="">Select department</option>

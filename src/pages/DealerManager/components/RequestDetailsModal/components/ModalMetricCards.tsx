@@ -74,7 +74,7 @@ export default function ModalMetricCards({ request }: ModalMetricCardsProps) {
                 <Box>
                     <Typography sx={{ fontSize: "11.5px", color: "#64748b", fontWeight: 600 }}>Total Quotation Amount</Typography>
                     <Typography sx={{ fontSize: "17px", fontWeight: 800, color: "#0f172a", lineHeight: 1.2 }}>
-                        {request?.quotationAmount || "₹ 2,50,00,000"}
+                        {request?.quotationAmount || "₹ 4,13,00,000"}
                     </Typography>
                 </Box>
             </Box>
@@ -87,7 +87,12 @@ export default function ModalMetricCards({ request }: ModalMetricCardsProps) {
                 <Box>
                     <Typography sx={{ fontSize: "11.5px", color: "#64748b", fontWeight: 600 }}>Expected Delivery</Typography>
                     <Typography sx={{ fontSize: "16px", fontWeight: 800, color: "#0f172a", lineHeight: 1.2 }}>
-                        30 Jun 2025
+                        {(() => {
+                            const baseDate = request?.orderDate ? new Date(request.orderDate) : new Date();
+                            const validDate = isNaN(baseDate.getTime()) ? new Date() : baseDate;
+                            const deliveryDate = new Date(validDate.getTime() + 35 * 24 * 60 * 60 * 1000);
+                            return deliveryDate.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+                        })()}
                     </Typography>
                 </Box>
             </Box>

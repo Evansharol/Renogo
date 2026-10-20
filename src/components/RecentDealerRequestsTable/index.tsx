@@ -14,6 +14,10 @@ export type DisplayRequest = {
 interface RecentDealerRequestsTableProps {
   orders?: Order[];
   requests?: DisplayRequest[];
+  title?: string;
+  subTitle?: string;
+  activeFilter?: string | null;
+  onClearFilter?: () => void;
   onVerify?: (order: Order) => void;
   onViewClick?: (request: DisplayRequest) => void;
   onViewAllClick?: () => void;
@@ -22,6 +26,10 @@ interface RecentDealerRequestsTableProps {
 export default function RecentDealerRequestsTable({
   orders,
   requests,
+  title,
+  subTitle,
+  activeFilter,
+  onClearFilter,
   onVerify,
   onViewClick,
   onViewAllClick,
@@ -46,19 +54,31 @@ export default function RecentDealerRequestsTable({
             <ReceiptLongOutlinedIcon className="recent-requests-icon" />
           </div>
           <div>
-            <h3 className="recent-requests-title">Recent Requests</h3>
-            <p className="recent-requests-sub">Latest orders allocated by the manufacturer.</p>
+            <h3 className="recent-requests-title">{title || "Recent Requests"}</h3>
+            <p className="recent-requests-sub">{subTitle || "Latest orders allocated by the manufacturer."}</p>
           </div>
         </div>
-        {onViewAllClick && (
-          <button
-            type="button"
-            className="recent-requests-view-all"
-            onClick={onViewAllClick}
-          >
-            View All
-          </button>
-        )}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {activeFilter && onClearFilter && (
+            <button
+              type="button"
+              className="recent-requests-clear-filter"
+              onClick={onClearFilter}
+              title="Reset filter"
+            >
+              Reset Filter &times;
+            </button>
+          )}
+          {onViewAllClick && (
+            <button
+              type="button"
+              className="recent-requests-view-all"
+              onClick={onViewAllClick}
+            >
+              View All
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="recent-requests-table-container">

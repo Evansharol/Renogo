@@ -29,7 +29,7 @@ export default function WorkflowShell({ title, subtitle, dealerLabel, children, 
 	return <div className="workflow-layout">
 		<Sidebar />
 		<div className="admin-content">
-			<Navbar adminName={state?.name ?? "Admin"} />
+			<Navbar adminName={state?.name ?? "Amelia Martin"} role="Administrator" />
 			<main className="workflow-main">
 				<button className="workflow-back" type="button" onClick={() => navigate("/dealers")}>← Back to Dealers</button>
 				<header className="workflow-page-header"><div>

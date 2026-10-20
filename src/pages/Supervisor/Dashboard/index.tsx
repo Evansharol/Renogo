@@ -16,7 +16,7 @@ type AllocationResponse = { dealerRequests: Allocation[] };
 export default function SupervisorDashboard() {
     const location = useLocation();
     const navigate = useNavigate();
-    const supervisorName = (location.state as LoginState | null)?.name ?? "Supervisor";
+    const supervisorName = (location.state as LoginState | null)?.name ?? "Louis Bernard";
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -55,7 +55,7 @@ export default function SupervisorDashboard() {
         <div className="supervisor-layout">
             <Sidebar variant="supervisor" />
             <div className="supervisor-content">
-                <Navbar adminName={supervisorName} />
+                <Navbar adminName={supervisorName} role="Finance Head" />
                 <main className="supervisor-main supervisor-dashboard-main">
                     <div className="supervisor-title">
                         <div>

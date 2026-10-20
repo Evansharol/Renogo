@@ -1,4 +1,20 @@
-// ─── DealerManager Central Domain Types ──────────────────────────────────────────
+export type VehicleLineItem = {
+    id?: number;
+    model: string;
+    variant?: string;
+    qty: number;
+    unitPrice: number;
+    total?: number;
+};
+
+export type BankSettlementDetails = {
+    beneficiaryName?: string;
+    bankName?: string;
+    accountNumber?: string;
+    ifscCode?: string;
+    accountType?: string;
+    bankBranch?: string;
+};
 
 export type DmRequest = {
     id: string; // Order ID (e.g. ORD-1001)
@@ -10,6 +26,12 @@ export type DmRequest = {
     status: "Awaiting Acknowledgement" | "Ready for Payment" | "Payment Submitted" | "Payment Verified" | "Completed";
     paymentStatus: "Pending" | "Submitted" | "Completed";
     orderDate: string;
+    quotationNo?: string;
+    discountAmount?: number;
+    taxRate?: number;
+    depositRate?: number;
+    items?: VehicleLineItem[];
+    bankDetails?: BankSettlementDetails;
 };
 
 export type DmNotification = {
@@ -49,13 +71,21 @@ export const FALLBACK_DM_REQUESTS: DmRequest[] = [
     {
         id: "ORD-1001",
         dealerId: "D001",
-        dealerName: "ABC Motors",
-        vehicleModel: "Renault Duster",
+        dealerName: "ABC Motors Pvt. Ltd.",
+        vehicleModel: "Renault Fleet (Kiger, Triber, Duster)",
         totalQuantity: 50,
-        quotationAmount: "₹ 7,08,00,000",
+        quotationAmount: "₹ 4,13,00,000",
         status: "Awaiting Acknowledgement",
         paymentStatus: "Pending",
-        orderDate: "2026-09-12T00:00:00.000Z",
+        orderDate: "2026-10-15T00:00:00.000Z",
+        discountAmount: 1750000,
+        taxRate: 18,
+        depositRate: 20,
+        items: [
+            { id: 1, model: "Renault Kiger", variant: "RXE MT Petrol", qty: 20, unitPrice: 750000 },
+            { id: 2, model: "Renault Triber", variant: "RXZ Easy-R AMT", qty: 15, unitPrice: 650000 },
+            { id: 3, model: "Renault Duster", variant: "RXZ Turbo CVT", qty: 15, unitPrice: 800000 },
+        ],
     },
     {
         id: "ORD-1002",
