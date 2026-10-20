@@ -31,7 +31,7 @@ export default function ManufacturerViewRequests() {
     <div className="dealer-layout">
       <Sidebar variant="manufacturer" />
       <div className="dealer-content">
-        <Navbar adminName="Manufacturer" />
+        <Navbar role="Manufacturer" />
         <main className="dealer-main-scroll">
           <div className="dealer-page-title-row">
             <div>

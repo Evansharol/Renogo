@@ -6,24 +6,41 @@ import { sectionCardStyle } from "../modalStyles";
 
 type ManufacturerBankDetailsProps = {
     requestId: string;
+    onViewExactDetails?: () => void;
 };
 
-export default function ManufacturerBankDetails({ requestId }: ManufacturerBankDetailsProps) {
+export default function ManufacturerBankDetails({ requestId, onViewExactDetails }: ManufacturerBankDetailsProps) {
     const bankDetails = [
         { label: "Beneficiary Name", val: "Renault India Pvt Ltd" },
-        { label: "Bank Name", val: "HDFC Bank" },
-        { label: "Account Number", val: "XXXXXXXXXX" },
+        { label: "Bank Name", val: "HDFC Bank Ltd." },
+        { label: "Account Number", val: "50200088991234" },
         { label: "IFSC Code", val: "HDFC0001234" },
         { label: "Branch", val: "Gurgaon, Haryana" },
     ];
 
     return (
         <Box sx={sectionCardStyle}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
-                <AccountBalanceOutlinedIcon sx={{ fontSize: 18, color: "#2563eb" }} />
-                <Typography sx={{ fontSize: "14px", fontWeight: 800, color: "#0f172a" }}>
-                    3. Manufacturer Bank Details
-                </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <AccountBalanceOutlinedIcon sx={{ fontSize: 18, color: "#2563eb" }} />
+                    <Typography sx={{ fontSize: "14px", fontWeight: 800, color: "#0f172a" }}>
+                        3. Manufacturer Bank Details
+                    </Typography>
+                </Box>
+                {onViewExactDetails && (
+                    <Typography
+                        onClick={onViewExactDetails}
+                        sx={{
+                            fontSize: "11.5px",
+                            fontWeight: 700,
+                            color: "#2563eb",
+                            cursor: "pointer",
+                            "&:hover": { textDecoration: "underline" },
+                        }}
+                    >
+                        View Full Details &rarr;
+                    </Typography>
+                )}
             </Box>
 
             <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mb: 2 }}>
@@ -38,7 +55,16 @@ export default function ManufacturerBankDetails({ requestId }: ManufacturerBankD
                         }}
                     >
                         <Typography sx={{ fontSize: "12px", color: "#64748b" }}>{item.label}</Typography>
-                        <Typography sx={{ fontSize: "12px", fontWeight: 700, color: "#0f172a" }}>{item.val}</Typography>
+                        <Typography
+                            sx={{
+                                fontSize: "12px",
+                                fontWeight: 700,
+                                color: item.label === "Account Number" ? "#1e40af" : "#0f172a",
+                                letterSpacing: item.label === "Account Number" ? "0.5px" : "normal",
+                            }}
+                        >
+                            {item.val}
+                        </Typography>
                     </Box>
                 ))}
             </Box>
@@ -61,7 +87,7 @@ export default function ManufacturerBankDetails({ requestId }: ManufacturerBankD
                 <Box component="ul" sx={{ m: 0, pl: 2, fontSize: "11px", color: "#3b82f6", lineHeight: 1.5 }}>
                     <li>Make payment through NEFT / RTGS only.</li>
                     <li>Use the request ID (<strong>{requestId}</strong>) as reference.</li>
-                    <li>Share transaction details after payment.</li>
+                    <li>Share transaction details and proof image after payment.</li>
                 </Box>
             </Box>
         </Box>

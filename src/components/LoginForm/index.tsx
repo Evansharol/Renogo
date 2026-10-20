@@ -11,33 +11,33 @@ type ManagedUser = { id: string; name: string; password: string; role: string; s
 const DUMMY_USERS: Record<LoginRole, DummyUser> = {
   admin: {
     userId: "A001",
-    name: "admin",
+    name: "Amelia Martin",
     password: "admin123",
   },
   dealer: {
     userId: "D001",
-    name: "dealer",
+    name: "Dinesh Kumar",
     password: "dealer123",
     dealerId: "D001",
   },
   manufacturer: {
     userId: "M001",
-    name: "manufacturer",
+    name: "Noah Wilson",
     password: "Mr123",
   },
   financehead: {
     userId: "F001",
-    name: "financehead",
+    name: "Louis Bernard",
     password: "f123",
   },
   salesmanager: {
     userId: "SM001",
-    name: "salesmanager",
+    name: "Rajesh Kumar",
     password: "sm123",
   },
   dealermanager: {
     userId: "DM001",
-    name: "dealermanager",
+    name: "Karthik Raja",
     password: "dm123",
   },
 };
@@ -93,6 +93,7 @@ export default function UserLoginForm() {
         name: selectedUser.name,
         userId: selectedUser.userId,
         dealerId: selectedUser.dealerId,
+        role: role,
       };
       localStorage.setItem("loginState", JSON.stringify(loginState));
 

@@ -12,21 +12,99 @@ import ReceiptOutlinedIcon from "@mui/icons-material/ReceiptOutlined";
 import PaidOutlinedIcon from "@mui/icons-material/PaidOutlined";
 import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
 import { sectionCardStyle, tableHeadStyle, tableBodyStyle } from "../modalStyles";
+import type { DmRequest, VehicleLineItem } from "../../../types";
+import { formatInr } from "../../../utils/generateQuotationPdf";
 
 type FinalQuotationSectionProps = {
+    requestId?: string;
+    request?: DmRequest | null;
     quotationNo?: string;
     date?: string;
 };
 
 export default function FinalQuotationSection({
-    quotationNo = "#RQ-2024-001",
-    date = "Apr 23, 2024",
+    requestId = "FR-2026-0048",
+    request,
+    quotationNo,
+    date,
 }: FinalQuotationSectionProps) {
-    const quotationRows = [
-        { id: 1, model: "Kiger", variant: "RXE", qty: 20, unit: "7,50,000", total: "1,50,00,000" },
-        { id: 2, model: "Triber", variant: "RXZ", qty: 15, unit: "6,50,000", total: "97,50,000" },
-        { id: 3, model: "Duster", variant: "RXZ", qty: 15, unit: "8,00,000", total: "1,20,00,000" },
-    ];
+    const effectiveQuotationNo = quotationNo || request?.quotationNo || `QTN-${requestId}`;
+
+    const formatDate = (isoString?: string) => {
+        if (!isoString) {
+            return new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+        }
+        const d = new Date(isoString);
+        return isNaN(d.getTime())
+            ? isoString
+            : d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+    };
+
+    const effectiveDate = date || formatDate(request?.orderDate);
+
+    // Dynamic resolution of items
+    let rawItems: VehicleLineItem[] = [];
+    if (request?.items && request.items.length > 0) {
+        rawItems = request.items;
+    } else if (requestId === "ORD-1001") {
+        rawItems = [
+            { id: 1, model: "Renault Kiger", variant: "RXE MT Petrol", qty: 20, unitPrice: 750000 },
+            { id: 2, model: "Renault Triber", variant: "RXZ Easy-R AMT", qty: 15, unitPrice: 650000 },
+            { id: 3, model: "Renault Duster", variant: "RXZ Turbo CVT", qty: 15, unitPrice: 800000 },
+        ];
+    } else if (request) {
+        const qty = Math.max(1, request.totalQuantity || 1);
+        let price = 800000;
+        if (request.quotationAmount) {
+            const num = Number(request.quotationAmount.replace(/[^0-9]/g, ""));
+            if (num > 0) {
+                price = Math.round((num / 1.18) / qty);
+            }
+        }
+        rawItems = [
+            {
+                id: 1,
+                model: request.vehicleModel || "Renault Vehicle",
+                variant: "Standard Fleet Trim",
+                qty: qty,
+                unitPrice: price,
+            },
+        ];
+    } else {
+        rawItems = [
+            { id: 1, model: "Renault Kiger", variant: "RXE MT Petrol", qty: 20, unitPrice: 750000 },
+            { id: 2, model: "Renault Triber", variant: "RXZ Easy-R AMT", qty: 15, unitPrice: 650000 },
+            { id: 3, model: "Renault Duster", variant: "RXZ Turbo CVT", qty: 15, unitPrice: 800000 },
+        ];
+    }
+
+    const quotationRows = rawItems.map((item, idx) => {
+        const qty = Math.max(0, Number(item.qty) || 0);
+        const unitPrice = Math.max(0, Number(item.unitPrice) || 0);
+        const total = Math.round(qty * unitPrice);
+        return {
+            id: item.id || idx + 1,
+            model: item.model,
+            variant: item.variant || "Standard Trim",
+            qty,
+            unitPrice,
+            total,
+        };
+    });
+
+    const grossSubtotal = quotationRows.reduce((sum, r) => sum + r.total, 0);
+    const discount = Math.min(
+        grossSubtotal,
+        Math.max(0, request?.discountAmount !== undefined ? request.discountAmount : (requestId === "ORD-1001" ? 1750000 : 0))
+    );
+    const taxableAmount = Math.max(0, grossSubtotal - discount);
+    const taxRate = request?.taxRate ?? 18;
+    const gstAmount = Math.round(taxableAmount * (taxRate / 100));
+    const finalTotal = taxableAmount + gstAmount;
+
+    const advanceRate = request?.depositRate ?? 20;
+    const advanceAmount = Math.round(finalTotal * (advanceRate / 100));
+    const balanceAmount = finalTotal - advanceAmount;
 
     return (
         <Box sx={sectionCardStyle}>
@@ -61,7 +139,7 @@ export default function FinalQuotationSection({
                             Final Quotation
                         </Typography>
                         <Typography sx={{ fontSize: "12px", color: "#64748b", mt: 0.3 }}>
-                            Your requested vehicle quotation with pricing details
+                            Official vehicle quotation with itemized pricing &amp; tax breakdown
                         </Typography>
                     </Box>
                 </Box>
@@ -72,7 +150,7 @@ export default function FinalQuotationSection({
                             Quotation No.
                         </Typography>
                         <Typography sx={{ fontSize: "13px", fontWeight: 800, color: "#0f172a" }}>
-                            {quotationNo}
+                            {effectiveQuotationNo}
                         </Typography>
                     </Box>
                     <Box sx={{ width: "1px", height: "30px", backgroundColor: "#e2e8f0" }} />
@@ -81,7 +159,7 @@ export default function FinalQuotationSection({
                             Date
                         </Typography>
                         <Typography sx={{ fontSize: "13px", fontWeight: 800, color: "#0f172a" }}>
-                            {date}
+                            {effectiveDate}
                         </Typography>
                     </Box>
                 </Box>
@@ -96,8 +174,8 @@ export default function FinalQuotationSection({
                             <TableCell sx={tableHeadStyle}>Model</TableCell>
                             <TableCell sx={tableHeadStyle}>Variant</TableCell>
                             <TableCell align="center" sx={tableHeadStyle}>Quantity</TableCell>
-                            <TableCell align="right" sx={tableHeadStyle}>Unit Price (₹)</TableCell>
-                            <TableCell align="right" sx={{ ...tableHeadStyle, pr: 2 }}>Total (₹)</TableCell>
+                            <TableCell align="right" sx={tableHeadStyle}>Unit Price (INR)</TableCell>
+                            <TableCell align="right" sx={{ ...tableHeadStyle, pr: 2 }}>Total (INR)</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -109,9 +187,9 @@ export default function FinalQuotationSection({
                                 </TableCell>
                                 <TableCell sx={tableBodyStyle}>{row.variant}</TableCell>
                                 <TableCell align="center" sx={tableBodyStyle}>{row.qty}</TableCell>
-                                <TableCell align="right" sx={tableBodyStyle}>₹ {row.unit}</TableCell>
+                                <TableCell align="right" sx={tableBodyStyle}>{formatInr(row.unitPrice)}</TableCell>
                                 <TableCell align="right" sx={{ ...tableBodyStyle, fontWeight: 800, color: "#0f172a", pr: 2 }}>
-                                    ₹ {row.total}
+                                    {formatInr(row.total)}
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -158,10 +236,10 @@ export default function FinalQuotationSection({
                             Advance Payment
                         </Typography>
                         <Typography sx={{ fontSize: "12px", color: "#64748b" }}>
-                            (20%)
+                            ({advanceRate}% of Final Total)
                         </Typography>
                         <Typography sx={{ fontSize: "21px", fontWeight: 900, color: "#0f172a", mt: 1 }}>
-                            ₹ 50,00,000
+                            {formatInr(advanceAmount)}
                         </Typography>
                     </Box>
                 </Box>
@@ -197,25 +275,25 @@ export default function FinalQuotationSection({
                             Balance Payable
                         </Typography>
                         <Typography sx={{ fontSize: "12px", color: "#64748b" }}>
-                            (80%)
+                            ({100 - advanceRate}% upon dispatch)
                         </Typography>
                         <Typography sx={{ fontSize: "21px", fontWeight: 900, color: "#0f172a", mt: 1 }}>
-                            ₹ 2,00,00,000
+                            {formatInr(balanceAmount)}
                         </Typography>
                     </Box>
                 </Box>
 
-                {/* 3. Total Quotation Amount (Solid Blue Highlight Card) */}
+                {/* 3. Total Quotation Amount (Solid Highlight Card) */}
                 <Box
                     sx={{
                         p: 2.2,
                         borderRadius: "14px",
-                        backgroundColor: "#1e60f0",
+                        backgroundColor: "#0f2b5c",
                         color: "#ffffff",
                         display: "flex",
                         flexDirection: "column",
                         justifyContent: "space-between",
-                        boxShadow: "0 6px 16px rgba(30, 96, 240, 0.25)",
+                        boxShadow: "0 6px 16px rgba(15, 43, 92, 0.25)",
                     }}
                 >
                     <Box
@@ -234,10 +312,10 @@ export default function FinalQuotationSection({
                     </Box>
                     <Box>
                         <Typography sx={{ fontSize: "13px", fontWeight: 600, color: "#ffffff", opacity: 0.95 }}>
-                            Total Quotation Amount
+                            Final Quotation Total
                         </Typography>
                         <Typography sx={{ fontSize: "22px", fontWeight: 900, color: "#ffffff", mt: 0.5 }}>
-                            ₹ 2,50,00,000
+                            {formatInr(finalTotal)}
                         </Typography>
                     </Box>
                 </Box>
@@ -269,27 +347,33 @@ export default function FinalQuotationSection({
                             <BarChartOutlinedIcon sx={{ fontSize: 16, color: "#2563eb" }} />
                         </Box>
                         <Typography sx={{ fontSize: "13.5px", fontWeight: 800, color: "#0f172a" }}>
-                            Cost Breakdown
+                            Pricing Breakdown
                         </Typography>
                     </Box>
 
                     <Box sx={{ display: "flex", flexDirection: "column", gap: 0.8 }}>
                         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                            <Typography sx={{ fontSize: "12px", color: "#64748b" }}>Subtotal</Typography>
+                            <Typography sx={{ fontSize: "12px", color: "#64748b" }}>Gross Subtotal</Typography>
                             <Typography sx={{ fontSize: "12.5px", fontWeight: 700, color: "#0f172a" }}>
-                                ₹ 3,67,50,000
+                                {formatInr(grossSubtotal)}
                             </Typography>
                         </Box>
                         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                            <Typography sx={{ fontSize: "12px", color: "#16a34a", fontWeight: 600 }}>Discount</Typography>
+                            <Typography sx={{ fontSize: "12px", color: "#16a34a", fontWeight: 600 }}>Fleet Discount</Typography>
                             <Typography sx={{ fontSize: "12.5px", fontWeight: 700, color: "#16a34a" }}>
-                                - ₹ 17,50,000
+                                - {formatInr(discount)}
                             </Typography>
                         </Box>
                         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                            <Typography sx={{ fontSize: "12px", color: "#64748b" }}>Tax (GST 18%)</Typography>
+                            <Typography sx={{ fontSize: "12px", color: "#64748b" }}>Taxable Amount</Typography>
                             <Typography sx={{ fontSize: "12.5px", fontWeight: 700, color: "#0f172a" }}>
-                                ₹ 66,15,000
+                                {formatInr(taxableAmount)}
+                            </Typography>
+                        </Box>
+                        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                            <Typography sx={{ fontSize: "12px", color: "#64748b" }}>GST ({taxRate}%)</Typography>
+                            <Typography sx={{ fontSize: "12.5px", fontWeight: 700, color: "#0f172a" }}>
+                                {formatInr(gstAmount)}
                             </Typography>
                         </Box>
                     </Box>
@@ -307,10 +391,10 @@ export default function FinalQuotationSection({
                         }}
                     >
                         <Typography sx={{ fontSize: "11px", fontWeight: 700, color: "#2563eb" }}>
-                            Total Quotation Amount
+                            Net Final Total
                         </Typography>
                         <Typography sx={{ fontSize: "13px", fontWeight: 900, color: "#2563eb" }}>
-                            ₹ 2,50,00,000
+                            {formatInr(finalTotal)}
                         </Typography>
                     </Box>
                 </Box>

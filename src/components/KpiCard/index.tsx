@@ -8,6 +8,8 @@ type KpiCardProps = {
   subtitle: string;
   icon: ReactNode;
   variant: KpiCardVariant;
+  onClick?: () => void;
+  active?: boolean;
 };
 
 export default function KpiCard({
@@ -16,9 +18,17 @@ export default function KpiCard({
   subtitle,
   icon,
   variant,
+  onClick,
+  active,
 }: KpiCardProps) {
   return (
-    <article className={`manufacturer-kpi-card manufacturer-kpi-card--${variant}`}>
+    <article
+      className={`manufacturer-kpi-card manufacturer-kpi-card--${variant}${active ? " manufacturer-kpi-card--active" : ""}`}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      style={onClick ? { cursor: "pointer" } : undefined}
+    >
       <div className="manufacturer-kpi-icon" aria-hidden="true">
         {icon}
       </div>

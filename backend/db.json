@@ -79,8 +79,8 @@
       "vehicleModel": "Renault Duster",
       "quantity": 50,
       "status": "In Production",
-      "orderDate": "2026-09-12T00:00:00.000Z",
-      "etaDelivery": "2026-10-18"
+      "orderDate": "2026-10-15T00:00:00.000Z",
+      "etaDelivery": "2026-11-20"
     },
     {
       "id": "ORD-1002",
@@ -265,13 +265,13 @@
     {
       "id": "ORD-1001",
       "dealerId": "D001",
-      "dealerName": "ABC Motors",
-      "vehicleModel": "Renault Duster",
+      "dealerName": "ABC Motors Pvt. Ltd.",
+      "vehicleModel": "Renault Fleet (Kiger, Triber, Duster)",
       "totalQuantity": 50,
-      "quotationAmount": "₹ 7,08,00,000",
+      "quotationAmount": "₹ 4,13,00,000",
       "status": "Awaiting Acknowledgement",
       "paymentStatus": "Pending",
-      "orderDate": "2026-09-12T00:00:00.000Z"
+      "orderDate": "2026-10-15T00:00:00.000Z"
     },
     {
       "id": "ORD-1002",

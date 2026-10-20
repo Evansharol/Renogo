@@ -22,7 +22,7 @@ type ManufacturerDashboard = { dealerRequests: ManufacturerRequest[] };
 
 export default function ViewRequests() {
     const location = useLocation();
-    const supervisorName = (location.state as LoginState | null)?.name ?? "Supervisor";
+    const supervisorName = (location.state as LoginState | null)?.name ?? "Louis Bernard";
     const [orders, setOrders] = useState<Order[]>([]);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [quotation, setQuotation] = useState<Quotation | null>(null);
@@ -71,7 +71,7 @@ export default function ViewRequests() {
         <div className="supervisor-layout">
             <Sidebar variant="supervisor" />
             <div className="supervisor-content">
-                <Navbar adminName={supervisorName} />
+                <Navbar adminName={supervisorName} role="Finance Head" />
                 <main className="supervisor-main">
                     <div className="supervisor-title">
                         <h1>View Requests</h1>

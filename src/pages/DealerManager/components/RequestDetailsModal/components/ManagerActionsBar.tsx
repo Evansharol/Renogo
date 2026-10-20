@@ -10,9 +10,18 @@ import { sectionCardStyle, actionCircleIconStyle } from "../modalStyles";
 type ManagerActionsBarProps = {
     acknowledged: boolean;
     onAcknowledge: () => void;
+    onViewPaymentDetails?: () => void;
+    onUploadPaymentProof?: () => void;
+    paymentSubmitted?: boolean;
 };
 
-export default function ManagerActionsBar({ acknowledged, onAcknowledge }: ManagerActionsBarProps) {
+export default function ManagerActionsBar({
+    acknowledged,
+    onAcknowledge,
+    onViewPaymentDetails,
+    onUploadPaymentProof,
+    paymentSubmitted = false,
+}: ManagerActionsBarProps) {
     return (
         <Box
             sx={{
@@ -34,7 +43,7 @@ export default function ManagerActionsBar({ acknowledged, onAcknowledge }: Manag
                         Dealer Manager Actions
                     </Typography>
                     <Typography sx={{ fontSize: "11.5px", color: "#64748b" }}>
-                        Accept terms, check manufacturer bank credentials, and upload proof.
+                        Accept terms, view manufacturer bank credentials, and upload proof.
                     </Typography>
                 </Box>
             </Box>
@@ -74,11 +83,7 @@ export default function ManagerActionsBar({ acknowledged, onAcknowledge }: Manag
                 <Button
                     variant="outlined"
                     startIcon={<CreditCardOutlinedIcon sx={{ fontSize: "16px !important" }} />}
-                    onClick={() =>
-                        alert(
-                            "Manufacturer Bank Details:\nBeneficiary: Renault India Pvt Ltd\nBank: HDFC Bank\nAccount: XXXXXXXXXX\nIFSC: HDFC0001234\nBranch: Gurgaon, Haryana\nAdvance Amount: ₹ 50,00,000"
-                        )
-                    }
+                    onClick={onViewPaymentDetails}
                     sx={{
                         borderColor: "#2563eb",
                         color: "#2563eb",
@@ -97,12 +102,19 @@ export default function ManagerActionsBar({ acknowledged, onAcknowledge }: Manag
 
                 {/* 3. Upload Payment Proof */}
                 <Button
-                    variant="outlined"
-                    startIcon={<CloudUploadOutlinedIcon sx={{ fontSize: "16px !important" }} />}
-                    onClick={() => alert("Please attach transaction receipt / UTR number for verification.")}
+                    variant={paymentSubmitted ? "contained" : "outlined"}
+                    startIcon={
+                        paymentSubmitted ? (
+                            <CheckCircleOutlinedIcon sx={{ fontSize: "16px !important" }} />
+                        ) : (
+                            <CloudUploadOutlinedIcon sx={{ fontSize: "16px !important" }} />
+                        )
+                    }
+                    onClick={onUploadPaymentProof}
                     sx={{
-                        borderColor: "#2563eb",
-                        color: "#2563eb",
+                        borderColor: paymentSubmitted ? "#16a34a" : "#2563eb",
+                        backgroundColor: paymentSubmitted ? "#16a34a" : "transparent",
+                        color: paymentSubmitted ? "#ffffff" : "#2563eb",
                         fontSize: "12.5px",
                         fontWeight: 700,
                         textTransform: "none",
@@ -110,10 +122,13 @@ export default function ManagerActionsBar({ acknowledged, onAcknowledge }: Manag
                         px: 2.2,
                         py: 0.9,
                         whiteSpace: "nowrap",
-                        "&:hover": { backgroundColor: "#eff6ff", borderColor: "#1d4ed8" },
+                        "&:hover": {
+                            backgroundColor: paymentSubmitted ? "#15803d" : "#eff6ff",
+                            borderColor: paymentSubmitted ? "#15803d" : "#1d4ed8",
+                        },
                     }}
                 >
-                    Upload Payment Proof
+                    {paymentSubmitted ? "Payment Proof Uploaded" : "Upload Payment Proof"}
                 </Button>
             </Box>
         </Box>

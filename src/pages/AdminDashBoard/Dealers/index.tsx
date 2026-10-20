@@ -63,14 +63,14 @@ export default function Dealers() {
 		setWorkflowView({ type, dealerId, orderId: selectedOrderByDealer[dealerId] });
 	};
 
-	if (isLoading) return <div className="admin-layout"><Sidebar /><div className="admin-content"><Navbar adminName={loginState?.name ?? "Admin"} /><main className="admin-main dealers-main"><p>Loading dealers...</p></main></div></div>;
-	if (error) return <div className="admin-layout"><Sidebar /><div className="admin-content"><Navbar adminName={loginState?.name ?? "Admin"} /><main className="admin-main dealers-main"><p>{error}</p></main></div></div>;
+	if (isLoading) return <div className="admin-layout"><Sidebar /><div className="admin-content"><Navbar adminName={loginState?.name ?? "Amelia Martin"} role="Administrator" /><main className="admin-main dealers-main"><p>Loading dealers...</p></main></div></div>;
+	if (error) return <div className="admin-layout"><Sidebar /><div className="admin-content"><Navbar adminName={loginState?.name ?? "Amelia Martin"} role="Administrator" /><main className="admin-main dealers-main"><p>{error}</p></main></div></div>;
 
 	return (
 		<div className="admin-layout">
 			<Sidebar />
 			<div className="admin-content">
-				<Navbar adminName={loginState?.name ?? "Admin"} />
+				<Navbar adminName={loginState?.name ?? "Amelia Martin"} role="Administrator" />
 				<main className="admin-main dealers-main">
 					<div className="page-heading"><div><h1>Dealer Management</h1><p>Manage dealers and move their orders through the fleet workflow.</p></div></div>
 					<section className="dealer-summary-grid" aria-label="Dealer summary">

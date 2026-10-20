@@ -16,6 +16,24 @@
   margin-bottom: 20px;
 }
 
+.recent-requests-clear-filter {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  font-size: 0.775rem;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.recent-requests-clear-filter:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+  border-color: #94a3b8;
+}
+
 .recent-requests-title-group {
   display: flex;
   align-items: center;

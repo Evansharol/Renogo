@@ -26,7 +26,7 @@ type Vehicle = {
 export default function Admindb() {
     const location = useLocation();
     const loginState = location.state as LoginState | null;
-    const adminName = loginState?.name ?? "Admin";
+    const adminName = loginState?.name ?? "Amelia Martin";
     const [selectedModel, setSelectedModel] = useState("all");
     const [selectedVariant, setSelectedVariant] = useState("all");
     const [selectedColor, setSelectedColor] = useState("all");
@@ -128,7 +128,7 @@ export default function Admindb() {
             <Sidebar />
 
             <div className="admin-content">
-                <Navbar adminName={adminName} />
+                <Navbar adminName={adminName} role="Administrator" />
                 <main className="catalog-main">
                     <header className="catalog-heading">
                         <div>

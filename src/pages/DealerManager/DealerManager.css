@@ -87,6 +87,12 @@
   box-shadow: 0 12px 26px rgba(15, 23, 42, 0.12);
 }
 
+.manufacturer-kpi-card--active {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14), 0 8px 24px rgba(15, 23, 42, 0.1);
+  transform: translateY(-4px);
+}
+
 .manufacturer-kpi-icon,
 .dealermanager-kpi-icon {
   display: inline-flex;

@@ -4,9 +4,21 @@
 
 .sm-va-stats-bar {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
   margin-bottom: 24px;
+}
+
+@media (max-width: 1024px) {
+  .sm-va-stats-bar {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .sm-va-stats-bar {
+    grid-template-columns: 1fr;
+  }
 }
 
 .sm-va-stat-item {
@@ -18,6 +30,22 @@
   align-items: center;
   gap: 14px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.sm-va-stat-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  border-color: #cbd5e1;
+}
+
+.sm-va-stat-item.is-active {
+  border-color: #2563eb;
+  background: #f8fafc;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25), 0 6px 16px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
 }
 
 .sm-va-stat-icon {
@@ -39,6 +67,11 @@
 .sm-va-stat-icon--green {
   background: #f0fdf4;
   color: #16a34a;
+}
+
+.sm-va-stat-icon--purple {
+  background: #f3e8ff;
+  color: #9333ea;
 }
 
 .sm-va-stat-item strong {

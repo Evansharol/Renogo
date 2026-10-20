@@ -175,7 +175,7 @@ export default function ManufacturerStocks() {
   const location = useLocation();
   const stored = localStorage.getItem("loginState");
   const loginState = (location.state as LoginState | null) ?? (stored ? JSON.parse(stored) as LoginState : null);
-  const manufacturerName = loginState?.name ?? "Manufacturer";
+  const manufacturerName = loginState?.name ?? "Noah Wilson";
 
   const addVehicle = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -205,7 +205,7 @@ export default function ManufacturerStocks() {
     <div className="admin-layout">
       <Sidebar variant="manufacturer" />
       <div className="admin-content">
-        <Navbar adminName={manufacturerName} />
+        <Navbar adminName={manufacturerName} role="Manufacturer" />
         <main className="admin-main">
           <div className="stock-page-heading">
             <h1>Stocks</h1>

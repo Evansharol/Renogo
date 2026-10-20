@@ -78,7 +78,7 @@ export default function DealerPortal() {
   // Resolve dealer identity: route state → localStorage → defaults
   const stored     = localStorage.getItem("loginState");
   const loginState = (location.state as LoginState | null) ?? (stored ? JSON.parse(stored) as LoginState : null);
-  const dealerName     = loginState?.name     ?? "Demo Dealer";
+  const manufacturerName = loginState?.name ?? "Noah Wilson";
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [dashboardError, setDashboardError] = useState("");
 
@@ -100,7 +100,8 @@ export default function DealerPortal() {
 
       <div className="dealer-content">
         <Navbar
-          adminName={dealerName}
+          adminName={manufacturerName}
+          role="Manufacturer"
         />
 
         <main className="dealer-main-scroll">

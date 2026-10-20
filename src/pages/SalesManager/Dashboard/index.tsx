@@ -53,15 +53,8 @@ export default function SalesManagerDashboard() {
         .catch(() => ({ dealerRequests: [] })),
     ])
       .then(([loadedOrders, loadedDashboardData, allocationData]) => {
-        const allocatedOrderIds = new Set(
-          allocationData.dealerRequests
-            .filter((request) => request.manufacturerStatus !== "Not Allocated")
-            .map((request) => request.orderId)
-        );
         setAllocations(allocationData.dealerRequests || []);
-        // Set orders to manufacturer allocated requests (the user's original data)
-        const allocatedOrders = loadedOrders.filter((order) => allocatedOrderIds.has(order.id));
-        setOrders(allocatedOrders.length > 0 ? allocatedOrders : loadedOrders);
+        setOrders(loadedOrders);
         setDashboardData(loadedDashboardData);
       })
       .catch(() => setError("Unable to load sales manager dashboard."))
@@ -94,7 +87,19 @@ export default function SalesManagerDashboard() {
     closeReview();
   };
 
-  // The recent orders (previous table data)
+  const handleKpiCardClick = (id: string) => {
+    let filter = "All";
+    if (id === "pending_approvals" || id === "pending") filter = "Pending";
+    else if (id === "approved_requests" || id === "approved") filter = "Approved";
+    else if (id === "orders_confirmed" || id === "confirmed") filter = "Confirmed";
+    else if (id === "total_requests" || id === "total") filter = "All";
+
+    navigate("/salesmanager/verification-approval", {
+      state: { filter },
+    });
+  };
+
+  // Keep recent requests few (top 5 most recent orders)
   const recentOrders = useMemo(
     () =>
       [...orders]
@@ -106,7 +111,7 @@ export default function SalesManagerDashboard() {
     [orders]
   );
 
-  // Dynamic KPI stats based on real allocated orders
+  // Dynamic KPI stats based on real orders
   const statCardsData = useMemo(() => {
     if (!orders.length && dashboardData?.stats) return dashboardData.stats;
     const total = orders.length;
@@ -162,7 +167,7 @@ export default function SalesManagerDashboard() {
       {/* Main Content Layout */}
       <div className="supervisor-content sm-supervisor-content">
         {/* Preserved standard Navbar component */}
-        <Navbar adminName={salesManagerName} />
+        <Navbar adminName={salesManagerName} role="Sales Manager" />
 
         {/* Scrollable Dashboard Container */}
         <main className="supervisor-main supervisor-dashboard-main sm-main-container">
@@ -185,11 +190,7 @@ export default function SalesManagerDashboard() {
               {/* Top 4 KPI Stat Cards Component */}
               <SalesManagerStatCards
                 stats={statCardsData}
-                onCardClick={(id) => {
-                  if (id === "pending_approvals") {
-                    navigate("/salesmanager/verification-approval");
-                  }
-                }}
+                onCardClick={handleKpiCardClick}
               />
 
               {/* Middle Row: Bar Chart & Request Approval Gauge Components */}
@@ -198,10 +199,12 @@ export default function SalesManagerDashboard() {
                 <RequestApprovalGauge data={dashboardData?.approvalRate} />
               </div>
 
-              {/* Bottom Row: Restored Recent Requests Table & Quick Actions Components */}
+              {/* Bottom Row: Restored Recent Requests Table (kept few) & Quick Actions */}
               <div className="sm-bottom-grid">
                 <RecentDealerRequestsTable
                   orders={recentOrders}
+                  title="Recent Requests"
+                  subTitle="Latest orders allocated by the manufacturer."
                   onVerify={openReview}
                   onViewAllClick={() => navigate("/salesmanager/verification-approval")}
                 />

@@ -22,7 +22,18 @@ const commitmentPillStyle = {
     borderRadius: "8px",
 };
 
-export default function RequestSummarySection() {
+import type { DmRequest } from "../../../types";
+
+type RequestSummarySectionProps = {
+    request?: DmRequest | null;
+};
+
+export default function RequestSummarySection({ request }: RequestSummarySectionProps) {
+    const baseDate = request?.orderDate ? new Date(request.orderDate) : new Date();
+    const validDate = isNaN(baseDate.getTime()) ? new Date() : baseDate;
+    const deliveryDate = new Date(validDate.getTime() + 45 * 24 * 60 * 60 * 1000);
+    const deliveryDateStr = deliveryDate.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+
     const vehicleRows = [
         { model: "Kiger", variant: "RXE", req: 20, avail: 15, prod: 5 },
         { model: "Triber", variant: "RXZ", req: 15, avail: 10, prod: 5 },
@@ -91,7 +102,7 @@ export default function RequestSummarySection() {
                     <CalendarTodayOutlinedIcon sx={{ fontSize: 16, color: "#2563eb", flexShrink: 0 }} />
                     <Box>
                         <Typography sx={{ fontSize: "10.5px", fontWeight: 600, color: "#64748b" }}>Delivery Commitment</Typography>
-                        <Typography sx={{ fontSize: "11.5px", fontWeight: 700, color: "#0f172a" }}>30 Jun 2025</Typography>
+                        <Typography sx={{ fontSize: "11.5px", fontWeight: 700, color: "#0f172a" }}>{deliveryDateStr}</Typography>
                     </Box>
                 </Box>
             </Box>

@@ -5,6 +5,7 @@ import FilterListIcon from "@mui/icons-material/FilterList";
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
+import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
 import Navbar from "../../../components/Navbar";
 import Sidebar from "../../../components/Sidebar";
 import SalesManagerReviewModal from "../Dashboard/SalesManagerReviewModal";
@@ -51,17 +52,27 @@ export default function SalesManagerVerificationApproval() {
       }),
     ])
       .then(([loadedOrders, allocationData]) => {
-        const allocatedOrderIds = new Set(
-          allocationData.dealerRequests
-            .filter((req) => req.manufacturerStatus !== "Not Allocated")
-            .map((req) => req.orderId)
-        );
-        setAllocations(allocationData.dealerRequests);
-        setOrders(loadedOrders.filter((order) => allocatedOrderIds.has(order.id)));
+        setAllocations(allocationData.dealerRequests || []);
+        setOrders(loadedOrders);
       })
       .catch(() => setError("Unable to load requests for verification."))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    const stateFilter = (location.state as { filter?: string } | null)?.filter;
+    if (stateFilter) {
+      if (stateFilter === "Pending" || stateFilter === "pending_approvals" || stateFilter === "pending") {
+        setStatusFilter("Pending");
+      } else if (stateFilter === "Approved" || stateFilter === "approved_requests" || stateFilter === "approved") {
+        setStatusFilter("Approved");
+      } else if (stateFilter === "Confirmed" || stateFilter === "orders_confirmed" || stateFilter === "confirmed") {
+        setStatusFilter("Confirmed");
+      } else {
+        setStatusFilter("All");
+      }
+    }
+  }, [location.state]);
 
   const openReview = async (order: Order) => {
     setSelectedOrder(order);
@@ -95,6 +106,7 @@ export default function SalesManagerVerificationApproval() {
       total: orders.length,
       pending: orders.filter((o) => ["Pending", "Pending Approval"].includes(o.status)).length,
       approved: orders.filter((o) => o.status === "Approved" || o.status.includes("Approved")).length,
+      confirmed: orders.filter((o) => ["In Production", "Completed"].includes(o.status)).length,
     };
   }, [orders]);
 
@@ -111,7 +123,7 @@ export default function SalesManagerVerificationApproval() {
         statusFilter === "All" ||
         (statusFilter === "Pending" && ["Pending", "Pending Approval"].includes(order.status)) ||
         (statusFilter === "Approved" && (order.status === "Approved" || order.status.includes("Approved"))) ||
-        (statusFilter === "Other" && !["Pending", "Pending Approval", "Approved"].includes(order.status) && !order.status.includes("Approved"));
+        (statusFilter === "Confirmed" && ["In Production", "Completed"].includes(order.status));
 
       return matchesSearch && matchesStatus;
     });
@@ -130,7 +142,7 @@ export default function SalesManagerVerificationApproval() {
     <div className="supervisor-layout">
       <Sidebar variant="salesmanager" />
       <div className="supervisor-content sm-supervisor-content">
-        <Navbar adminName={salesManagerName} />
+        <Navbar adminName={salesManagerName} role="Sales Manager" />
 
         <main className="supervisor-main sm-main-container">
           {/* Header */}
@@ -144,27 +156,58 @@ export default function SalesManagerVerificationApproval() {
             </div>
           </div>
 
-          {/* Quick Stats Banner */}
+          {/* Quick Stats Banner - Clickable to filter table */}
           <div className="sm-va-stats-bar">
-            <div className="sm-va-stat-item">
+            <div
+              className={`sm-va-stat-item ${statusFilter === "All" ? "is-active" : ""}`}
+              onClick={() => setStatusFilter("All")}
+              role="button"
+              tabIndex={0}
+              title="Click to view all requests"
+            >
               <AssignmentTurnedInOutlinedIcon className="sm-va-stat-icon sm-va-stat-icon--blue" />
               <div>
                 <strong>{stats.total}</strong>
-                <span>Total Allocated Requests</span>
+                <span>Total Fleet Requests</span>
               </div>
             </div>
-            <div className="sm-va-stat-item">
+            <div
+              className={`sm-va-stat-item ${statusFilter === "Pending" ? "is-active" : ""}`}
+              onClick={() => setStatusFilter((prev) => (prev === "Pending" ? "All" : "Pending"))}
+              role="button"
+              tabIndex={0}
+              title="Click to filter pending approvals"
+            >
               <HourglassEmptyIcon className="sm-va-stat-icon sm-va-stat-icon--yellow" />
               <div>
                 <strong>{stats.pending}</strong>
-                <span>Awaiting Verification</span>
+                <span>Pending Approvals</span>
               </div>
             </div>
-            <div className="sm-va-stat-item">
+            <div
+              className={`sm-va-stat-item ${statusFilter === "Approved" ? "is-active" : ""}`}
+              onClick={() => setStatusFilter((prev) => (prev === "Approved" ? "All" : "Approved"))}
+              role="button"
+              tabIndex={0}
+              title="Click to filter approved requests"
+            >
               <CheckCircleOutlinedIcon className="sm-va-stat-icon sm-va-stat-icon--green" />
               <div>
                 <strong>{stats.approved}</strong>
                 <span>Approved Requests</span>
+              </div>
+            </div>
+            <div
+              className={`sm-va-stat-item ${statusFilter === "Confirmed" ? "is-active" : ""}`}
+              onClick={() => setStatusFilter((prev) => (prev === "Confirmed" ? "All" : "Confirmed"))}
+              role="button"
+              tabIndex={0}
+              title="Click to filter orders confirmed"
+            >
+              <LocalShippingOutlinedIcon className="sm-va-stat-icon sm-va-stat-icon--purple" />
+              <div>
+                <strong>{stats.confirmed}</strong>
+                <span>Orders Confirmed</span>
               </div>
             </div>
           </div>
@@ -188,7 +231,7 @@ export default function SalesManagerVerificationApproval() {
                 className={`sm-va-tab ${statusFilter === "All" ? "sm-va-tab--active" : ""}`}
                 onClick={() => setStatusFilter("All")}
               >
-                All ({orders.length})
+                All ({stats.total})
               </button>
               <button
                 type="button"
@@ -203,6 +246,13 @@ export default function SalesManagerVerificationApproval() {
                 onClick={() => setStatusFilter("Approved")}
               >
                 Approved ({stats.approved})
+              </button>
+              <button
+                type="button"
+                className={`sm-va-tab ${statusFilter === "Confirmed" ? "sm-va-tab--active" : ""}`}
+                onClick={() => setStatusFilter("Confirmed")}
+              >
+                Confirmed ({stats.confirmed})
               </button>
             </div>
           </div>
