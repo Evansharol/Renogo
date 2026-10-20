@@ -1,8 +1,8 @@
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import LogoutIcon from '@mui/icons-material/Logout';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useNavigate } from 'react-router-dom';
+import RecentRequestsNotification from '../RecentRequestsNotification';
 
 import "./Navbar.css";
 
@@ -19,7 +19,6 @@ export default function Navbar({
   variant = "admin",
   dealerLocation = "Chennai, TN",
   dealerAvatar = "DK",
-  notificationsCount = 3,
 }: NavbarProps) {
   const navigate = useNavigate();
 
@@ -31,18 +30,7 @@ export default function Navbar({
   return (
     <nav className={`navbar ${variant === "dealer" ? "dealer-navbar-style" : ""}`}>
       <div className="navbar-actions">
-        <button
-          type="button"
-          className="notification-button"
-          aria-label="View notifications"
-        >
-          <NotificationsNoneIcon />
-          {notificationsCount > 0 && (
-            <span className="notification-badge" aria-label={`${notificationsCount} unread notifications`}>
-              {notificationsCount}
-            </span>
-          )}
-        </button>
+        <RecentRequestsNotification showLabel={true} customLabel="Recent Requests" />
 
         {variant === "dealer" ? (
           <div className="dealer-profile-pill">

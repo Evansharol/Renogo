@@ -9,6 +9,7 @@ import ApprovalProduction from "./pages/AdminDashBoard/Dealers/ApprovalProductio
 import DealerPortal from "./pages/Dealer";
 import DashboardHome from "./pages/Dealer/DashBoard";
 import DealerVehicleCatalog from "./pages/Dealer/VehicleCatalog";
+import ReviewOrder from "./pages/Dealer/ReviewOrder";
 import MyRequests from "./pages/Dealer/MyRequests";
 import DealerProfile from "./pages/Dealer/Profile";
 import ManufacturerDashboard from "./pages/Manufacturer/DashBoard";
@@ -19,26 +20,28 @@ import SupervisorDashboard from "./pages/Supervisor/Dashboard";
 import SalesManagerDashboard from "./pages/SalesManager/Dashboard";
 import SalesManagerVerificationApproval from "./pages/SalesManager/Verification&Approval";
 import DealerManagerDashboard from "./pages/DealerManager/DashBoard";
+import ApprovalRequests from "./pages/DealerManager/Approvals";
 
 function AnimatedRoutes() {
-	const location = useLocation();
+  const location = useLocation();
 
-	return <div className="route-transition" key={`${location.pathname}${location.search}`}>
-      <Routes location={location}>
-        <Route path="/" element={<Login />} />
-        <Route path="/admindb" element={<Admindb />} />
-        <Route path="/usermg" element={<Usermg />} />
-        <Route path="/dealers" element={<Dealers />} />
-        <Route path="/vehiclecatalog" element={<VehicleCatalog />} />
-        <Route path="/manufacturer/dashboard" element={<ManufacturerDashboard />} />
-        <Route path="/manufacturer/view-requests" element={<ManufacturerViewRequests />} />
-        <Route path="/manufacturer/stocks" element={<ManufacturerStocks />} />
-        <Route path="/dealers/details/:dealerId" element={<DealerDetails />} />
-        <Route path="/dealers/approval/:dealerId" element={<ApprovalProduction />} />
-        <Route path="/dealer" element={<DealerPortal />}>
+  return <div className="route-transition" key={`${location.pathname}${location.search}`}>
+    <Routes location={location}>
+      <Route path="/" element={<Login />} />
+      <Route path="/admindb" element={<Admindb />} />
+      <Route path="/usermg" element={<Usermg />} />
+      <Route path="/dealers" element={<Dealers />} />
+      <Route path="/vehiclecatalog" element={<VehicleCatalog />} />
+      <Route path="/manufacturer/dashboard" element={<ManufacturerDashboard />} />
+      <Route path="/manufacturer/view-requests" element={<ManufacturerViewRequests />} />
+      <Route path="/manufacturer/stocks" element={<ManufacturerStocks />} />
+      <Route path="/dealers/details/:dealerId" element={<DealerDetails />} />
+      <Route path="/dealers/approval/:dealerId" element={<ApprovalProduction />} />
+      <Route path="/dealer" element={<DealerPortal />}>
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<DashboardHome />} />
         <Route path="catalog" element={<DealerVehicleCatalog />} />
+        <Route path="review-order" element={<ReviewOrder />} />
         <Route path="my-requests" element={<MyRequests />} />
         <Route path="profile" element={<DealerProfile />} />
         </Route>

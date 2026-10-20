@@ -9,6 +9,7 @@ import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Uform, { type User } from "../../../components/Form/UserForm";
+import { getUsers, createUser, updateUser, deleteUser } from "../../../api/users";
 import "./UserManagement.css";
 
 type LoginState = { name?: string };
@@ -45,6 +46,19 @@ export default function Usermg() {
 	const inactiveUsers = users.length - activeUsers;
 
 	useEffect(() => {
+		getUsers()
+			.then((apiUsers) => {
+				if (Array.isArray(apiUsers) && apiUsers.length > 0) {
+					setUsers(apiUsers);
+					localStorage.setItem("managed-users", JSON.stringify(apiUsers));
+				}
+			})
+			.catch(() => {
+				// Fallback to localStorage / initialUsers when json-server is not running
+			});
+	}, []);
+
+	useEffect(() => {
 		localStorage.setItem("user-search", searchTerm);
 	}, [searchTerm]);
 
@@ -52,10 +66,27 @@ export default function Usermg() {
 		localStorage.setItem("managed-users", JSON.stringify(users));
 	}, [users]);
 
-	const handleSaveUser = (user: User) => {
-		setUsers((currentUsers) => editingUser
-			? currentUsers.map((currentUser) => currentUser.id === editingUser.id ? user : currentUser)
-			: [...currentUsers, user]);
+	const handleSaveUser = async (user: User) => {
+		const userToSave: User = {
+			...user,
+			id: user.id || `USR-${Math.floor(1000 + Math.random() * 9000)}`,
+		};
+
+		if (editingUser) {
+			try {
+				const saved = await updateUser(userToSave);
+				setUsers((currentUsers) => currentUsers.map((currentUser) => (currentUser.id === editingUser.id ? saved : currentUser)));
+			} catch {
+				setUsers((currentUsers) => currentUsers.map((currentUser) => (currentUser.id === editingUser.id ? userToSave : currentUser)));
+			}
+		} else {
+			try {
+				const saved = await createUser(userToSave);
+				setUsers((currentUsers) => [...currentUsers, saved]);
+			} catch {
+				setUsers((currentUsers) => [...currentUsers, userToSave]);
+			}
+		}
 		setEditingUser(null);
 		setIsUserFormOpen(false);
 	};
@@ -65,8 +96,13 @@ export default function Usermg() {
 		setIsUserFormOpen(true);
 	};
 
-	const handleDeleteUser = (user: User) => {
+	const handleDeleteUser = async (user: User) => {
 		if (window.confirm(`Delete ${user.name}?`)) {
+			try {
+				await deleteUser(user.id);
+			} catch {
+				// Continue with local removal if API call fails
+			}
 			setUsers((currentUsers) => currentUsers.filter((currentUser) => currentUser.id !== user.id));
 		}
 	};

@@ -22,7 +22,7 @@ export async function getOrdersByDealerId(dealerId: string): Promise<Order[]> {
 	return (await response.json()) as Order[];
 }
 
-export async function createOrder(order: Omit<Order, "id">): Promise<Order> {
+export async function createOrder(order: Omit<Order, "id"> | Order): Promise<Order> {
 	const response = await fetch(`${API_URL}/orders`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
@@ -35,3 +35,17 @@ export async function createOrder(order: Omit<Order, "id">): Promise<Order> {
 
 	return (await response.json()) as Order;
 }
+
+export async function updateOrder(order: Order): Promise<Order> {
+	const response = await fetch(`${API_URL}/orders/${encodeURIComponent(order.id)}`, {
+		method: "PUT",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(order),
+	});
+
+	if (!response.ok) {
+		throw new Error("Failed to update order");
+	}
+
+	return (await response.json()) as Order;
+}

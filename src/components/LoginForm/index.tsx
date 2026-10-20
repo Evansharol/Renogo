@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getUsers } from "../../api/users";
 import "./LoginForm.css";
 import Alert from '@mui/material/Alert';
 
@@ -27,7 +28,7 @@ const DUMMY_USERS: Record<LoginRole, DummyUser> = {
   supervisor: {
     userId: "S001",
     name: "supervisor",
-    password: "s123",
+    password: "sp123",
   },
   salesmanager: {
     userId: "SM001",
@@ -58,6 +59,16 @@ export default function UserLoginForm() {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    getUsers()
+      .then((apiUsers) => {
+        if (Array.isArray(apiUsers) && apiUsers.length > 0) {
+          localStorage.setItem("managed-users", JSON.stringify(apiUsers));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

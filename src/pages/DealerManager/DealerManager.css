@@ -1,0 +1,172 @@
+/* =========================================================
+   DEALER MANAGER PORTAL — Dedicated Styles
+   ========================================================= */
+
+/* ── Root Layout ── */
+.dealer-layout,
+.dealermanager-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #f8fafc;
+}
+
+.dealer-content,
+.dealermanager-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.dealer-main-scroll,
+.dealermanager-main-scroll {
+  flex: 1;
+  height: calc(100vh - 65px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 24px 28px 48px;
+  background-color: #f8fafc;
+}
+
+/* ── Page Title Row ── */
+.dealer-page-title-row,
+.dealermanager-page-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.dealer-page-title-row h1,
+.dealermanager-page-title-row h1,
+.dealer-main-scroll h1,
+.dealermanager-main-scroll h1 {
+  margin: 0 0 16px;
+  font-size: 24px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.dealer-page-title-row p,
+.dealermanager-page-title-row p {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* ── KPI Grid ── */
+.manufacturer-kpi-grid,
+.dealermanager-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+/* ── KPI Cards ── */
+.manufacturer-kpi-card,
+.dealermanager-kpi-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  min-width: 0;
+  padding: 22px;
+  background: #ffffff;
+  border: 1px solid #eef1f5;
+  border-radius: 14px;
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.07);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.manufacturer-kpi-card:hover,
+.dealermanager-kpi-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.12);
+}
+
+.manufacturer-kpi-icon,
+.dealermanager-kpi-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 46px;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+}
+
+.manufacturer-kpi-icon svg,
+.dealermanager-kpi-icon svg {
+  font-size: 24px;
+}
+
+.manufacturer-kpi-label,
+.dealermanager-kpi-label {
+  margin: 0 0 8px;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.manufacturer-kpi-value,
+.dealermanager-kpi-value {
+  margin: 0;
+  color: #111827;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.manufacturer-kpi-subtitle,
+.dealermanager-kpi-subtitle {
+  margin: 8px 0 0;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.manufacturer-kpi-card--blue .manufacturer-kpi-icon,
+.dealermanager-kpi-card--blue .dealermanager-kpi-icon {
+  background: #eaf2ff;
+  color: #2563eb;
+}
+
+.manufacturer-kpi-card--orange .manufacturer-kpi-icon,
+.dealermanager-kpi-card--orange .dealermanager-kpi-icon {
+  background: #fff4e6;
+  color: #ea8a17;
+}
+
+.manufacturer-kpi-card--green .manufacturer-kpi-icon,
+.dealermanager-kpi-card--green .dealermanager-kpi-icon {
+  background: #eaf9f0;
+  color: #16a34a;
+}
+
+.manufacturer-kpi-card--purple .manufacturer-kpi-icon,
+.dealermanager-kpi-card--purple .dealermanager-kpi-icon {
+  background: #f3edff;
+  color: #7c3aed;
+}
+
+/* ── Responsive breakpoints ── */
+@media (max-width: 1024px) {
+  .manufacturer-kpi-grid,
+  .dealermanager-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .manufacturer-kpi-grid,
+  .dealermanager-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+  .dealer-main-scroll,
+  .dealermanager-main-scroll {
+    padding: 16px;
+  }
+}
