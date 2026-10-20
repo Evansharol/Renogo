@@ -133,6 +133,10 @@ export default function Sidebar({ variant = "admin" }: SidebarProps) {
                 <DashboardIcon />
                 <span>Dashboard</span>
               </NavLink>
+              <NavLink className="sidebar-link" to="/salesmanager/verification-approval" title="Verification & Approval">
+                <AssignmentOutlinedIcon />
+                <span>Verification & Approval</span>
+              </NavLink>
             </>
           ) : variant === "dealermanager" ? (
             <>

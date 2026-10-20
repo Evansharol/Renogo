@@ -1,0 +1,243 @@
+.sm-va-header {
+  margin-bottom: 24px;
+}
+
+.sm-va-stats-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.sm-va-stat-item {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.sm-va-stat-icon {
+  font-size: 28px !important;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.sm-va-stat-icon--blue {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.sm-va-stat-icon--yellow {
+  background: #fefce8;
+  color: #ca8a04;
+}
+
+.sm-va-stat-icon--green {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.sm-va-stat-item strong {
+  display: block;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.sm-va-stat-item span {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.sm-va-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.sm-va-search {
+  position: relative;
+  flex: 1;
+  max-width: 440px;
+}
+
+.sm-va-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 18px !important;
+}
+
+.sm-va-search input {
+  width: 100%;
+  padding: 10px 14px 10px 38px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  background: #ffffff;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.sm-va-search input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.sm-va-filter-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sm-va-filter-icon {
+  color: #94a3b8;
+  font-size: 18px !important;
+}
+
+.sm-va-tab {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sm-va-tab:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.sm-va-tab--active {
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border-color: #0f172a !important;
+}
+
+.sm-va-card {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+}
+
+.sm-va-table-wrapper {
+  overflow-x: auto;
+}
+
+.sm-va-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.sm-va-table th {
+  padding: 14px 18px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.sm-va-table td {
+  padding: 16px 18px;
+  font-size: 0.875rem;
+  color: #334155;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.sm-va-table tr:last-child td {
+  border-bottom: none;
+}
+
+.sm-va-table tr:hover td {
+  background: #fafafa;
+}
+
+.sm-va-alloc-tag {
+  display: inline-block;
+  padding: 3px 8px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+.sm-va-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.sm-va-badge--pending {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.sm-va-badge--approved {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.sm-va-badge--declined {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.sm-va-badge--completed {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.sm-va-badge--default {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.sm-va-verify-btn {
+  background: #ffc72c;
+  color: #0f172a;
+  border: 1px solid #e5b026;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 0.825rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sm-va-verify-btn:hover {
+  background: #e5b026;
+  transform: translateY(-1px);
+}
+
+.sm-va-empty {
+  text-align: center;
+  padding: 40px !important;
+  color: #94a3b8;
+  font-size: 0.95rem;
+}
