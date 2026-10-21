@@ -214,7 +214,7 @@ export default function RequestsTablePanel({
                                         }}
                                     >
                                         <TableCell sx={{ fontWeight: 700, color: "#2563eb", fontSize: "12.5px", whiteSpace: "nowrap" }}>
-                                            {req.id}
+                                            {req.requestNumber ?? req.id}
                                         </TableCell>
                                         <TableCell sx={{ color: "#374151", fontSize: "12.5px", fontWeight: 600, whiteSpace: "nowrap" }}>
                                             {req.dealerId || "DLR-10024"}

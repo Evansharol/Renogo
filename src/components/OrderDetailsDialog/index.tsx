@@ -20,7 +20,7 @@ type OrderDetailsDialogProps = {
  * Workflow stages in exact sequential order:
  * 1. Dealer Request
  * 2. Manufacturer
- * 3. Supervisor
+ * 3. Finance Head
  * 4. Sales Manager
  * 5. Dealer Manager
  * 6. Delivered
@@ -39,9 +39,9 @@ const WORKFLOW_STEPS = [
 		desc: "Checking vehicle stock availability and allocation.",
 	},
 	{
-		id: "supervisor",
-		title: "Supervisor",
-		role: "Supervisor",
+		id: "finance-head",
+		title: "Finance Head",
+		role: "Finance Head",
 		desc: "Preparing financial quotation and pricing review.",
 	},
 	{
@@ -70,7 +70,7 @@ function getActiveStep(status: string): { index: number; isRejected: boolean } {
 	if (s.includes("deliver")) return { index: 5, isRejected: false };
 	if (s.includes("dealer manager")) return { index: 4, isRejected: false };
 	if (s.includes("sales manager") || s.includes("approv")) return { index: 3, isRejected: false };
-	if (s.includes("supervisor") || s.includes("quotation")) return { index: 2, isRejected: false };
+	if (s.includes("financehead") || s.includes("quotation")) return { index: 2, isRejected: false };
 	if (s.includes("manufacturer") || s.includes("stock") || s.includes("under review")) return { index: 1, isRejected: false };
 	return { index: 0, isRejected: false };
 }
@@ -120,7 +120,7 @@ export default function OrderDetailsDialog({ order, onClose }: OrderDetailsDialo
 								{order.status}
 							</span>
 						</div>
-						<h2 id="order-dialog-title">{order.id}</h2>
+						<h2 id="order-dialog-title">{order.requestNumber ?? order.id}</h2>
 					</div>
 					<IconButton aria-label="Close order details" onClick={onClose} size="small">
 						<CloseIcon fontSize="small" />
@@ -359,7 +359,7 @@ export default function OrderDetailsDialog({ order, onClose }: OrderDetailsDialo
 					<div>
 						<strong>Department Lifecycle Protocol:</strong>
 						<p>
-							Orders advance through: Dealer Request → Manufacturer (stock check) → Supervisor (quotation) → Sales Manager (approval) → Dealer Manager (dispatch) → Delivered.
+							Orders advance through: Dealer Request → Manufacturer (stock check) → Finance Head (quotation) → Sales Manager (approval) → Dealer Manager (dispatch) → Delivered.
 						</p>
 					</div>
 				</aside>

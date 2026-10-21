@@ -34,12 +34,33 @@ export default function DealerDetails({ dealerId: dealerIdProp, orderId, isModal
 						<span className="workflow-section-label">Order lifecycle</span>
 						<h2>Order Overview</h2></div></div>
 						<div className="info-grid"><div><span>Order ID</span>
-						<strong>{order.id}</strong></div><div><span>Vehicle Model</span>
+						<strong>{order.requestNumber ?? order.id}</strong></div><div><span>Vehicle Model</span>
 						<strong>{order.vehicleModel}</strong></div><div><span>Requested Quantity</span>
 						<strong>{order.quantity} units</strong></div><div><span>Order Status</span>
-						<strong>{order.status}</strong></div><div><span>Expected Delivery</span>
-						<strong>25 Sep 2026</strong></div><div><span>Total Dealer Orders</span>
+						<strong>{order.status}</strong></div><div><span>Current Owner</span>
+						<strong>{order.currentOwner ?? "Admin"}</strong></div><div><span>Expected Delivery</span>
+						<strong>{order.etaDelivery ?? "—"}</strong></div><div><span>Payment Proof</span>
+						<strong>{order.paymentProof?.fileName ?? "Not submitted"}</strong></div><div><span>Total Dealer Orders</span>
 						<strong>{dealer.orders}</strong></div></div></section>
+				{order.workflowHistory && order.workflowHistory.length > 0 && (
+					<section className="workflow-card">
+						<div className="workflow-card-heading"><div>
+							<span className="workflow-section-label">Audit trail</span>
+							<h2>Workflow History</h2>
+						</div></div>
+						<table className="history-table" style={{ width: "100%", marginTop: "12px" }}>
+							<thead><tr><th>Status</th><th>Owner</th><th>Timestamp</th><th>Remarks</th></tr></thead>
+							<tbody>{order.workflowHistory.map((entry, index) => (
+								<tr key={`${entry.timestamp}-${index}`}>
+									<td><strong>{entry.status}</strong></td>
+									<td>{entry.owner}</td>
+									<td>{new Date(entry.timestamp).toLocaleString()}</td>
+									<td>{entry.remarks ?? "—"}</td>
+								</tr>
+							))}</tbody>
+						</table>
+					</section>
+				)}
 				{order.items && order.items.length > 0 && (
 					<section className="workflow-card">
 						<div className="workflow-card-heading">

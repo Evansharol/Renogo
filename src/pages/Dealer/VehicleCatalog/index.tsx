@@ -74,7 +74,7 @@ type Props = {
 };
 
 export default function DealerVehicleCatalog({ onOrderRequest }: Props) {
-  const { openRequest } = useOutletContext<DealerOutletContext>();
+  const { openRequest, dealerId, onOrderSubmitted } = useOutletContext<DealerOutletContext>();
   const requestOrder = onOrderRequest ?? openRequest;
 
   const { addToCart, totalModels } = useFleetCart();
@@ -319,7 +319,12 @@ export default function DealerVehicleCatalog({ onOrderRequest }: Props) {
       </div>
 
       {/* Cart Drawer */}
-      <FleetCartDrawer open={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      <FleetCartDrawer
+        open={isCartOpen}
+        dealerId={dealerId}
+        onSubmitted={onOrderSubmitted}
+        onClose={() => setIsCartOpen(false)}
+      />
 
       {showAddedSnackbar && (
         <div className="dealer-cart-snackbar" role="status">

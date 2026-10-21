@@ -8,6 +8,7 @@ export type User = {
 	role: string;
 	password: string;
 	phone?: string;
+	location?: string;
 	department?: string;
 	permissions?: string[];
 	status: "Active" | "Inactive";
@@ -27,6 +28,7 @@ type UserFormState = {
 	role: string;
 	password: string;
 	phone: string;
+	location: string;
 	department: string;
 	permissions: string[];
 	status: User["status"];
@@ -43,6 +45,7 @@ const getInitialForm = (user?: User): UserFormState => {
 		role: user?.role ?? "",
 		password: user?.password ?? "",
 		phone: user?.phone ?? "",
+		location: user?.location ?? "",
 		department: user?.department ?? "",
 		permissions: user?.permissions ?? [],
 		status: user?.status ?? "Active",
@@ -51,8 +54,8 @@ const getInitialForm = (user?: User): UserFormState => {
 
 const permissionGroups = [
 	{ title: "Administrator", items: ["View Fleet Requests", "Assign Orders to Teams", "Manage Users & Roles", "Manage Vehicle Data", "Monitor Order Progress"] },
-	{ title: "Manufacturer", items: ["View Dealer Requests", "Check Vehicle Availability", "Allocate Orders for Production", "Send Allocated Orders to Supervisor"] },
-	{ title: "Supervisor", items: ["View Allocated Orders", "Review Dealer Requests", "Prepare Pricing & Quotations", "Edit Bank Details", "Generate Quotation PDF", "Send Quotations to Sales Manager"] },
+	{ title: "Manufacturer", items: ["View Dealer Requests", "Check Vehicle Availability", "Allocate Orders for Production", "Send Allocated Orders to Finance Head"] },
+	{ title: "Finance Head", items: ["View Allocated Orders", "Review Dealer Requests", "Prepare Pricing & Quotations", "Edit Bank Details", "Generate Quotation PDF", "Send Quotations to Sales Manager"] },
 	{ title: "Dealer", items: ["Create Fleet Orders", "View & Edit Own Orders", "Submit & Track Orders", "Download Quotations & Invoices"] },
 ];
 
@@ -72,6 +75,7 @@ export default function Uform({ onSave, onClose, user }: UserFormProps) {
 			role: form.role,
 			password: form.password,
 			phone: form.phone,
+			location: form.location,
 			department: form.department,
 			permissions: form.permissions,
 			status: form.status,
@@ -98,13 +102,16 @@ export default function Uform({ onSave, onClose, user }: UserFormProps) {
 				<section className="user-drawer-section">
 					<h3>Basic Information</h3>
 					<div className="user-drawer-grid">
+						<label>User ID<input required value={form.id} placeholder="e.g. D004 or USR-1005" onChange={(event) => updateField("id", event.target.value.trim().toUpperCase())} /></label>
 						<label>Full Name<input required value={`${form.firstName} ${form.lastName}`.trim()} placeholder="Enter full name" onChange={(event) => {
 							const [firstName = "", ...lastNameParts] = event.target.value.split(" ");
 							setForm((currentForm) => ({ ...currentForm, firstName, lastName: lastNameParts.join(" ") }));
 						}} /></label>
 						<label>Email Address<input required type="email" value={form.email} placeholder="name@company.com" onChange={(event) => updateField("email", event.target.value)} /></label>
 						<label>Phone Number<input value={form.phone} placeholder="Enter phone number" onChange={(event) => updateField("phone", event.target.value)} /></label>
+						<label>Location<input value={form.location} placeholder="City, state or region" onChange={(event) => updateField("location", event.target.value)} /></label>
 						<label>Initial Password<input required type="password" value={form.password} placeholder="Set initial password" onChange={(event) => updateField("password", event.target.value)} /></label>
+						
 					</div>
 				</section>
 
@@ -117,7 +124,7 @@ export default function Uform({ onSave, onClose, user }: UserFormProps) {
 							<option>Manufacturer</option>
 							<option>Sales Manager</option>
 							<option>Dealer</option>
-							<option>Finance Manager</option>
+							<option>Finance Head</option>
 							<option>Dealer Manager</option>
 
 						</select></label>

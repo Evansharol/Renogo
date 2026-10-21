@@ -68,7 +68,7 @@
   font-size: 0.775rem;
 }
 
-.supervisor-review-link {
+.financehead-review-link {
   border: 0;
   background: transparent;
   color: #2563eb;
@@ -80,7 +80,7 @@
   transition: all 0.2s ease;
 }
 
-.supervisor-review-link:hover {
+.financehead-review-link:hover {
   background: #eff6ff;
   color: #1d4ed8;
 }

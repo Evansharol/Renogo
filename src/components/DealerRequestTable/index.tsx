@@ -7,11 +7,13 @@ import DealerRequestReviewModal from "../../pages/Manufacturer/DealerRequestRevi
 
 export type DealerRequest = {
   requestId: string;
+  requestNumber?: string;
   dealerId: string;
   dealerName: string;
   model: string;
   color: string;
   quantity: number;
+  items?: Array<{ model: string; variant: string; color?: string; quantity: number }>;
   requestDate: string;
   stockBreakdown: Record<string, number>;
   priority: "High" | "Medium";
@@ -23,9 +25,10 @@ const PAGE_SIZE = 3;
 
 type DealerRequestTableProps = {
   requests: DealerRequest[];
+  onRequestAllocated?: (request: DealerRequest) => void;
 };
 
-export default function DealerRequestTable({ requests }: DealerRequestTableProps) {
+export default function DealerRequestTable({ requests, onRequestAllocated }: DealerRequestTableProps) {
   const [search, setSearch] = useState("");
   const [selectedModel, setSelectedModel] = useState("All Models");
   const [page, setPage] = useState(1);
@@ -34,9 +37,9 @@ export default function DealerRequestTable({ requests }: DealerRequestTableProps
   const filteredRequests = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
     return requests.filter((request) => {
-      const matchesModel = selectedModel === "All Models" || request.model === selectedModel;
+      const matchesModel = selectedModel === "All Models" || request.model.includes(selectedModel);
       const matchesSearch = !normalizedSearch
-        || [request.dealerId, request.dealerName, request.model, request.color]
+        || [request.requestNumber ?? "", request.requestId, request.dealerId, request.dealerName, request.model, request.color]
           .some((value) => value.toLowerCase().includes(normalizedSearch));
       return matchesModel && matchesSearch;
     });
@@ -105,16 +108,22 @@ export default function DealerRequestTable({ requests }: DealerRequestTableProps
           </thead>
           <tbody>
             {visibleRequests.map((request) => (
-              <tr key={request.dealerId}>
+              <tr key={request.requestId}>
                 <td className="manufacturer-dealer-id">{request.dealerId}</td>
                 <td className="manufacturer-dealer-name">{request.dealerName}</td>
                 <td>
-                  <span className="manufacturer-model-name">{request.model}</span>
+                  {request.items?.length ? request.items.map((item) => (
+                    <span className="manufacturer-model-name" key={`${item.model}-${item.variant}-${item.color ?? ""}`}>
+                      {item.model} - {item.variant} ({item.quantity})
+                    </span>
+                  )) : <span className="manufacturer-model-name">{request.model}</span>}
                   <span className={`manufacturer-request-status manufacturer-request-status--${request.stockStatus}`}>
                     {request.stockStatus === "available" ? "In Stock" : "Low Stock"}
                   </span>
                 </td>
-                <td>{request.color}</td>
+                <td>{request.items?.length ? request.items.map((item) => (
+                  <span key={`${item.model}-${item.variant}-${item.color ?? ""}`}>{item.color ?? "Any"}</span>
+                )) : request.color}</td>
                 <td>{request.quantity}</td>
                 <td>
                   <span className={`manufacturer-priority-badge manufacturer-priority-badge--${request.priority.toLowerCase()}`}>
@@ -170,6 +179,10 @@ export default function DealerRequestTable({ requests }: DealerRequestTableProps
       {selectedRequest && (
         <DealerRequestReviewModal
           request={selectedRequest}
+          onAllocated={(updatedRequest) => {
+            onRequestAllocated?.(updatedRequest);
+            setSelectedRequest(null);
+          }}
           onClose={() => setSelectedRequest(null)}
         />
       )}

@@ -18,7 +18,7 @@ const initialUsers: User[] = [
 	{ id: "USR-1001", name: "Amelia Martin", email: "amelia.martin@renogo.com", role: "Administrator", password: "admin123", status: "Active" },
 	{ id: "USR-1002", name: "Louis Bernard", email: "louis.bernard@renogo.com", role: "Manufacturer", password: "manufacturer123", status: "Active" },
 	{ id: "USR-1003", name: "Sofia Garcia", email: "sofia.garcia@renogo.com", role: "Dealer", password: "dealer123", status: "Inactive" },
-	{ id: "USR-1004", name: "Noah Wilson", email: "noah.wilson@renogo.com", role: "Supervisor", password: "supervisor123", status: "Active" },
+	{ id: "USR-1004", name: "Noah Wilson", email: "noah.wilson@renogo.com", role: "Finance Head", password: "financehead123", status: "Active" },
 ];
 
 const loadUsers = () => {

@@ -8,31 +8,33 @@ import { useOrder } from "../../../../hooks/useOrder";
  *
  *   1. Dealer Request     → Dealer submits the order
  *   2. Manufacturer       → Checks stock availability
- *   3. Supervisor         → Finance quotation
+ *   3. Finance Head       → Finance quotation
  *   4. Sales Manager      → Approval / Rejection
  *   5. Dealer Manager     → Final acknowledgement
- *   6. Delivered          → Order fulfilled
+ *   6. Order Confirmed    → Payment and acknowledgement completed
  *
  * Admin is an OVERSEER — they can VIEW progress but do NOT approve/reject.
  */
 const WORKFLOW_STEPS = [
 	"Dealer Request",
 	"Manufacturer",
-	"Supervisor",
+	"Finance Head",
 	"Sales Manager",
 	"Dealer Manager",
-	"Delivered",
+	"Order Confirmed",
 ];
 
 /** Map an order status string to the active step index (0-based). */
 function resolveActiveStep(status: string): number {
 	const s = status.toLowerCase();
 	if (s.includes("reject") || s.includes("decline"))       return -1; // rejected
-	if (s.includes("deliver"))                                return 5;
-	if (s.includes("dealer manager"))                         return 4;
-	if (s.includes("sales manager") || s.includes("approv")) return 3;
-	if (s.includes("supervisor") || s.includes("quotation"))  return 2;
-	if (s.includes("manufacturer") || s.includes("stock"))    return 1;
+	if (s.includes("completed") || s.includes("confirmed") || s.includes("deliver")) return 5;
+	if (s.includes("dealer manager") || s.includes("awaiting payment") || s.includes("payment submitted") || s.includes("payment verified") || s.includes("in production")) return 4;
+	if (s.includes("approved by sales manager")) return 4;
+	if (s.includes("sales manager") || s.includes("quotation sent")) return 3;
+	if (s.includes("stock allocated")) return 2;
+	if (s.includes("finance head") || s.includes("financehead") || s.includes("pending finance") || s.includes("quotation")) return 2;
+	if (s.includes("manufacturer") || s.includes("stock")) return 1;
 	return 0; // dealer request / pending
 }
 
@@ -40,10 +42,11 @@ function resolveActiveStep(status: string): number {
 const STEP_DESCRIPTIONS: Record<number, { title: string; description: string }> = {
 	0: { title: "Dealer Request",    description: "Fleet order submitted by the dealer. Waiting to be picked up by the Manufacturer." },
 	1: { title: "Manufacturer",      description: "Manufacturer is verifying stock availability and allocation for the requested vehicles." },
-	2: { title: "Supervisor",        description: "Supervisor is reviewing financials and preparing the quotation for this order." },
+	2: { title: "Finance Head",      description: "Finance Head is reviewing financials and preparing the quotation for this order." },
 	3: { title: "Sales Manager",     description: "Sales Manager is reviewing the order for final approval or rejection." },
 	4: { title: "Dealer Manager",    description: "Dealer Manager is performing final acknowledgement before delivery." },
-	5: { title: "Delivered",         description: "Order has been fulfilled and delivered to the dealership." },
+	5: { title: "Order Confirmed",   description: "Payment proof and dealer acknowledgement have been completed. The order is confirmed." },
+	6: { title: "Order Confirmed",   description: "Payment proof and dealer acknowledgement have been completed. The order is confirmed." },
 };
 
 type ApprovalProductionProps = { dealerId?: string; orderId?: string; isModal?: boolean; onClose?: () => void };
@@ -61,6 +64,7 @@ export default function ApprovalProduction({ dealerId: dealerIdProp, orderId, is
 	const currentStatus = order.status || "Manufacturer Review";
 	const activeStep = resolveActiveStep(currentStatus);
 	const isRejected = activeStep === -1;
+	const isConfirmed = activeStep === 5 && /completed|confirmed|deliver/i.test(currentStatus);
 
 	const currentStepInfo = STEP_DESCRIPTIONS[isRejected ? 3 : activeStep] ?? STEP_DESCRIPTIONS[0];
 
@@ -77,7 +81,7 @@ export default function ApprovalProduction({ dealerId: dealerIdProp, orderId, is
 				</span>
 			</div>
 			<p style={{ fontSize: "13px", color: "#64748b", marginTop: "8px", lineHeight: 1.6 }}>
-				This is a <strong>read-only view</strong> for admin oversight. Order approvals flow through: <em>Manufacturer → Supervisor → Sales Manager → Dealer Manager</em>.
+				This is a <strong>read-only view</strong> for admin oversight. Order approvals flow through: <em>Manufacturer → Finance Head → Sales Manager → Dealer Manager</em>.
 			</p>
 		</section>
 
@@ -135,7 +139,7 @@ export default function ApprovalProduction({ dealerId: dealerIdProp, orderId, is
 		{/* Request Summary */}
 		<section className="workflow-card">
 			<div className="request-summary">
-				<div><span>Request ID</span><strong>{order.id}</strong></div>
+				<div><span>Request ID</span><strong>{order.requestNumber ?? order.id}</strong></div>
 				<div><span>Dealer Name</span><strong>{dealer.name}</strong></div>
 				<div><span>Vehicle Model</span><strong>{order.vehicleModel}</strong></div>
 				<div><span>Total Quantity</span><strong>{order.quantity} units</strong></div>
@@ -171,7 +175,7 @@ export default function ApprovalProduction({ dealerId: dealerIdProp, orderId, is
 							stepLabel = "Skipped";
 							stepIcon = String(index + 1);
 						}
-					} else if (index < activeStep) {
+					} else if (isConfirmed || index < activeStep) {
 						stepClass = "complete";
 						stepLabel = "Completed";
 						stepIcon = "✓";
@@ -205,7 +209,7 @@ export default function ApprovalProduction({ dealerId: dealerIdProp, orderId, is
 					<h2>{isRejected ? "Rejected" : currentStepInfo.title}</h2>
 					<p>{isRejected ? "This order was rejected during the Sales Manager review stage." : currentStepInfo.description}</p>
 				</div>
-				{order.etaDelivery && !isRejected && (
+				{order.etaDelivery && !isRejected && !isConfirmed && (
 					<strong>Expected Delivery<br />{order.etaDelivery}</strong>
 				)}
 			</div>
@@ -232,38 +236,38 @@ export default function ApprovalProduction({ dealerId: dealerIdProp, orderId, is
 					<tr className={activeStep >= 0 ? "" : "dimmed"}>
 						<td>1. Dealer Request</td>
 						<td>Dealer</td>
-						<td>{activeStep >= 1 || isRejected ? "✓ Completed" : activeStep === 0 ? "⏳ In Progress" : "Pending"}</td>
+						<td>{activeStep >= 1 || isRejected || isConfirmed ? "✓ Completed" : activeStep === 0 ? "⏳ In Progress" : "Pending"}</td>
 						<td>Submit fleet order request</td>
 					</tr>
 					<tr className={activeStep >= 1 || isRejected ? "" : "dimmed"}>
 						<td>2. Manufacturer</td>
 						<td>Manufacturer</td>
-						<td>{activeStep >= 2 || isRejected ? "✓ Completed" : activeStep === 1 ? "⏳ In Progress" : "Pending"}</td>
+						<td>{activeStep >= 2 || isRejected || isConfirmed ? "✓ Completed" : activeStep === 1 ? "⏳ In Progress" : "Pending"}</td>
 						<td>Stock availability check &amp; allocation</td>
 					</tr>
 					<tr className={activeStep >= 2 || isRejected ? "" : "dimmed"}>
-						<td>3. Supervisor</td>
-						<td>Supervisor</td>
-						<td>{activeStep >= 3 || isRejected ? "✓ Completed" : activeStep === 2 ? "⏳ In Progress" : "Pending"}</td>
+						<td>3. Finance Head</td>
+						<td>Finance Head</td>
+						<td>{activeStep >= 3 || isRejected || isConfirmed ? "✓ Completed" : activeStep === 2 ? "⏳ In Progress" : "Pending"}</td>
 						<td>Finance quotation &amp; pricing review</td>
 					</tr>
 					<tr className={activeStep >= 3 ? "" : "dimmed"}>
 						<td>4. Sales Manager</td>
 						<td>Sales Manager</td>
-						<td>{isRejected ? "✕ Rejected" : activeStep >= 4 ? "✓ Approved" : activeStep === 3 ? "⏳ In Progress" : "Pending"}</td>
+						<td>{isRejected ? "✕ Rejected" : activeStep >= 4 || isConfirmed ? "✓ Approved" : activeStep === 3 ? "⏳ In Progress" : "Pending"}</td>
 						<td>Order approval or rejection</td>
 					</tr>
 					<tr className={activeStep >= 4 && !isRejected ? "" : "dimmed"}>
 						<td>5. Dealer Manager</td>
 						<td>Dealer Manager</td>
-						<td>{activeStep >= 5 ? "✓ Completed" : activeStep === 4 ? "⏳ In Progress" : isRejected ? "Skipped" : "Pending"}</td>
+						<td>{isConfirmed ? "✓ Completed" : activeStep === 4 ? "⏳ In Progress" : isRejected ? "Skipped" : "Pending"}</td>
 						<td>Final acknowledgement &amp; delivery</td>
 					</tr>
 					<tr className={activeStep >= 5 ? "" : "dimmed"}>
-						<td>6. Delivered</td>
+						<td>6. Order Confirmed</td>
 						<td>System</td>
-						<td>{activeStep >= 5 ? "✓ Delivered" : isRejected ? "Skipped" : "Pending"}</td>
-						<td>Order fulfilled to dealership</td>
+						<td>{isConfirmed ? "✓ Confirmed" : isRejected ? "Skipped" : "Pending"}</td>
+						<td>Payment proof and dealer acknowledgement completed</td>
 					</tr>
 				</tbody>
 			</table>

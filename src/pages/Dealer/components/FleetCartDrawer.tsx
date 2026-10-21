@@ -4,24 +4,90 @@ import CloseIcon from "@mui/icons-material/Close";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import DirectionsCarOutlinedIcon from "@mui/icons-material/DirectionsCarOutlined";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { useFleetCart } from "../useFleetCart";
+import { createOrder } from "../../../api/orders";
+import type { Order } from "../../../types/order";
 import "./FleetCartDrawer.css";
 
 type Props = {
   open: boolean;
+  dealerId: string;
+  onSubmitted?: (order: Order) => void;
   onClose: () => void;
 };
 
-export default function FleetCartDrawer({ open, onClose }: Props) {
-  const navigate = useNavigate();
-  const { cart, updateQuantity, removeFromCart, totalModels, totalVehicles } = useFleetCart();
+const PRICE_BY_MODEL: Record<string, number> = {
+  "Renault Kiger": 950000,
+  "Renault Triber": 850000,
+  "Renault Duster": 1200000,
+  "Renault Kwid": 650000,
+  "Renault Arkana": 1450000,
+};
 
-  const handleProceedToReview = () => {
-    onClose();
-    navigate("/dealer/review-order");
+export default function FleetCartDrawer({ open, dealerId, onSubmitted, onClose }: Props) {
+  const { cart, clearCart, updateQuantity, removeFromCart, totalModels, totalVehicles } = useFleetCart();
+  const [deliveryDate, setDeliveryDate] = useState("");
+  const [notes, setNotes] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const estimatedTotal = cart.reduce((total, item) => total + (PRICE_BY_MODEL[item.model] ?? Number.parseInt(item.startingPrice?.replace(/[^0-9]/g, "") ?? "0", 10)) * item.quantity, 0);
+
+  const handleSubmit = async () => {
+    if (!cart.length) {
+      setError("Add at least one vehicle before submitting.");
+      return;
+    }
+    if (!deliveryDate) {
+      setError("Select a required delivery date.");
+      return;
+    }
+    setSubmitting(true);
+    setError("");
+    const requestNumber = `REQ-${dealerId}-${deliveryDate.replace(/-/g, "")}-${Date.now().toString().slice(-4)}`;
+    const order: Order = {
+      id: "",
+      requestNumber,
+      dealerId,
+      vehicleModel: cart.map((item) => `${item.model} - ${item.variant} (${item.quantity})`).join(", "),
+      quantity: totalVehicles,
+      status: "Pending Manufacturer Review",
+      currentOwner: "Manufacturer",
+      workflowHistory: [{
+        status: "Dealer Request Created",
+        timestamp: new Date().toISOString(),
+        owner: "Dealer",
+        remarks: notes.trim() || undefined,
+      }, {
+        status: "Pending Manufacturer Review",
+        timestamp: new Date().toISOString(),
+        owner: "Manufacturer",
+      }],
+      notifications: [{
+        role: "Manufacturer",
+        message: "New dealer request is ready for review.",
+        createdAt: new Date().toISOString(),
+        read: false,
+      }],
+      orderDate: new Date().toISOString(),
+      etaDelivery: deliveryDate,
+      remarks: notes.trim() || undefined,
+      items: cart,
+      estimatedTotal,
+    };
+    try {
+      const createdOrder = await createOrder(order);
+      onSubmitted?.(createdOrder);
+      clearCart();
+      setDeliveryDate("");
+      setNotes("");
+      onClose();
+    } catch (submissionError) {
+      setError(submissionError instanceof Error ? submissionError.message : "Unable to send the request to Finance Head.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -163,14 +229,27 @@ export default function FleetCartDrawer({ open, onClose }: Props) {
                 <span>Total Fleet Units</span>
                 <strong>{totalVehicles} Vehicles</strong>
               </div>
+              <div>
+                <span>Estimated Amount</span>
+                <strong>₹{estimatedTotal.toLocaleString("en-IN")}</strong>
+              </div>
             </div>
 
+            <div className="cart-request-fields">
+              <label htmlFor="cart-delivery-date">Required delivery date *
+                <input id="cart-delivery-date" type="date" min={new Date().toISOString().slice(0, 10)} value={deliveryDate} onChange={(event) => { setDeliveryDate(event.target.value); setError(""); }} />
+              </label>
+              <label htmlFor="cart-notes">Notes / special instructions
+                <textarea id="cart-notes" rows={3} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Add delivery preferences or fleet requirements." />
+              </label>
+            </div>
+            {error && <p className="cart-submit-error" role="alert">{error}</p>}
             <div className="cart-footer-buttons">
               <button type="button" className="cart-continue-btn" onClick={onClose}>
                 Continue Shopping
               </button>
-              <button type="button" className="cart-review-btn" onClick={handleProceedToReview}>
-                Review Order <ArrowForwardIcon fontSize="small" />
+              <button type="button" className="cart-review-btn" onClick={handleSubmit} disabled={submitting}>
+                {submitting ? "Sending..." : "Submit Request"}
               </button>
             </div>
           </footer>

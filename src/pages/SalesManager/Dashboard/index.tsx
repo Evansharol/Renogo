@@ -13,6 +13,7 @@ import { getOrders } from "../../../api/orders";
 import { getQuotationByOrderId } from "../../../api/quotations";
 import { getSalesManagerDashboardData, type SalesManagerDashboardData } from "../../../api/salesManager";
 import type { Order } from "../../../types/order";
+import { transitionOrder } from "../../../api/workflow";
 import type { Quotation } from "../../../types/quotation";
 import SalesManagerReviewModal from "./SalesManagerReviewModal";
 
@@ -79,12 +80,20 @@ export default function SalesManagerDashboard() {
     setReviewQuotation(null);
   };
 
-  const completeReview = (status: string) => {
+  const completeReview = async (action: string) => {
     if (!reviewOrder) return;
-    setOrders((current) =>
-      current.map((order) => (order.id === reviewOrder.id ? { ...order, status } : order))
-    );
-    closeReview();
+    const isRejected = action.startsWith("Declined:");
+    try {
+      const updatedOrder = await transitionOrder(reviewOrder, {
+        status: isRejected ? "Rejected" : "Approved by Sales Manager",
+        owner: isRejected ? "Admin" : "Dealer Manager",
+        remarks: action.replace(/^(Declined:|Approved and sent to Dealer Manager)\s*/, ""),
+      });
+      setOrders((current) => current.map((order) => order.id === updatedOrder.id ? updatedOrder : order));
+      closeReview();
+    } catch {
+      setError("Unable to save the sales manager decision.");
+    }
   };
 
   const handleKpiCardClick = (id: string) => {
@@ -160,17 +169,17 @@ export default function SalesManagerDashboard() {
   };
 
   return (
-    <div className="supervisor-layout">
+    <div className="financehead-layout">
       {/* Sidebar Navigation */}
       <Sidebar variant="salesmanager" />
 
       {/* Main Content Layout */}
-      <div className="supervisor-content sm-supervisor-content">
+      <div className="financehead-content sm-financehead-content">
         {/* Preserved standard Navbar component */}
         <Navbar adminName={salesManagerName} role="Sales Manager" />
 
         {/* Scrollable Dashboard Container */}
-        <main className="supervisor-main supervisor-dashboard-main sm-main-container">
+        <main className="financehead-main financehead-dashboard-main sm-main-container">
           {/* Header Title Section */}
           <div className="sm-header-section">
             <div className="sm-header-left">

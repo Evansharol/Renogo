@@ -34,7 +34,7 @@
       "id": "USR-1002",
       "name": "Louis Bernard",
       "email": "louis.bernard@renogo.com",
-      "role": "Supervisor",
+      "role": "Finance Head",
       "status": "Active"
     },
     {
@@ -49,6 +49,22 @@
       "name": "Noah Wilson",
       "email": "noah.wilson@renogo.com",
       "role": "Manufacturer",
+      "status": "Active"
+    },
+    {
+      "id": "D1001",
+      "name": "Chota bheem cars",
+      "email": "dealer@renogo.com",
+      "role": "Dealer",
+      "password": "d1123",
+      "phone": "4567890123",
+      "department": "Dealer Operations",
+      "permissions": [
+        "Create Fleet Orders",
+        "View & Edit Own Orders",
+        "Submit & Track Orders",
+        "Download Quotations & Invoices"
+      ],
       "status": "Active"
     }
   ],
@@ -138,7 +154,7 @@
     },
     {
       "id": "ORD-4001",
-      "dealerId": "hD7-wIuowCY",
+      "dealerId": "D004",
       "vehicleModel": "Renault Duster",
       "quantity": 12,
       "status": "Approved",
@@ -162,6 +178,166 @@
       "orderDate": "2026-10-13T06:28:48.397Z",
       "etaDelivery": "2026-11-14",
       "id": "k4k8e1GIqeQ"
+    },
+    {
+      "id": "DRoEbgEb6ds",
+      "requestNumber": "REQ-D1001-20261124-7087",
+      "dealerId": "D1001",
+      "vehicleModel": "Renault Duster - RXZ (5), Renault Triber - RXZ (5)",
+      "quantity": 10,
+      "status": "Completed",
+      "currentOwner": "Admin",
+      "workflowHistory": [
+        {
+          "status": "Dealer Request Created",
+          "timestamp": "2026-10-21T08:32:57.087Z",
+          "owner": "Dealer"
+        },
+        {
+          "status": "Pending Manufacturer Review",
+          "timestamp": "2026-10-21T08:32:57.087Z",
+          "owner": "Manufacturer"
+        },
+        {
+          "status": "Stock Allocated by Manufacturer",
+          "timestamp": "2026-10-21T08:39:23.738Z",
+          "owner": "Manufacturer",
+          "remarks": "yet to manufacture"
+        },
+        {
+          "status": "Pending Finance Quotation",
+          "timestamp": "2026-10-21T08:39:23.766Z",
+          "owner": "Finance Head"
+        },
+        {
+          "status": "Pending Sales Manager Approval",
+          "timestamp": "2026-10-21T08:47:25.882Z",
+          "owner": "Sales Manager",
+          "remarks": "Quotation generated and sent for sales manager approval."
+        },
+        {
+          "status": "Approved by Sales Manager",
+          "timestamp": "2026-10-21T08:48:15.464Z",
+          "owner": "Dealer Manager",
+          "remarks": ""
+        },
+        {
+          "status": "Payment Submitted",
+          "timestamp": "2026-10-21T08:48:58.684Z",
+          "owner": "Admin",
+          "remarks": "Payment proof Designer.jpg submitted. UTR: dftgyhu."
+        },
+        {
+          "status": "Payment Submitted",
+          "timestamp": "2026-10-21T08:49:25.454Z",
+          "owner": "Admin",
+          "remarks": "Payment proof Designer.jpg submitted. UTR: rtgyhj."
+        },
+        {
+          "status": "Completed",
+          "timestamp": "2026-10-21T08:51:23.794Z",
+          "owner": "Admin",
+          "remarks": "Payment proof Designer.jpg submitted and acknowledgement completed. UTR: awsedrftgyuhio."
+        }
+      ],
+      "notifications": [
+        {
+          "role": "Manufacturer",
+          "message": "New dealer request is ready for review.",
+          "createdAt": "2026-10-21T08:32:57.087Z",
+          "read": false
+        },
+        {
+          "role": "Manufacturer",
+          "message": "REQ-D1001-20261124-7087 is ready for Manufacturer",
+          "createdAt": "2026-10-21T08:39:23.738Z",
+          "read": false
+        },
+        {
+          "role": "Finance Head",
+          "message": "REQ-D1001-20261124-7087 is ready for Finance Head",
+          "createdAt": "2026-10-21T08:39:23.766Z",
+          "read": false
+        },
+        {
+          "role": "Sales Manager",
+          "message": "REQ-D1001-20261124-7087 is ready for Sales Manager",
+          "createdAt": "2026-10-21T08:47:25.882Z",
+          "read": false
+        },
+        {
+          "role": "Dealer Manager",
+          "message": "REQ-D1001-20261124-7087 is ready for Dealer Manager",
+          "createdAt": "2026-10-21T08:48:15.464Z",
+          "read": false
+        },
+        {
+          "role": "Admin",
+          "message": "REQ-D1001-20261124-7087 is ready for Admin",
+          "createdAt": "2026-10-21T08:48:58.684Z",
+          "read": false
+        },
+        {
+          "role": "Admin",
+          "message": "REQ-D1001-20261124-7087 is ready for Admin",
+          "createdAt": "2026-10-21T08:49:25.454Z",
+          "read": false
+        },
+        {
+          "role": "Admin",
+          "message": "REQ-D1001-20261124-7087 is ready for Admin",
+          "createdAt": "2026-10-21T08:51:23.794Z",
+          "read": false
+        }
+      ],
+      "orderDate": "2026-10-21T08:32:57.087Z",
+      "etaDelivery": "2026-11-24",
+      "items": [
+        {
+          "id": "duster-rxz-caspian-blue",
+          "model": "Renault Duster",
+          "variant": "RXZ",
+          "color": "Caspian Blue",
+          "colorHex": "#1A3A5C",
+          "quantity": 5,
+          "image": "/src/assets/dealer/duster.jpg",
+          "startingPrice": "₹ 9.86 Lakh*",
+          "specs": {
+            "engine": "1.3L Turbo Petrol / Hybrid",
+            "transmission": "6-Speed MT / EDC Auto",
+            "fuel": "Turbo Petrol",
+            "seating": "5 Seater Rugged"
+          }
+        },
+        {
+          "id": "triber-rxz-electric-blue",
+          "model": "Renault Triber",
+          "variant": "RXZ",
+          "color": "Electric Blue",
+          "colorHex": "#1C4FA0",
+          "quantity": 5,
+          "image": "/src/assets/dealer/triber.jpg",
+          "startingPrice": "₹ 5.99 Lakh*",
+          "specs": {
+            "engine": "1.0L Energy Petrol",
+            "transmission": "5-Speed MT / EASY-R AMT",
+            "fuel": "Petrol",
+            "seating": "7 Seater Modular"
+          }
+        }
+      ],
+      "estimatedTotal": 10250000,
+      "allocation": {
+        "available": 0,
+        "toManufacture": 10,
+        "manufacturerStatus": "Fully Allocated",
+        "updatedAt": "2026-10-21T08:39:23.920Z"
+      },
+      "paymentProof": {
+        "fileName": "Designer.jpg",
+        "submittedAt": "2026-10-21T08:51:23.822Z",
+        "remarks": "UTR: awsedrftgyuhio; Amount: 0234567890"
+      }
     }
   ],
   "quotations": [
@@ -259,6 +435,25 @@
         "bankBranch": "HDFC Bank Ltd., Chennai Main Branch"
       },
       "status": "Quotation Generated"
+    },
+    {
+      "id": "zE5CLPD-W4c",
+      "dealerId": "D1001",
+      "orderId": "DRoEbgEb6ds",
+      "vehicleModel": "Renault Duster - RXZ (5), Renault Triber - RXZ (5)",
+      "quantity": 10,
+      "basePrice": 9,
+      "taxRate": 18,
+      "depositRate": 20,
+      "gstNumber": "GST-PENDING",
+      "paymentTerms": "30 days from quotation date",
+      "bankDetails": {
+        "beneficiaryName": "Renault India Private Limited",
+        "accountNumber": "Finance account details pending",
+        "ifscCode": "IFSC-PENDING",
+        "bankBranch": "Renault India Commercial Banking"
+      },
+      "status": "Quotation Sent"
     }
   ],
   "dmRequests": [

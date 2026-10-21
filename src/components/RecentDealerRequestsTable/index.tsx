@@ -97,7 +97,7 @@ export default function RecentDealerRequestsTable({
             {hasOrders && orders && orders.map((order) => (
               <tr key={order.id}>
                 <td className="req-id-cell">
-                  <strong>{order.id}</strong>
+                  <strong>{order.requestNumber ?? order.id}</strong>
                 </td>
                 <td className="req-dealer-cell">{order.dealerId}</td>
                 <td className="req-model-cell">{order.vehicleModel}</td>
@@ -111,7 +111,7 @@ export default function RecentDealerRequestsTable({
                 <td>
                   <button
                     type="button"
-                    className="supervisor-review-link"
+                    className="financehead-review-link"
                     onClick={() => onVerify?.(order)}
                   >
                     Verify
@@ -137,7 +137,7 @@ export default function RecentDealerRequestsTable({
                 <td>
                   <button
                     type="button"
-                    className="supervisor-review-link"
+                    className="financehead-review-link"
                     onClick={() => {
                       if (req.rawOrder && onVerify) {
                         onVerify(req.rawOrder);

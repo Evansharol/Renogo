@@ -33,7 +33,7 @@ const FALLBACK_DEALER_ORDERS: Order[] = [
 		dealerId: "D001",
 		vehicleModel: "Renault Duster",
 		quantity: 50,
-		status: "Supervisor Review",
+		status: "Finance Head Review",
 		orderDate: "2026-10-15T00:00:00.000Z",
 		etaDelivery: "2026-11-20",
 	},
@@ -285,7 +285,7 @@ export default function RecentRequestsNotification({
 					{/* Dropdown Footer */}
 					<div className="recent-dropdown-footer">
 						<span className="recent-footer-note">
-							Updates propagate across Manufacturer &rarr; Supervisor &rarr; Sales Manager
+							Updates propagate across Manufacturer &rarr; Finance Head &rarr; Sales Manager
 						</span>
 					</div>
 				</div>

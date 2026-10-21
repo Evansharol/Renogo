@@ -3,24 +3,36 @@ import CloseIcon from "@mui/icons-material/Close";
 
 import type { DealerRequest } from "../../../components/DealerRequestTable";
 import AvailabilityProgressBar from "../../../components/AvailabilityProgressBar";
+import { transitionOrder } from "../../../api/workflow";
+import { getOrders, updateOrder } from "../../../api/orders";
+import type { WorkflowStage } from "../../../types/order";
 
 type DealerRequestReviewModalProps = {
   request: DealerRequest;
+  onAllocated?: (request: DealerRequest) => void;
   onClose: () => void;
 };
 
 export default function DealerRequestReviewModal({
   request,
+  onAllocated,
   onClose,
 }: DealerRequestReviewModalProps) {
-  const colorStock = request.stockBreakdown[request.color] ?? 0;
+  const colorStock = request.items?.length
+    ? request.items.reduce((total, item) => total + (request.stockBreakdown[item.color ?? "Any"] ?? 5), 0)
+    : request.stockBreakdown[request.color] ?? 5;
   const initialAvailable = Math.min(colorStock, request.quantity);
   const [available, setAvailable] = useState(initialAvailable);
   const [manufacturing, setManufacturing] = useState(request.quantity - initialAvailable);
   const [comments, setComments] = useState("");
   const [manufacturerStatus, setManufacturerStatus] = useState(request.manufacturerStatus);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
   const total = available + manufacturing;
   const isComplete = total === request.quantity;
+  const allocationStatus: WorkflowStage = manufacturerStatus === "Not Allocated"
+    ? "Pending Manufacturer Review"
+    : "Pending Finance Quotation";
   const modelName = request.model.startsWith("Renault") ? request.model : `Renault ${request.model}`;
   const formattedDate = useMemo(
     () => new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(request.requestDate)),
@@ -59,7 +71,7 @@ export default function DealerRequestReviewModal({
       <div className="manufacturer-review-modal" role="dialog" aria-modal="true" aria-labelledby="review-request-title">
         <header className="manufacturer-review-header">
           <div>
-            <p className="manufacturer-review-eyebrow">{request.requestId}</p>
+            <p className="manufacturer-review-eyebrow">{request.requestNumber ?? request.requestId}</p>
             <h2 id="review-request-title">Review Dealer Fleet Request</h2>
             <p>{request.dealerName} <span>•</span> {modelName} <span>•</span> {request.color} <span>•</span> {request.quantity} Units</p>
           </div>
@@ -132,7 +144,7 @@ export default function DealerRequestReviewModal({
 
           <section className="manufacturer-review-card">
             <h3>Manufacturer Comments</h3>
-            <textarea value={comments} onChange={(event) => setComments(event.target.value)} placeholder="Enter allocation notes for supervisor..." />
+            <textarea value={comments} onChange={(event) => setComments(event.target.value)} placeholder="Enter allocation notes for financehead..." />
           </section>
 
           <section className="manufacturer-final-summary">
@@ -147,8 +159,51 @@ export default function DealerRequestReviewModal({
           <button type="button" className="manufacturer-modal-secondary" onClick={onClose}>Cancel</button>
           <div>
             <button type="button" className="manufacturer-modal-secondary">Save Draft</button>
-            <button type="button" className="manufacturer-modal-primary" disabled={!isComplete}>Send To Supervisor</button>
+            <button
+              type="button"
+              className="manufacturer-modal-primary"
+              disabled={!isComplete || manufacturerStatus === "Not Allocated" || submitting}
+              onClick={async () => {
+                setSubmitting(true);
+                setError("");
+                try {
+                  const orders = await getOrders();
+                  const order = orders.find((candidate) => candidate.id === request.requestId);
+                  if (!order) throw new Error("The order could not be found.");
+                  const allocatedOrder = await transitionOrder(order, {
+                    status: manufacturerStatus === "Not Allocated" ? "Pending Manufacturer Review" : "Stock Allocated by Manufacturer",
+                    owner: "Manufacturer",
+                    remarks: comments.trim() || `Allocated ${available} units from stock and ${manufacturing} units to manufacture.`,
+                  });
+                  const transitionedOrder = allocationStatus === "Pending Finance Quotation"
+                    ? await transitionOrder(allocatedOrder, {
+                      status: "Pending Finance Quotation",
+                      owner: "Finance Head",
+                    })
+                    : allocatedOrder;
+                  const updatedOrder = await updateOrder({
+                    ...transitionedOrder,
+                    allocation: {
+                      available,
+                      toManufacture: manufacturing,
+                      manufacturerStatus,
+                      updatedAt: new Date().toISOString(),
+                    },
+                  });
+                  onAllocated?.({ ...request, manufacturerStatus });
+                  if (updatedOrder.status !== allocationStatus) throw new Error("The workflow status was not updated.");
+                  onClose();
+                } catch (allocationError) {
+                  setError(allocationError instanceof Error ? allocationError.message : "Unable to update the request.");
+                } finally {
+                  setSubmitting(false);
+                }
+              }}
+            >
+              {submitting ? "Saving..." : "Send To Finance Head"}
+            </button>
           </div>
+          {error && <p role="alert">{error}</p>}
         </footer>
       </div>
     </div>

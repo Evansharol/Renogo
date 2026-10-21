@@ -15,7 +15,7 @@ import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
 
 type SidebarProps = {
-  variant?: "admin" | "dealer" | "manufacturer" | "supervisor" | "salesmanager" | "dealermanager";
+  variant?: "admin" | "dealer" | "manufacturer" | "financehead" | "salesmanager" | "dealermanager";
 }
 
 export default function Sidebar({ variant = "admin" }: SidebarProps) {
@@ -115,15 +115,11 @@ export default function Sidebar({ variant = "admin" }: SidebarProps) {
                 <span>Stocks</span>
               </NavLink>
             </>
-          ) : variant === "supervisor" ? (
+          ) : variant === "financehead" ? (
             <>
-              <NavLink className="sidebar-link" to="/supervisor/dashboard" title="Dashboard">
+              <NavLink className="sidebar-link" to="/financehead/dashboard" title="Dashboard">
                 <DashboardIcon />
                 <span>Dashboard</span>
-              </NavLink>
-              <NavLink end className="sidebar-link" to="/supervisor" title="View Requests">
-                <AssignmentOutlinedIcon />
-                <span>View Requests</span>
               </NavLink>
             </>
           ) : variant === "salesmanager" ? (

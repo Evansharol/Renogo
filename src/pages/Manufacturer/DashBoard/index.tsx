@@ -24,6 +24,8 @@ import twingoImage from "../../../assets/twingo.jpg";
 import meganeImage from "../../../assets/megane.jpg";
 import etechImage from "../../../assets/etech.jpg";
 import type { DealerRequest } from "../../../components/DealerRequestTable";
+import { getOrders } from "../../../api/orders";
+import type { Order } from "../../../types/order";
 
 import "../../Dealer/Dealer.css";
 
@@ -38,7 +40,7 @@ type DashboardData = {
     label: string;
     value: number;
     subtitle: string;
-    icon: "orders" | "pending" | "allocated" | "supervisor";
+    icon: "orders" | "pending" | "allocated" | "financehead";
     variant: "blue" | "orange" | "green" | "purple";
   }>;
   models: Array<{
@@ -67,7 +69,37 @@ const dashboardIcons = {
   orders: <ShoppingCartOutlinedIcon />,
   pending: <AccessTimeOutlinedIcon />,
   allocated: <CheckCircleOutlinedIcon />,
-  supervisor: <ArrowForwardOutlinedIcon />,
+  financehead: <ArrowForwardOutlinedIcon />,
+};
+
+const DEFAULT_STOCK_BY_MODEL: Record<string, number> = {
+  "Renault Kiger": 10,
+  "Renault Triber": 10,
+  "Renault Duster": 8,
+  "Renault Kwid": 12,
+};
+
+const toDealerRequest = (order: Order): DealerRequest => {
+  const items = order.items ?? [];
+  const stockBreakdown = Object.fromEntries(items.map((item) => [
+    item.color ?? "Any",
+    DEFAULT_STOCK_BY_MODEL[item.model] ?? 5,
+  ]));
+  return {
+    requestId: order.id,
+    requestNumber: order.requestNumber,
+    dealerId: order.dealerId,
+    dealerName: order.dealerId,
+    model: order.items?.map((item) => item.model).join(", ") ?? order.vehicleModel,
+    color: order.items?.map((item) => item.color ?? "Any").join(", ") ?? "Any",
+    quantity: order.quantity,
+    items,
+    requestDate: order.orderDate ?? new Date().toISOString(),
+    stockBreakdown: Object.keys(stockBreakdown).length ? stockBreakdown : { Any: 5 },
+    priority: "Medium",
+    stockStatus: "low",
+    manufacturerStatus: "Not Allocated",
+  };
 };
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -83,12 +115,20 @@ export default function DealerPortal() {
   const [dashboardError, setDashboardError] = useState("");
 
   useEffect(() => {
-    fetch("/api/manufacturer-dashboard.json")
-      .then((response) => {
+    Promise.all([
+      fetch("/api/manufacturer-dashboard.json").then((response) => {
         if (!response.ok) throw new Error(`Unable to load dashboard data (${response.status})`);
         return response.json() as Promise<DashboardData>;
-      })
-      .then(setDashboardData)
+      }),
+      getOrders(),
+    ])
+      .then(([data, orders]) => setDashboardData({
+        ...data,
+        dealerRequests: [
+          ...orders.filter((order) => order.status === "Pending Manufacturer Review").map(toDealerRequest),
+          ...data.dealerRequests.filter((request) => !orders.some((order) => order.id === request.requestId)),
+        ],
+      }))
       .catch((error: unknown) => {
         setDashboardError(error instanceof Error ? error.message : "Unable to load dashboard data");
       });

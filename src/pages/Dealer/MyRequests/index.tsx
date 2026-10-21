@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useOutletContext, useSearchParams } from "react-router-dom";
 import SearchIcon from "@mui/icons-material/Search";
-import { formatDate, statusBadgeClass } from "../utils";
+import { formatDate, getDisplayRequestNumber, statusBadgeClass } from "../utils";
 import type { DealerOutletContext } from "../index";
 import "../../Dealer/Dealer.css";
 import "./MyRequests.css";
@@ -42,7 +42,8 @@ export default function DealerMyRequests() {
 
   const filtered = orders.filter((o) => {
     const q = search.toLowerCase();
-    const matchSearch = o.id.toLowerCase().includes(q) || o.vehicleModel.toLowerCase().includes(q);
+    const displayRequestNumber = getDisplayRequestNumber(o);
+    const matchSearch = displayRequestNumber.toLowerCase().includes(q) || o.id.toLowerCase().includes(q) || o.vehicleModel.toLowerCase().includes(q);
     const matchModel  = model  === "all" || o.vehicleModel.toLowerCase().includes(model.toLowerCase());
 
     let matchStatus = true;
@@ -114,7 +115,7 @@ export default function DealerMyRequests() {
             ) : (
               filtered.map((o) => (
                 <tr key={o.id}>
-                  <td className="id-font"><strong>{o.id}</strong></td>
+                  <td className="id-font"><strong>{getDisplayRequestNumber(o)}</strong></td>
                   <td><strong>{o.vehicleModel}</strong></td>
                   <td>{o.quantity} units</td>
                   <td>{formatDate(o.orderDate)}</td>

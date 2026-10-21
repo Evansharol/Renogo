@@ -6,6 +6,8 @@ import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import type { DmRequest } from "../../types";
+import { getOrders, updateOrder } from "../../../../api/orders";
+import { transitionOrder } from "../../../../api/workflow";
 
 // Modular Subcomponents
 import ModalHeaderBanner from "./components/ModalHeaderBanner";
@@ -23,15 +25,17 @@ type RequestDetailsModalProps = {
     open: boolean;
     onClose: () => void;
     request?: DmRequest | null;
+    onRequestUpdated?: (requestId: string) => void;
 };
 
-export default function RequestDetailsModal({ open, onClose, request }: RequestDetailsModalProps) {
+export default function RequestDetailsModal({ open, onClose, request, onRequestUpdated }: RequestDetailsModalProps) {
     const [acknowledged, setAcknowledged] = useState(false);
     const [isBankDetailsOpen, setIsBankDetailsOpen] = useState(false);
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [paymentSubmitted, setPaymentSubmitted] = useState(
         request?.paymentStatus === "Submitted" || request?.paymentStatus === "Completed"
     );
+    const [orderConfirmed, setOrderConfirmed] = useState(request?.status === "Completed");
 
     const requestId = request?.id || "FR-2026-0048";
 
@@ -99,7 +103,10 @@ export default function RequestDetailsModal({ open, onClose, request }: RequestD
                         <ModalMetricCards request={request} />
 
                         {/* 3. Request Status Stepper */}
-                        <RequestStatusStepper acknowledged={acknowledged || paymentSubmitted} />
+                        <RequestStatusStepper
+                            acknowledged={acknowledged || paymentSubmitted}
+                            orderConfirmed={orderConfirmed}
+                        />
 
                         {/* 4. Request Summary & Bank Details Grid */}
                         <Box
@@ -153,9 +160,27 @@ export default function RequestDetailsModal({ open, onClose, request }: RequestD
                 onClose={() => setIsUploadModalOpen(false)}
                 requestId={requestId}
                 request={request}
-                onSuccess={() => {
+                onSuccess={async (details) => {
                     setPaymentSubmitted(true);
                     setAcknowledged(true);
+                    const order = (await getOrders()).find((candidate) => candidate.id === requestId);
+                    if (order) {
+                        const transitionedOrder = await transitionOrder(order, {
+                            status: "Completed",
+                            owner: "Admin",
+                            remarks: `Payment proof ${details.fileName} submitted and acknowledgement completed. UTR: ${details.utr}.`,
+                        });
+                        await updateOrder({
+                            ...transitionedOrder,
+                            paymentProof: {
+                                fileName: details.fileName,
+                                submittedAt: new Date().toISOString(),
+                                remarks: `UTR: ${details.utr}; Amount: ${details.amount}`,
+                            },
+                        });
+                        setOrderConfirmed(true);
+                        onRequestUpdated?.(requestId);
+                    }
                 }}
             />
         </>

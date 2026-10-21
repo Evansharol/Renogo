@@ -30,7 +30,7 @@ type LoginState = {
 // ── Seed orders (shown while backend is offline) ──────────────────────────────
 
 const SEED_ORDERS: Order[] = [
-  { id: "REQ001", dealerId: "D001", vehicleModel: "Kiger",  quantity: 50,  status: "Supervisor Review",       orderDate: "2024-10-12T00:00:00.000Z", etaDelivery: "2024-11-20" },
+  { id: "REQ001", dealerId: "D001", vehicleModel: "Kiger",  quantity: 50,  status: "Finance Head Review",       orderDate: "2024-10-12T00:00:00.000Z", etaDelivery: "2024-11-20" },
   { id: "REQ002", dealerId: "D001", vehicleModel: "Triber", quantity: 100, status: "Manufacturer Review",     orderDate: "2024-10-10T00:00:00.000Z", etaDelivery: "2024-11-28" },
   { id: "REQ003", dealerId: "D001", vehicleModel: "Duster", quantity: 30,  status: "Sales Manager Approval",  orderDate: "2024-10-05T00:00:00.000Z", etaDelivery: "2024-11-15" },
   { id: "REQ004", dealerId: "D001", vehicleModel: "Kwid",   quantity: 25,  status: "Delivered",               orderDate: "2024-10-01T00:00:00.000Z", etaDelivery: "2024-11-05" },
@@ -89,7 +89,7 @@ export default function DealerPortal() {
   const handleOrderSubmitted = (order: Order) => {
     setOrders((prev) => [order, ...prev]);
     setIsRequestOpen(false);
-    setSuccessMsg(`Request ${order.id} submitted to Renault Fleet Management!`);
+    setSuccessMsg(`Request ${order.requestNumber ?? order.id} sent to Finance Head for approval.`);
     setTimeout(() => setSuccessMsg(""), 6000);
   };
 

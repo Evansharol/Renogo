@@ -9,14 +9,12 @@ import ApprovalProduction from "./pages/AdminDashBoard/Dealers/ApprovalProductio
 import DealerPortal from "./pages/Dealer";
 import DashboardHome from "./pages/Dealer/DashBoard";
 import DealerVehicleCatalog from "./pages/Dealer/VehicleCatalog";
-import ReviewOrder from "./pages/Dealer/ReviewOrder";
 import MyRequests from "./pages/Dealer/MyRequests";
 import DealerProfile from "./pages/Dealer/Profile";
 import ManufacturerDashboard from "./pages/Manufacturer/DashBoard";
 import ManufacturerViewRequests from "./pages/Manufacturer/ViewRequests";
 import ManufacturerStocks from "./pages/Manufacturer/Stocks";
-import ViewRequests from "./pages/Supervisor/ViewRequests";
-import SupervisorDashboard from "./pages/Supervisor/Dashboard";
+import FinanceHeadDashboard from "./pages/FinanceHead/Dashboard";
 import SalesManagerDashboard from "./pages/SalesManager/Dashboard";
 import SalesManagerVerificationApproval from "./pages/SalesManager/Verification&Approval";
 import DealerManagerDashboard from "./pages/DealerManager/DashBoard";
@@ -41,12 +39,10 @@ function AnimatedRoutes() {
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<DashboardHome />} />
         <Route path="catalog" element={<DealerVehicleCatalog />} />
-        <Route path="review-order" element={<ReviewOrder />} />
         <Route path="my-requests" element={<MyRequests />} />
         <Route path="profile" element={<DealerProfile />} />
         </Route>
-        <Route path="/supervisor/dashboard" element={<SupervisorDashboard />} />
-        <Route path="/supervisor" element={<ViewRequests />} />
+        <Route path="/financehead/dashboard" element={<FinanceHeadDashboard />} />
         <Route path="/salesmanager/dashboard" element={<SalesManagerDashboard />} />
         <Route path="/salesmanager/verification-approval" element={<SalesManagerVerificationApproval />} />
         <Route path="/dealermanager/dashboard" element={<DealerManagerDashboard />} />

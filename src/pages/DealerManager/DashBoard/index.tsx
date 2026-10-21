@@ -79,6 +79,12 @@ export default function DealerManagerDashboard() {
         setSelectedRequest(null);
     };
 
+    const handleRequestUpdated = async (requestId: string) => {
+        const updatedRequests = await getDmRequests();
+        setRequests(updatedRequests);
+        setSelectedRequest(updatedRequests.find((request) => request.id === requestId) ?? null);
+    };
+
     // Scope requests by KPI card, then by tab, then by search
     const tableRequests = useMemo(() => {
         // Scope by card
@@ -180,6 +186,7 @@ export default function DealerManagerDashboard() {
                 open={isModalOpen}
                 onClose={handleCloseDetails}
                 request={selectedRequest}
+                onRequestUpdated={handleRequestUpdated}
             />
         </div>
     );

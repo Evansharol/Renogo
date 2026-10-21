@@ -210,7 +210,7 @@ export default function DashboardHome() {
                   ) : (
                     filteredOrders.slice(0, 5).map((req) => (
                       <tr key={req.id}>
-                        <td className="req-id-cell">{req.id}</td>
+                        <td className="req-id-cell">{req.requestNumber ?? req.id}</td>
                         <td className="req-model-cell">{req.vehicleModel}</td>
                         <td>{req.quantity}</td>
                         <td className="req-date-cell">{formatDate(req.orderDate)}</td>

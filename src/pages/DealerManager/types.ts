@@ -18,6 +18,7 @@ export type BankSettlementDetails = {
 
 export type DmRequest = {
     id: string; // Order ID (e.g. ORD-1001)
+    requestNumber?: string;
     dealerId: string;
     dealerName?: string;
     vehicleModel: string;
@@ -32,6 +33,7 @@ export type DmRequest = {
     depositRate?: number;
     items?: VehicleLineItem[];
     bankDetails?: BankSettlementDetails;
+    orderStatus?: string;
 };
 
 export type DmNotification = {

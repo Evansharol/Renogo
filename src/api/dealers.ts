@@ -1,4 +1,5 @@
 import type { Dealer, NewDealer } from "../types/dealer";
+import { createUser } from "./users";
 
 const API_URL = "/api";
 
@@ -33,5 +34,14 @@ export async function createDealer(dealer: NewDealer): Promise<Dealer> {
 		throw new Error("Failed to create dealer");
 	}
 
-	return (await response.json()) as Dealer;
+	const createdDealer = (await response.json()) as Dealer;
+	await createUser({
+		id: createdDealer.id,
+		name: createdDealer.name,
+		email: `${createdDealer.id.toLowerCase()}@dealer.renault.com`,
+		role: "Dealer",
+		password: `${createdDealer.id.toLowerCase()}123`,
+		status: "Active",
+	});
+	return createdDealer;
 }

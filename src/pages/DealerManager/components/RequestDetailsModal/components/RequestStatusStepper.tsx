@@ -8,9 +8,10 @@ import { sectionCardStyle } from "../modalStyles";
 
 type RequestStatusStepperProps = {
     acknowledged: boolean;
+    orderConfirmed: boolean;
 };
 
-export default function RequestStatusStepper({ acknowledged }: RequestStatusStepperProps) {
+export default function RequestStatusStepper({ acknowledged, orderConfirmed }: RequestStatusStepperProps) {
     const steps = [
         { title: "Request Submitted", date: "18 Apr 2025", state: "done" },
         { title: "Sales Manager Review", date: "22 Apr 2025", state: "done" },
@@ -20,9 +21,9 @@ export default function RequestStatusStepper({ acknowledged }: RequestStatusStep
             date: acknowledged ? "Completed" : "Current",
             state: acknowledged ? "done" : "active",
         },
-        { title: "Payment Pending", date: "", state: "pending" },
-        { title: "Payment Completed", date: "", state: "pending" },
-        { title: "Order Confirmed", date: "", state: "pending" },
+        { title: "Payment Pending", date: "", state: orderConfirmed ? "done" : "pending" },
+        { title: "Payment Completed", date: orderConfirmed ? "Completed" : "", state: orderConfirmed ? "done" : "pending" },
+        { title: "Order Confirmed", date: orderConfirmed ? "Completed" : "", state: orderConfirmed ? "done" : "pending" },
     ];
 
     return (

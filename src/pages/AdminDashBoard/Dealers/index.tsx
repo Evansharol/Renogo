@@ -31,21 +31,46 @@ export default function Dealers() {
 	const loginState = location.state as LoginState | null;
 	const totalOrders = dealerList.reduce((total, dealer) => total + dealer.orders, 0);
 	const visibleDealerList = dealerList.filter((dealer) => (ordersByDealer[dealer.id] ?? []).length > 0);
-	const pendingRequests = visibleDealerList.filter((dealer) => dealer.status === "Pending Approval").length;
+	const pendingRequests = visibleDealerList.filter((dealer) => {
+		const selectedOrder = (ordersByDealer[dealer.id] ?? []).find((order) => order.id === selectedOrderByDealer[dealer.id]);
+		return selectedOrder ? !confirmedOrderStatuses.has(selectedOrder.status) : true;
+	}).length;
 
 	useEffect(() => {
-		Promise.all([getDealers(), getOrders()])
-			.then(([dealers, orders]) => {
-				setDealerList(dealers);
-				const groupedOrders = orders.reduce<Record<string, Order[]>>((grouped, order) => {
-					grouped[order.dealerId] = [...(grouped[order.dealerId] ?? []), order];
-					return grouped;
-				}, {});
-				setOrdersByDealer(groupedOrders);
-				setSelectedOrderByDealer(Object.fromEntries(Object.entries(groupedOrders).map(([dealerId, dealerOrders]) => [dealerId, dealerOrders[0]?.id ?? ""])));
-			})
+		const loadDealerWorkflow = async () => {
+			const [dealers, orders] = await Promise.all([getDealers(), getOrders()]);
+			const ordersByDealerId = orders.reduce<Record<string, Order[]>>((grouped, order) => {
+				grouped[order.dealerId] = [...(grouped[order.dealerId] ?? []), order];
+				return grouped;
+			}, {});
+			const knownDealerIds = new Set(dealers.map((dealer) => dealer.id));
+			const requestDealers: Dealer[] = Object.entries(ordersByDealerId)
+				.filter(([dealerId]) => !knownDealerIds.has(dealerId))
+				.map(([dealerId, dealerOrders]) => ({
+					id: dealerId,
+					name: `Dealer ${dealerId}`,
+					location: "Location not provided",
+					orders: dealerOrders.length,
+					status: dealerOrders.some((order) => !confirmedOrderStatuses.has(order.status)) ? "Pending Approval" : "Order Confirmed",
+				}));
+			const mergedDealers = [...dealers, ...requestDealers].map((dealer) => ({
+				...dealer,
+				orders: ordersByDealerId[dealer.id]?.length ?? dealer.orders,
+			}));
+			setDealerList(mergedDealers);
+			setOrdersByDealer(ordersByDealerId);
+			setSelectedOrderByDealer((current) => Object.fromEntries(Object.entries(ordersByDealerId).map(([dealerId, dealerOrders]) => [
+				dealerId,
+				current[dealerId] && dealerOrders.some((order) => order.id === current[dealerId]) ? current[dealerId] : dealerOrders[0]?.id ?? "",
+			])));
+		};
+		loadDealerWorkflow()
 			.catch(() => setError("Unable to load dealers. Start JSON Server with npm run server."))
 			.finally(() => setIsLoading(false));
+		const refreshTimer = window.setInterval(() => {
+			loadDealerWorkflow().catch(() => setError("Unable to refresh dealer workflow data."));
+		}, 5000);
+		return () => window.clearInterval(refreshTimer);
 	}, []);
 
 	const handleAddDealer = async (dealer: Parameters<typeof createDealer>[0]) => {
@@ -98,7 +123,7 @@ export default function Dealers() {
 										<td><strong>{dealer.name}</strong>
 										<span className="dealer-location">{dealer.location}</span></td>
 										<td><select className="order-select" aria-label={`Select order for ${dealer.name}`} value={selectedOrderByDealer[dealer.id] ?? ""} onChange={(event) => setSelectedOrderByDealer((current) => ({ ...current, [dealer.id]: event.target.value }))}>
-											<option value="">No orders</option>{dealerOrders.map((order) => <option value={order.id} key={order.id}>{order.id} · {order.vehicleModel}</option>)}</select></td>
+											<option value="">No orders</option>{dealerOrders.map((order) => <option value={order.id} key={order.id}>{order.requestNumber ?? order.id} · {order.vehicleModel}</option>)}</select></td>
 											<td>
 												<span className={`request-status ${isOrderConfirmed ? "approved" : "pending"}`}>
 													<span aria-hidden="true">{isOrderConfirmed ? "✓" : "!"}</span>

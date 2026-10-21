@@ -5,6 +5,7 @@ export type User = {
 	role: string;
 	password: string;
 	phone?: string;
+	location?: string;
 	department?: string;
 	permissions?: string[];
 	status: "Active" | "Inactive";

@@ -2,6 +2,16 @@ import type { Quotation } from "../types/quotation";
 
 const API_URL = "/api";
 
+export async function createQuotation(quotation: Quotation): Promise<Quotation> {
+	const response = await fetch(`${API_URL}/quotations`, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(quotation),
+	});
+	if (!response.ok) throw new Error("Failed to create quotation");
+	return (await response.json()) as Quotation;
+}
+
 export async function getQuotationByDealerId(dealerId: string): Promise<Quotation> {
 	const response = await fetch(`${API_URL}/quotations?dealerId=${encodeURIComponent(dealerId)}`);
 

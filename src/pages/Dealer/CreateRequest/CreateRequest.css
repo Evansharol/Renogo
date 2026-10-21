@@ -8,6 +8,115 @@
   gap: 16px;
 }
 
+.request-vehicle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.request-section-heading,
+.request-vehicle-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.request-section-heading h3 {
+  margin: 0 0 3px;
+  color: #111827;
+  font-size: 15px;
+}
+
+.request-section-heading p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.request-section-heading > strong {
+  color: #2563eb;
+  font-size: 12px;
+}
+
+.request-vehicle-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #dbe3ef;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.request-vehicle-card-heading {
+  color: #1e293b;
+  font-size: 13px;
+}
+
+.request-vehicle-fields {
+  gap: 12px;
+}
+
+.request-remove-button,
+.request-add-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  background: transparent;
+  color: #dc2626;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.request-add-button {
+  align-self: flex-start;
+  padding: 8px 0;
+  color: #2563eb;
+}
+
+.request-line-estimate {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.request-line-estimate strong {
+  color: #1e293b;
+}
+
+.request-total-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  background: #eff6ff;
+}
+
+.request-total-card span,
+.request-total-card small {
+  color: #475569;
+  font-size: 11px;
+}
+
+.request-total-card strong {
+  color: #1d4ed8;
+  font-size: 20px;
+}
+
+.request-validation-error {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .form-field-row  { display: flex; flex-direction: column; }
 
 .form-field-columns {

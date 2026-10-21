@@ -139,12 +139,12 @@ export default function SalesManagerVerificationApproval() {
   };
 
   return (
-    <div className="supervisor-layout">
+    <div className="financehead-layout">
       <Sidebar variant="salesmanager" />
-      <div className="supervisor-content sm-supervisor-content">
+      <div className="financehead-content sm-financehead-content">
         <Navbar adminName={salesManagerName} role="Sales Manager" />
 
-        <main className="supervisor-main sm-main-container">
+        <main className="financehead-main sm-main-container">
           {/* Header */}
           <div className="sm-va-header">
             <div>
@@ -281,7 +281,7 @@ export default function SalesManagerVerificationApproval() {
                       const alloc = allocations.find((a) => a.orderId === order.id);
                       return (
                         <tr key={order.id}>
-                          <td><strong>{order.id}</strong></td>
+                          <td><strong>{order.requestNumber ?? order.id}</strong></td>
                           <td>{order.dealerId}</td>
                           <td>{alloc?.dealerName ?? "Dealer Account"}</td>
                           <td>{order.vehicleModel}</td>

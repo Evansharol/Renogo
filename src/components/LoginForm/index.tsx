@@ -53,6 +53,26 @@ function getManagedUsers(): ManagedUser[] {
   }
 }
 
+function isMatchingManagedUser(user: ManagedUser, normalizedUserId: string, selectedRole: string) {
+  const normalizedRole = user.role.toLowerCase();
+  const roleMatches = selectedRole === "dealer"
+    ? normalizedRole === "dealer"
+    : selectedRole === "manufacturer"
+      ? normalizedRole === "manufacturer"
+      : selectedRole === "financehead"
+        ? ["financehead", "finance head"].includes(normalizedRole)
+        : normalizedRole === "administrator";
+
+  if (!roleMatches || user.status !== "Active") return false;
+
+  const matchesStoredId = user.id.toUpperCase() === normalizedUserId;
+  const matchesLegacyDealerId = selectedRole === "dealer"
+    && /^D\d+$/.test(normalizedUserId)
+    && user.name.trim().toUpperCase() === normalizedUserId;
+
+  return matchesStoredId || matchesLegacyDealerId;
+}
+
 export default function UserLoginForm() {
   const navigate = useNavigate();
   const [userId, setUserId] = useState("");
@@ -70,17 +90,25 @@ export default function UserLoginForm() {
       .catch(() => {});
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const normalizedUserId = userId.trim().toUpperCase();
-    const managedUser = getManagedUsers().find((user) =>
-      user.id.toUpperCase() === normalizedUserId &&
-      user.status === "Active" &&
-      (role === "dealer" ? user.role.toLowerCase() === "dealer" : role === "manufacturer" ? user.role.toLowerCase() === "manufacturer" : role === "financehead" ? ["supervisor", "finance head", "financehead"].includes(user.role.toLowerCase()) : user.role.toLowerCase() === "administrator")
+    const cachedManagedUser = getManagedUsers().find((user) =>
+      isMatchingManagedUser(user, normalizedUserId, role)
     );
+    let managedUser = cachedManagedUser;
+    try {
+      const apiUsers = await getUsers();
+      const freshManagedUser = apiUsers.find((user) =>
+        isMatchingManagedUser(user, normalizedUserId, role)
+      );
+      if (freshManagedUser) managedUser = freshManagedUser;
+    } catch {
+      // Use the cached users when the API is unavailable.
+    }
     const selectedUser = managedUser
-      ? { userId: managedUser.id, name: managedUser.name, password: managedUser.password, dealerId: role === "dealer" ? managedUser.id : undefined }
+      ? { userId: normalizedUserId, name: managedUser.name, password: managedUser.password, dealerId: role === "dealer" ? normalizedUserId : undefined }
       : DUMMY_USERS[role as LoginRole];
 
     if (
@@ -108,7 +136,7 @@ export default function UserLoginForm() {
           state: loginState,
         });
       } else if (role === "financehead") {
-        navigate("/supervisor/dashboard", {
+        navigate("/financehead/dashboard", {
           state: loginState,
         });
       } else if( role === "salesmanager") {

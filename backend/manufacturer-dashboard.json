@@ -3,7 +3,7 @@
     { "label": "Total Orders", "value": 128, "subtitle": "All Fleet Requests", "icon": "orders", "variant": "blue" },
     { "label": "Pending Requests", "value": 42, "subtitle": "Awaiting Allocation", "icon": "pending", "variant": "orange" },
     { "label": "Fully Allocated", "value": 61, "subtitle": "Stock Available & Mapped", "icon": "allocated", "variant": "green" },
-    { "label": "Sent to Supervisor", "value": 25, "subtitle": "Awaiting Final Approval", "icon": "supervisor", "variant": "purple" }
+    { "label": "Sent to Finance Head", "value": 25, "subtitle": "Awaiting Final Approval", "icon": "financehead", "variant": "purple" }
   ],
   "models": [
     { "name": "Renault Kwid", "image": "kwid", "units": 120, "stockLevel": 100, "availability": "available" },
