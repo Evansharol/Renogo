@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Navbar from "../../../components/Navbar";
@@ -9,15 +9,15 @@ import RecentNotifications from "./components/NotificationsCard";
 import RequestsTablePanel, { STATUS_TABS } from "./components/RequestsTablePanel";
 import RequestDetailsModal from "../components/RequestDetailsModal/RequestDetailsModal";
 import { DM_KPI, DM_NOTIFICATIONS, CHART_DATA, type DmRequest } from "../types";
-import { getDmRequests } from "../../../api/dmRequests";
+import { ordersToDmRequests } from "../../../api/dmRequests";
+import { useGetOrdersQuery } from "../../../features/orders/ordersApi";
 import "../DealerManager.css";
 
 type ActiveFilter = "total" | "awaiting" | "payment_completed" | "confirmed" | null;
 
 export default function DealerManagerDashboard() {
-    const [requests, setRequests] = useState<DmRequest[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+    const { data: orders = [], isLoading: loading, isError } = useGetOrdersQuery();
+    const requests = useMemo(() => ordersToDmRequests(orders), [orders]);
 
     // Table panel state
     const [activeFilter, setActiveFilter] = useState<ActiveFilter>(null);
@@ -27,13 +27,6 @@ export default function DealerManagerDashboard() {
     // View Details modal state
     const [selectedRequest, setSelectedRequest] = useState<DmRequest | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-
-    useEffect(() => {
-        getDmRequests()
-            .then(setRequests)
-            .catch(() => setError("Unable to load requests."))
-            .finally(() => setLoading(false));
-    }, []);
 
     const kpi = useMemo(() => ({
         ...DM_KPI,
@@ -79,10 +72,9 @@ export default function DealerManagerDashboard() {
         setSelectedRequest(null);
     };
 
-    const handleRequestUpdated = async (requestId: string) => {
-        const updatedRequests = await getDmRequests();
-        setRequests(updatedRequests);
-        setSelectedRequest(updatedRequests.find((request) => request.id === requestId) ?? null);
+    const handleRequestUpdated = () => {
+        setIsModalOpen(false);
+        setSelectedRequest(null);
     };
 
     // Scope requests by KPI card, then by tab, then by search
@@ -139,9 +131,9 @@ export default function DealerManagerDashboard() {
                     </Box>
 
                     {loading && <Typography sx={{ color: "#64748b", mt: 2 }}>Loading dashboard...</Typography>}
-                    {error && <Typography sx={{ color: "#dc2626", mt: 2 }}>{error}</Typography>}
+                    {isError && <Typography sx={{ color: "#dc2626", mt: 2 }} role="alert">Unable to load requests.</Typography>}
 
-                    {!loading && !error && (
+                    {!loading && !isError && (
                         <>
                             {/* ── KPI Cards Row — click any to reveal the full table ── */}
                             <KpiCards

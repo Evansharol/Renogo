@@ -1,7 +1,7 @@
 /**
  * Manufacturer dashboard overview.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import ArrowForwardOutlinedIcon from "@mui/icons-material/ArrowForwardOutlined";
@@ -24,8 +24,9 @@ import twingoImage from "../../../assets/twingo.jpg";
 import meganeImage from "../../../assets/megane.jpg";
 import etechImage from "../../../assets/etech.jpg";
 import type { DealerRequest } from "../../../components/DealerRequestTable";
-import { getOrders } from "../../../api/orders";
 import type { Order } from "../../../types/order";
+import { useGetOrdersQuery } from "../../../features/orders/ordersApi";
+import { getOrderDisplayNumber } from "../../../utils/orderDisplay";
 
 import "../../Dealer/Dealer.css";
 
@@ -87,7 +88,7 @@ const toDealerRequest = (order: Order): DealerRequest => {
   ]));
   return {
     requestId: order.id,
-    requestNumber: order.requestNumber,
+    requestNumber: getOrderDisplayNumber(order),
     dealerId: order.dealerId,
     dealerName: order.dealerId,
     model: order.items?.map((item) => item.model).join(", ") ?? order.vehicleModel,
@@ -111,28 +112,25 @@ export default function DealerPortal() {
   const stored     = localStorage.getItem("loginState");
   const loginState = (location.state as LoginState | null) ?? (stored ? JSON.parse(stored) as LoginState : null);
   const manufacturerName = loginState?.name ?? "Noah Wilson";
+  const { data: orders = [], isLoading: ordersLoading, isError: ordersError } = useGetOrdersQuery();
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [dashboardError, setDashboardError] = useState("");
 
   useEffect(() => {
-    Promise.all([
-      fetch("/api/manufacturer-dashboard.json").then((response) => {
+    fetch("/api/manufacturer-dashboard.json").then((response) => {
         if (!response.ok) throw new Error(`Unable to load dashboard data (${response.status})`);
         return response.json() as Promise<DashboardData>;
-      }),
-      getOrders(),
-    ])
-      .then(([data, orders]) => setDashboardData({
-        ...data,
-        dealerRequests: [
-          ...orders.filter((order) => order.status === "Pending Manufacturer Review").map(toDealerRequest),
-          ...data.dealerRequests.filter((request) => !orders.some((order) => order.id === request.requestId)),
-        ],
-      }))
+      })
+      .then(setDashboardData)
       .catch((error: unknown) => {
         setDashboardError(error instanceof Error ? error.message : "Unable to load dashboard data");
       });
   }, []);
+
+  const dealerRequests = useMemo(
+    () => orders.filter((order) => order.status === "Pending Manufacturer Review").map(toDealerRequest),
+    [orders],
+  );
 
   return (
     <div className="dealer-layout">
@@ -145,9 +143,9 @@ export default function DealerPortal() {
         />
 
         <main className="dealer-main-scroll">
-          {dashboardError && <p role="alert">{dashboardError}</p>}
-          {!dashboardData && !dashboardError && <p>Loading dashboard...</p>}
-          {dashboardData && (
+          {(dashboardError || ordersError) && <p role="alert">{dashboardError || "Unable to load orders."}</p>}
+          {(!dashboardData || ordersLoading) && !dashboardError && !ordersError && <p>Loading dashboard...</p>}
+          {dashboardData && !dashboardError && !ordersLoading && !ordersError && (
             <>
           <div className="dealer-page-title-row">
             <div>
@@ -176,7 +174,7 @@ export default function DealerPortal() {
             </div>
           </section>
 
-          <DealerRequestTable requests={dashboardData.dealerRequests} />
+          <DealerRequestTable requests={dealerRequests} />
             </>
           )}
         </main>

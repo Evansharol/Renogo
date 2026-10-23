@@ -338,6 +338,515 @@
         "submittedAt": "2026-10-21T08:51:23.822Z",
         "remarks": "UTR: awsedrftgyuhio; Amount: 0234567890"
       }
+    },
+    {
+      "id": "0vHsl6s0YR0",
+      "dealerId": "D001",
+      "vehicleModel": "Renault Triber, Renault Kwid",
+      "quantity": 12,
+      "status": "Completed",
+      "currentOwner": "Admin",
+      "workflowHistory": [
+        {
+          "status": "Dealer Request Created",
+          "timestamp": "2026-10-22T05:00:53.646Z",
+          "owner": "Dealer"
+        },
+        {
+          "status": "Pending Manufacturer Review",
+          "timestamp": "2026-10-22T05:00:53.646Z",
+          "owner": "Manufacturer"
+        },
+        {
+          "status": "Stock Allocated by Manufacturer",
+          "timestamp": "2026-10-22T05:04:34.845Z",
+          "owner": "Manufacturer",
+          "remarks": "Allocated 12 units from stock and 0 units to manufacture."
+        },
+        {
+          "status": "Pending Finance Quotation",
+          "timestamp": "2026-10-22T05:04:34.845Z",
+          "owner": "Finance Head"
+        },
+        {
+          "status": "Pending Sales Manager Approval",
+          "timestamp": "2026-10-22T05:05:22.312Z",
+          "owner": "Sales Manager",
+          "remarks": "Quotation generated and sent for sales manager approval."
+        },
+        {
+          "status": "Approved by Sales Manager",
+          "timestamp": "2026-10-22T05:11:04.236Z",
+          "owner": "Dealer Manager",
+          "remarks": ""
+        },
+        {
+          "status": "Awaiting Payment",
+          "timestamp": "2026-10-22T05:11:28.096Z",
+          "owner": "Dealer Manager",
+          "remarks": "Dealer Manager acknowledged the quotation and terms."
+        },
+        {
+          "status": "Completed",
+          "timestamp": "2026-10-22T05:23:42.713Z",
+          "owner": "Admin",
+          "remarks": "Payment proof black.jpg submitted and acknowledgement completed. UTR: 12345678."
+        }
+      ],
+      "notifications": [
+        {
+          "role": "Manufacturer",
+          "message": "New dealer request is ready for review.",
+          "createdAt": "2026-10-22T05:00:53.646Z",
+          "read": false
+        },
+        {
+          "role": "Manufacturer",
+          "message": "0vHsl6s0YR0 is ready for Manufacturer",
+          "createdAt": "2026-10-22T05:04:34.845Z",
+          "read": false
+        },
+        {
+          "role": "Finance Head",
+          "message": "0vHsl6s0YR0 is ready for Finance Head",
+          "createdAt": "2026-10-22T05:04:34.845Z",
+          "read": false
+        },
+        {
+          "role": "Sales Manager",
+          "message": "0vHsl6s0YR0 is ready for Sales Manager",
+          "createdAt": "2026-10-22T05:05:22.312Z",
+          "read": false
+        },
+        {
+          "role": "Dealer Manager",
+          "message": "REQ-D001-20261022-050053-646 is ready for Dealer Manager",
+          "createdAt": "2026-10-22T05:11:04.236Z",
+          "read": false
+        },
+        {
+          "role": "Dealer Manager",
+          "message": "REQ-D001-20261022-050053-646 is ready for Dealer Manager",
+          "createdAt": "2026-10-22T05:11:28.096Z",
+          "read": false
+        },
+        {
+          "role": "Admin",
+          "message": "REQ-D001-20261022-050053-646 is ready for Admin",
+          "createdAt": "2026-10-22T05:23:42.713Z",
+          "read": false
+        }
+      ],
+      "orderDate": "2026-10-22T05:00:53.646Z",
+      "etaDelivery": "2027-01-23",
+      "items": [
+        {
+          "id": "1",
+          "model": "Renault Triber",
+          "variant": "RXL",
+          "color": "Moonlight Silver",
+          "quantity": 4,
+          "specs": {}
+        },
+        {
+          "id": "2",
+          "model": "Renault Kwid",
+          "variant": "RXZ Turbo",
+          "color": "Metallic Black",
+          "quantity": 8,
+          "specs": {}
+        }
+      ],
+      "estimatedTotal": 8600000,
+      "allocation": {
+        "available": 12,
+        "toManufacture": 0,
+        "manufacturerStatus": "Fully Allocated",
+        "updatedAt": "2026-10-22T05:04:34.845Z"
+      },
+      "paymentProof": {
+        "fileName": "black.jpg",
+        "submittedAt": "2026-10-22T05:23:42.713Z",
+        "remarks": "UTR: 12345678; Amount: 16,99,200"
+      }
+    },
+    {
+      "requestNumber": "REQ-D001-20261022-054835-950",
+      "dealerId": "D001",
+      "vehicleModel": "Renault Kiger - RXZ Turbo (10), Renault Kwid - RXT (5)",
+      "quantity": 15,
+      "status": "Completed",
+      "currentOwner": "Admin",
+      "workflowHistory": [
+        {
+          "status": "Dealer Request Created",
+          "timestamp": "2026-10-22T05:48:35.950Z",
+          "owner": "Dealer"
+        },
+        {
+          "status": "Pending Manufacturer Review",
+          "timestamp": "2026-10-22T05:48:35.950Z",
+          "owner": "Manufacturer"
+        },
+        {
+          "status": "Stock Allocated by Manufacturer",
+          "timestamp": "2026-10-22T05:49:24.488Z",
+          "owner": "Manufacturer",
+          "remarks": "Allocated 15 units from stock and 0 units to manufacture."
+        },
+        {
+          "status": "Pending Finance Quotation",
+          "timestamp": "2026-10-22T05:49:24.488Z",
+          "owner": "Finance Head"
+        },
+        {
+          "status": "Pending Sales Manager Approval",
+          "timestamp": "2026-10-22T06:01:33.199Z",
+          "owner": "Sales Manager",
+          "remarks": "Quotation generated and sent for sales manager approval."
+        },
+        {
+          "status": "Approved by Sales Manager",
+          "timestamp": "2026-10-22T06:14:54.243Z",
+          "owner": "Dealer Manager",
+          "remarks": ""
+        },
+        {
+          "status": "Awaiting Payment",
+          "timestamp": "2026-10-22T06:15:22.399Z",
+          "owner": "Dealer Manager",
+          "remarks": "Dealer Manager acknowledged the quotation and terms."
+        },
+        {
+          "status": "Completed",
+          "timestamp": "2026-10-22T06:15:36.015Z",
+          "owner": "Admin",
+          "remarks": "Payment proof black.jpg submitted and acknowledgement completed. UTR: wedrftgyhj."
+        }
+      ],
+      "notifications": [
+        {
+          "role": "Manufacturer",
+          "message": "New dealer request is ready for review.",
+          "createdAt": "2026-10-22T05:48:35.950Z",
+          "read": false
+        },
+        {
+          "role": "Manufacturer",
+          "message": "REQ-D001-20261022-054835-950 is ready for Manufacturer",
+          "createdAt": "2026-10-22T05:49:24.488Z",
+          "read": false
+        },
+        {
+          "role": "Finance Head",
+          "message": "REQ-D001-20261022-054835-950 is ready for Finance Head",
+          "createdAt": "2026-10-22T05:49:24.488Z",
+          "read": false
+        },
+        {
+          "role": "Sales Manager",
+          "message": "REQ-D001-20261022-054835-950 is ready for Sales Manager",
+          "createdAt": "2026-10-22T06:01:33.199Z",
+          "read": false
+        },
+        {
+          "role": "Dealer Manager",
+          "message": "REQ-D001-20261022-054835-950 is ready for Dealer Manager",
+          "createdAt": "2026-10-22T06:14:54.243Z",
+          "read": false
+        },
+        {
+          "role": "Dealer Manager",
+          "message": "REQ-D001-20261022-054835-950 is ready for Dealer Manager",
+          "createdAt": "2026-10-22T06:15:22.399Z",
+          "read": false
+        },
+        {
+          "role": "Admin",
+          "message": "REQ-D001-20261022-054835-950 is ready for Admin",
+          "createdAt": "2026-10-22T06:15:36.015Z",
+          "read": false
+        }
+      ],
+      "orderDate": "2026-10-22T05:48:35.950Z",
+      "etaDelivery": "2026-10-31",
+      "items": [
+        {
+          "id": "kiger-rxz-turbo-moonlight-silver",
+          "model": "Renault Kiger",
+          "variant": "RXZ Turbo",
+          "color": "Moonlight Silver",
+          "colorHex": "#C0C0C8",
+          "quantity": 10,
+          "image": "/src/assets/dealer/kiger.jpg",
+          "startingPrice": "₹ 5.99 Lakh*",
+          "specs": {
+            "engine": "1.0L Turbo Petrol",
+            "transmission": "5-Speed MT / CVT",
+            "fuel": "Petrol",
+            "seating": "5 Seater"
+          }
+        },
+        {
+          "id": "kwid-rxt-fiery-red",
+          "model": "Renault Kwid",
+          "variant": "RXT",
+          "color": "Fiery Red",
+          "colorHex": "#C1201F",
+          "quantity": 5,
+          "image": "/src/assets/dealer/kwid.jpg",
+          "startingPrice": "₹ 4.69 Lakh*",
+          "specs": {
+            "engine": "1.0L SCe Smart Drive",
+            "transmission": "5-Speed MT / AMT",
+            "fuel": "Petrol",
+            "seating": "5 Seater City Hatch"
+          }
+        }
+      ],
+      "estimatedTotal": 12750000,
+      "id": "UNkKFv3jeLA",
+      "allocation": {
+        "available": 15,
+        "toManufacture": 0,
+        "manufacturerStatus": "Fully Allocated",
+        "updatedAt": "2026-10-22T05:49:24.488Z"
+      },
+      "paymentProof": {
+        "fileName": "black.jpg",
+        "submittedAt": "2026-10-22T06:15:36.015Z",
+        "remarks": "UTR: wedrftgyhj; Amount: 19,67,061"
+      }
+    },
+    {
+      "requestNumber": "REQ-D001-20261023-053801-805",
+      "dealerId": "D001",
+      "vehicleModel": "Renault Kiger - RXZ Turbo (10)",
+      "quantity": 10,
+      "status": "Completed",
+      "currentOwner": "Admin",
+      "workflowHistory": [
+        {
+          "status": "Dealer Request Created",
+          "timestamp": "2026-10-23T05:38:01.805Z",
+          "owner": "Dealer"
+        },
+        {
+          "status": "Pending Manufacturer Review",
+          "timestamp": "2026-10-23T05:38:01.805Z",
+          "owner": "Manufacturer"
+        },
+        {
+          "status": "Stock Allocated by Manufacturer",
+          "timestamp": "2026-10-23T05:38:25.239Z",
+          "owner": "Manufacturer",
+          "remarks": "Allocated 10 units from stock and 0 units to manufacture."
+        },
+        {
+          "status": "Pending Finance Quotation",
+          "timestamp": "2026-10-23T05:38:25.239Z",
+          "owner": "Finance Head"
+        },
+        {
+          "status": "Pending Sales Manager Approval",
+          "timestamp": "2026-10-23T05:38:45.669Z",
+          "owner": "Sales Manager",
+          "remarks": "Quotation generated and sent for sales manager approval."
+        },
+        {
+          "status": "Approved by Sales Manager",
+          "timestamp": "2026-10-23T05:39:07.066Z",
+          "owner": "Dealer Manager",
+          "remarks": ""
+        },
+        {
+          "status": "Awaiting Payment",
+          "timestamp": "2026-10-23T05:39:26.881Z",
+          "owner": "Dealer Manager",
+          "remarks": "Dealer Manager acknowledged the quotation and terms."
+        },
+        {
+          "status": "Completed",
+          "timestamp": "2026-10-23T05:39:36.697Z",
+          "owner": "Admin",
+          "remarks": "Payment proof black.jpg submitted and acknowledgement completed. UTR: edrftghyj."
+        }
+      ],
+      "notifications": [
+        {
+          "role": "Manufacturer",
+          "message": "New dealer request is ready for review.",
+          "createdAt": "2026-10-23T05:38:01.805Z",
+          "read": false
+        },
+        {
+          "role": "Manufacturer",
+          "message": "REQ-D001-20261023-053801-805 is ready for Manufacturer",
+          "createdAt": "2026-10-23T05:38:25.239Z",
+          "read": false
+        },
+        {
+          "role": "Finance Head",
+          "message": "REQ-D001-20261023-053801-805 is ready for Finance Head",
+          "createdAt": "2026-10-23T05:38:25.239Z",
+          "read": false
+        },
+        {
+          "role": "Sales Manager",
+          "message": "REQ-D001-20261023-053801-805 is ready for Sales Manager",
+          "createdAt": "2026-10-23T05:38:45.669Z",
+          "read": false
+        },
+        {
+          "role": "Dealer Manager",
+          "message": "REQ-D001-20261023-053801-805 is ready for Dealer Manager",
+          "createdAt": "2026-10-23T05:39:07.066Z",
+          "read": false
+        },
+        {
+          "role": "Dealer Manager",
+          "message": "REQ-D001-20261023-053801-805 is ready for Dealer Manager",
+          "createdAt": "2026-10-23T05:39:26.881Z",
+          "read": false
+        },
+        {
+          "role": "Admin",
+          "message": "REQ-D001-20261023-053801-805 is ready for Admin",
+          "createdAt": "2026-10-23T05:39:36.697Z",
+          "read": false
+        }
+      ],
+      "orderDate": "2026-10-23T05:38:01.805Z",
+      "etaDelivery": "2026-10-31",
+      "items": [
+        {
+          "id": "kiger-rxz-turbo-moonlight-silver",
+          "model": "Renault Kiger",
+          "variant": "RXZ Turbo",
+          "color": "Moonlight Silver",
+          "colorHex": "#C0C0C8",
+          "quantity": 10,
+          "unitPrice": 599000,
+          "image": "/src/assets/dealer/kiger.jpg",
+          "startingPrice": "₹ 5.99 Lakh*",
+          "specs": {
+            "engine": "1.0L Turbo Petrol",
+            "transmission": "5-Speed MT / CVT",
+            "fuel": "Petrol",
+            "seating": "5 Seater"
+          }
+        }
+      ],
+      "estimatedTotal": 5990000,
+      "id": "nzhUlx1XQ20",
+      "allocation": {
+        "available": 10,
+        "toManufacture": 0,
+        "manufacturerStatus": "Fully Allocated",
+        "updatedAt": "2026-10-23T05:38:25.239Z"
+      },
+      "paymentProof": {
+        "fileName": "black.jpg",
+        "submittedAt": "2026-10-23T05:39:36.697Z",
+        "remarks": "UTR: edrftghyj; Amount: 14,13,640"
+      }
+    },
+    {
+      "requestNumber": "REQ-D001-20261023-054344-566",
+      "dealerId": "D001",
+      "vehicleModel": "Renault Triber - RXZ (10), Renault Duster - RXZ (5)",
+      "quantity": 15,
+      "status": "Pending Finance Quotation",
+      "currentOwner": "Finance Head",
+      "workflowHistory": [
+        {
+          "status": "Dealer Request Created",
+          "timestamp": "2026-10-23T05:43:44.567Z",
+          "owner": "Dealer"
+        },
+        {
+          "status": "Pending Manufacturer Review",
+          "timestamp": "2026-10-23T05:43:44.567Z",
+          "owner": "Manufacturer"
+        },
+        {
+          "status": "Stock Allocated by Manufacturer",
+          "timestamp": "2026-10-23T05:44:38.390Z",
+          "owner": "Manufacturer",
+          "remarks": "Allocated 15 units from stock and 0 units to manufacture."
+        },
+        {
+          "status": "Pending Finance Quotation",
+          "timestamp": "2026-10-23T05:44:38.390Z",
+          "owner": "Finance Head"
+        }
+      ],
+      "notifications": [
+        {
+          "role": "Manufacturer",
+          "message": "New dealer request is ready for review.",
+          "createdAt": "2026-10-23T05:43:44.567Z",
+          "read": false
+        },
+        {
+          "role": "Manufacturer",
+          "message": "REQ-D001-20261023-054344-566 is ready for Manufacturer",
+          "createdAt": "2026-10-23T05:44:38.390Z",
+          "read": false
+        },
+        {
+          "role": "Finance Head",
+          "message": "REQ-D001-20261023-054344-566 is ready for Finance Head",
+          "createdAt": "2026-10-23T05:44:38.390Z",
+          "read": false
+        }
+      ],
+      "orderDate": "2026-10-23T05:43:44.566Z",
+      "etaDelivery": "2026-12-31",
+      "items": [
+        {
+          "id": "triber-rxz-electric-blue",
+          "model": "Renault Triber",
+          "variant": "RXZ",
+          "color": "Electric Blue",
+          "colorHex": "#1C4FA0",
+          "quantity": 10,
+          "unitPrice": 599000,
+          "image": "/src/assets/dealer/triber.jpg",
+          "startingPrice": "₹ 5.99 Lakh*",
+          "specs": {
+            "engine": "1.0L Energy Petrol",
+            "transmission": "5-Speed MT / EASY-R AMT",
+            "fuel": "Petrol",
+            "seating": "7 Seater Modular"
+          }
+        },
+        {
+          "id": "duster-rxz-caspian-blue",
+          "model": "Renault Duster",
+          "variant": "RXZ",
+          "color": "Caspian Blue",
+          "colorHex": "#1A3A5C",
+          "quantity": 5,
+          "unitPrice": 986000,
+          "image": "/src/assets/dealer/duster.jpg",
+          "startingPrice": "₹ 9.86 Lakh*",
+          "specs": {
+            "engine": "1.3L Turbo Petrol / Hybrid",
+            "transmission": "6-Speed MT / EDC Auto",
+            "fuel": "Turbo Petrol",
+            "seating": "5 Seater Rugged"
+          }
+        }
+      ],
+      "estimatedTotal": 10920000,
+      "id": "G2cCSjji-fg",
+      "allocation": {
+        "available": 15,
+        "toManufacture": 0,
+        "manufacturerStatus": "Fully Allocated",
+        "updatedAt": "2026-10-23T05:44:38.390Z"
+      }
     }
   ],
   "quotations": [
@@ -443,6 +952,63 @@
       "vehicleModel": "Renault Duster - RXZ (5), Renault Triber - RXZ (5)",
       "quantity": 10,
       "basePrice": 9,
+      "taxRate": 18,
+      "depositRate": 20,
+      "gstNumber": "GST-PENDING",
+      "paymentTerms": "30 days from quotation date",
+      "bankDetails": {
+        "beneficiaryName": "Renault India Private Limited",
+        "accountNumber": "Finance account details pending",
+        "ifscCode": "IFSC-PENDING",
+        "bankBranch": "Renault India Commercial Banking"
+      },
+      "status": "Quotation Sent"
+    },
+    {
+      "id": "kHx28A2LElw",
+      "dealerId": "D001",
+      "orderId": "0vHsl6s0YR0",
+      "vehicleModel": "Renault Triber, Renault Kwid",
+      "quantity": 12,
+      "basePrice": 600000,
+      "taxRate": 18,
+      "depositRate": 20,
+      "gstNumber": "GST-PENDING",
+      "paymentTerms": "30 days from quotation date",
+      "bankDetails": {
+        "beneficiaryName": "Renault India Private Limited",
+        "accountNumber": "Finance account details pending",
+        "ifscCode": "IFSC-PENDING",
+        "bankBranch": "Renault India Commercial Banking"
+      },
+      "status": "Quotation Sent"
+    },
+    {
+      "id": "R6-4SJ8iHa0",
+      "dealerId": "D001",
+      "orderId": "UNkKFv3jeLA",
+      "vehicleModel": "Renault Kiger - RXZ Turbo (10), Renault Kwid - RXT (5)",
+      "quantity": 15,
+      "basePrice": 555667,
+      "taxRate": 18,
+      "depositRate": 20,
+      "gstNumber": "GST-PENDING",
+      "paymentTerms": "30 days from quotation date",
+      "bankDetails": {
+        "beneficiaryName": "Renault India Private Limited",
+        "accountNumber": "Finance account details pending",
+        "ifscCode": "IFSC-PENDING",
+        "bankBranch": "Renault India Commercial Banking"
+      },
+      "status": "Quotation Sent"
+    },
+    {
+      "id": "p9M1Lh0QpK8",
+      "dealerId": "D001",
+      "orderId": "nzhUlx1XQ20",
+      "vehicleModel": "Renault Kiger - RXZ Turbo (10)",
+      "quantity": 10,
+      "basePrice": 599000,
       "taxRate": 18,
       "depositRate": 20,
       "gstNumber": "GST-PENDING",

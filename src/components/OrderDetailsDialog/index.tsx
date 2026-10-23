@@ -9,6 +9,7 @@ import BusinessIcon from "@mui/icons-material/Business";
 import IconButton from "@mui/material/IconButton";
 import Drawer from "@mui/material/Drawer";
 import type { Order } from "../../types/order";
+import { getOrderDisplayNumber } from "../../utils/orderDisplay";
 import "./OrderDetailsDialog.css";
 
 type OrderDetailsDialogProps = {
@@ -120,7 +121,7 @@ export default function OrderDetailsDialog({ order, onClose }: OrderDetailsDialo
 								{order.status}
 							</span>
 						</div>
-						<h2 id="order-dialog-title">{order.requestNumber ?? order.id}</h2>
+						<h2 id="order-dialog-title">{getOrderDisplayNumber(order)}</h2>
 					</div>
 					<IconButton aria-label="Close order details" onClick={onClose} size="small">
 						<CloseIcon fontSize="small" />

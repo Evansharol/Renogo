@@ -660,6 +660,14 @@
   margin-top: 0;
 }
 
+.financehead-quote-editor-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .financehead-no-quote {
   color: #6b7280;
 }

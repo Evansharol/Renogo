@@ -28,7 +28,14 @@ A role-based fleet order management system that streamlines vehicle requests fro
 - TypeScript
 - Vite
 - React Router
+- Redux Toolkit (RTK Query) and React-Redux
 - CSS
+
+## Order Data
+
+RTK Query is the shared client cache for server-owned orders, statuses, and workflow history. Dealer screens use `GET /orders?dealerId=...`; other role dashboards use `GET /orders`. Order creation and workflow updates use the existing `POST /orders` and `PUT /orders/:id` operations. Successful mutations invalidate order cache tags so subscribed screens refresh from the server. Filters, selections, and modal state remain local to their screens.
+
+There is no separate workflow, approval, or rejection endpoint. Workflow transitions are persisted as updates to the corresponding order record.
 
 ## Installation
 

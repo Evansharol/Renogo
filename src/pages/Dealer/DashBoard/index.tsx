@@ -13,6 +13,7 @@ import { useNavigate, useOutletContext } from "react-router-dom";
 import { POPULAR_MODELS } from "./types";
 import { formatDate, statusBadgeClass, deriveStats } from "../utils";
 import type { DealerOutletContext } from "../index";
+import { getOrderDisplayNumber } from "../../../utils/orderDisplay";
 import heroBannerImg from "../../../assets/dealer/hero_banner.jpg";
 import fleetPromoImg from "../../../assets/dealer/fleet_promo.jpg";
 import "../Dealer.css";
@@ -210,7 +211,7 @@ export default function DashboardHome() {
                   ) : (
                     filteredOrders.slice(0, 5).map((req) => (
                       <tr key={req.id}>
-                        <td className="req-id-cell">{req.requestNumber ?? req.id}</td>
+                        <td className="req-id-cell">{getOrderDisplayNumber(req)}</td>
                         <td className="req-model-cell">{req.vehicleModel}</td>
                         <td>{req.quantity}</td>
                         <td className="req-date-cell">{formatDate(req.orderDate)}</td>

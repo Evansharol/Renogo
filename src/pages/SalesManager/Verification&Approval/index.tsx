@@ -9,13 +9,15 @@ import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined
 import Navbar from "../../../components/Navbar";
 import Sidebar from "../../../components/Sidebar";
 import SalesManagerReviewModal from "../Dashboard/SalesManagerReviewModal";
-import { getOrders } from "../../../api/orders";
 import { getQuotationByOrderId } from "../../../api/quotations";
 import type { Order } from "../../../types/order";
 import type { Quotation } from "../../../types/quotation";
+import { applyWorkflowTransition, useGetOrdersQuery, useUpdateOrderMutation } from "../../../features/orders/ordersApi";
+import { getOrderDisplayNumber } from "../../../utils/orderDisplay";
+import { getRequestRowDomId, useRequestRowFocus } from "../../../hooks/useRequestRowFocus";
 import "./VerificationApproval.css";
 
-type LoginState = { name?: string };
+type LoginState = { name?: string; requestId?: string; filter?: string };
 
 type Allocation = {
   orderId: string;
@@ -30,49 +32,38 @@ type AllocationResponse = { dealerRequests: Allocation[] };
 export default function SalesManagerVerificationApproval() {
   const location = useLocation();
   const salesManagerName = (location.state as LoginState | null)?.name ?? "Rajesh Kumar";
+  const targetRequestId = new URLSearchParams(location.search).get("requestId") ?? undefined;
 
-  const [orders, setOrders] = useState<Order[]>([]);
+  const { data: orders = [], isLoading: loading, isError: ordersError } = useGetOrdersQuery();
+  const [updateOrder] = useUpdateOrderMutation();
   const [allocations, setAllocations] = useState<Allocation[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [quotation, setQuotation] = useState<Quotation | null>(null);
   const [reviewLoading, setReviewLoading] = useState(false);
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("All");
+  const [searchQuery, setSearchQuery] = useState(targetRequestId ?? "");
+  const [statusFilter, setStatusFilter] = useState<string>(() => {
+    if (targetRequestId) return "All";
+    const stateFilter = (location.state as LoginState | null)?.filter;
+    if (["Pending", "pending_approvals", "pending"].includes(stateFilter ?? "")) return "Pending";
+    if (["Approved", "approved_requests", "approved"].includes(stateFilter ?? "")) return "Approved";
+    if (["Confirmed", "orders_confirmed", "confirmed"].includes(stateFilter ?? "")) return "Confirmed";
+    return "All";
+  });
 
   useEffect(() => {
-    Promise.all([
-      getOrders(),
-      fetch("/api/manufacturer-dashboard.json").then((res) => {
+    fetch("/api/manufacturer-dashboard.json")
+      .then((res) => {
         if (!res.ok) throw new Error("Unable to load manufacturer allocations.");
         return res.json() as Promise<AllocationResponse>;
-      }),
-    ])
-      .then(([loadedOrders, allocationData]) => {
-        setAllocations(allocationData.dealerRequests || []);
-        setOrders(loadedOrders);
       })
-      .catch(() => setError("Unable to load requests for verification."))
-      .finally(() => setLoading(false));
+      .then((allocationData) => {
+        setAllocations(allocationData.dealerRequests || []);
+      })
+      .catch(() => setError("Unable to load requests for verification."));
   }, []);
-
-  useEffect(() => {
-    const stateFilter = (location.state as { filter?: string } | null)?.filter;
-    if (stateFilter) {
-      if (stateFilter === "Pending" || stateFilter === "pending_approvals" || stateFilter === "pending") {
-        setStatusFilter("Pending");
-      } else if (stateFilter === "Approved" || stateFilter === "approved_requests" || stateFilter === "approved") {
-        setStatusFilter("Approved");
-      } else if (stateFilter === "Confirmed" || stateFilter === "orders_confirmed" || stateFilter === "confirmed") {
-        setStatusFilter("Confirmed");
-      } else {
-        setStatusFilter("All");
-      }
-    }
-  }, [location.state]);
 
   const openReview = async (order: Order) => {
     setSelectedOrder(order);
@@ -92,12 +83,20 @@ export default function SalesManagerVerificationApproval() {
     setQuotation(null);
   };
 
-  const completeReview = (status: string) => {
+  const completeReview = async (status: string) => {
     if (!selectedOrder) return;
-    setOrders((current) =>
-      current.map((order) => (order.id === selectedOrder.id ? { ...order, status } : order))
-    );
-    closeReview();
+    const isRejected = status.startsWith("Declined:");
+    const updatedOrder = applyWorkflowTransition(selectedOrder, {
+      status: isRejected ? "Rejected" : "Approved by Sales Manager",
+      owner: isRejected ? "Admin" : "Dealer Manager",
+      remarks: status.replace(/^(Declined:|Approved and sent to Dealer Manager)\s*/, ""),
+    });
+    try {
+      await updateOrder(updatedOrder).unwrap();
+      closeReview();
+    } catch {
+      setError("Unable to save the sales manager decision.");
+    }
   };
 
   // KPI stats
@@ -115,6 +114,7 @@ export default function SalesManagerVerificationApproval() {
     return orders.filter((order) => {
       const matchesSearch =
         searchQuery === "" ||
+        getOrderDisplayNumber(order).toLowerCase().includes(searchQuery.toLowerCase()) ||
         order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         order.dealerId.toLowerCase().includes(searchQuery.toLowerCase()) ||
         order.vehicleModel.toLowerCase().includes(searchQuery.toLowerCase());
@@ -128,6 +128,7 @@ export default function SalesManagerVerificationApproval() {
       return matchesSearch && matchesStatus;
     });
   }, [orders, searchQuery, statusFilter]);
+  useRequestRowFocus(targetRequestId, filteredOrders.map((order) => order.id));
 
   const getStatusBadgeClass = (status: string) => {
     const s = status.toLowerCase();
@@ -258,9 +259,9 @@ export default function SalesManagerVerificationApproval() {
           </div>
 
           {loading && <p className="loading-state">Loading verification requests...</p>}
-          {error && <p className="error-state" role="alert">{error}</p>}
+          {(error || ordersError) && <p className="error-state" role="alert">{error || "Unable to load orders."}</p>}
 
-          {!loading && !error && (
+          {!loading && !error && !ordersError && (
             <div className="sm-va-card">
               <div className="sm-va-table-wrapper">
                 <table className="sm-va-table">
@@ -280,8 +281,12 @@ export default function SalesManagerVerificationApproval() {
                     {filteredOrders.map((order) => {
                       const alloc = allocations.find((a) => a.orderId === order.id);
                       return (
-                        <tr key={order.id}>
-                          <td><strong>{order.requestNumber ?? order.id}</strong></td>
+                        <tr
+                          key={order.id}
+                          id={getRequestRowDomId(order.id)}
+                          className={order.id === targetRequestId ? "notification-target-row" : undefined}
+                        >
+                          <td><strong>{getOrderDisplayNumber(order)}</strong></td>
                           <td>{order.dealerId}</td>
                           <td>{alloc?.dealerName ?? "Dealer Account"}</td>
                           <td>{order.vehicleModel}</td>

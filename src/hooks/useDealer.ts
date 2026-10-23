@@ -1,74 +1,61 @@
 import { useEffect, useState } from "react";
 import { getDealerById } from "../api/dealers";
-import { getOrdersByDealerId } from "../api/orders";
 import { getUsers } from "../api/users";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { useGetDealerOrdersQuery } from "../features/orders/ordersApi";
 import type { Dealer } from "../types/dealer";
-import type { Order } from "../types/order";
 
 export function useDealer(dealerId?: string) {
-	const [dealer, setDealer] = useState<Dealer | null>(null);
-	const [isLoading, setIsLoading] = useState(true);
-	const [error, setError] = useState("");
+	const [result, setResult] = useState<{ dealerId: string; dealer: Dealer | null; error: string } | null>(null);
+	const ordersQuery = useGetDealerOrdersQuery(dealerId ?? skipToken);
 
 	useEffect(() => {
-		if (!dealerId) {
-			setDealer(null);
-			setIsLoading(false);
-			return;
-		}
+		if (!dealerId) return;
 
 		let isActive = true;
-		setIsLoading(true);
-		setError("");
 
 		const loadDealer = async () => {
 			try {
 				const existingDealer = await getDealerById(dealerId);
-				if (isActive) setDealer(existingDealer);
+				if (isActive) setResult({ dealerId, dealer: existingDealer, error: "" });
 				return;
 			} catch {
-				const [ordersResult, usersResult] = await Promise.allSettled([
-					getOrdersByDealerId(dealerId),
-					getUsers(),
-				]);
-				if (ordersResult.status !== "fulfilled" || ordersResult.value.length === 0) {
+				if (ordersQuery.isLoading) return;
+				if (ordersQuery.isError || !ordersQuery.data?.length) {
 					throw new Error("Dealer and dealer orders were not found.");
 				}
 
-				const dealerUser = usersResult.status === "fulfilled"
-					? usersResult.value.find((user) => user.id === dealerId && user.role.toLowerCase() === "dealer")
-					: undefined;
-				const dealerOrders: Order[] = ordersResult.value;
+				const users = await getUsers().catch(() => []);
+				const dealerUser = users.find((user) => user.id === dealerId && user.role.toLowerCase() === "dealer");
 				const derivedDealer: Dealer = {
 					id: dealerId,
 					name: dealerUser?.name ?? `Dealer ${dealerId}`,
 					location: "Location not provided",
-					orders: dealerOrders.length,
-					status: dealerOrders[0]?.status ?? "Pending Approval",
+					orders: ordersQuery.data.length,
+					status: ordersQuery.data[0]?.status ?? "Pending Approval",
 				};
-				if (isActive) setDealer(derivedDealer);
+				if (isActive) setResult({ dealerId, dealer: derivedDealer, error: "" });
 			}
 		};
 
 		loadDealer()
 			.catch((loadError: unknown) => {
-				if (isActive) {
-					setDealer(null);
-					setError(loadError instanceof Error ? loadError.message : "Unable to load dealer");
-				}
-			})
-			.finally(() => {
-				if (isActive) setIsLoading(false);
+				if (isActive) setResult({
+					dealerId,
+					dealer: null,
+					error: loadError instanceof Error ? loadError.message : "Unable to load dealer",
+				});
 			});
 
 		return () => {
 			isActive = false;
 		};
-	}, [dealerId]);
+	}, [dealerId, ordersQuery.data, ordersQuery.isError, ordersQuery.isLoading]);
 
+	const currentResult = result?.dealerId === dealerId ? result : null;
 	return {
-		dealer,
-		isLoading: dealerId ? isLoading : false,
-		error: dealerId ? error : "Dealer ID is missing",
+		dealer: currentResult?.dealer ?? null,
+		isLoading: Boolean(dealerId) && !currentResult,
+		error: dealerId ? currentResult?.error ?? "" : "Dealer ID is missing",
 	};
 }

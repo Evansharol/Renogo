@@ -1,5 +1,6 @@
 // Shared utility functions for Dealer portal
 import type { Order } from "../../types/order";
+import { getOrderDisplayNumber } from "../../utils/orderDisplay";
 
 export const formatDate = (dateStr?: string): string => {
   if (!dateStr) return "12 Oct 2024";
@@ -13,14 +14,7 @@ export const formatDate = (dateStr?: string): string => {
 };
 
 export const getDisplayRequestNumber = (order: Order): string => {
-  if (order.requestNumber) return order.requestNumber;
-  if (!order.orderDate) return order.id;
-
-  const date = new Date(order.orderDate);
-  if (isNaN(date.getTime())) return order.id;
-
-  const datePart = date.toISOString().slice(0, 10).replace(/-/g, "");
-  return `REQ-${order.dealerId}-${datePart}`;
+  return getOrderDisplayNumber(order);
 };
 
 export const statusBadgeClass = (status: string): string => {

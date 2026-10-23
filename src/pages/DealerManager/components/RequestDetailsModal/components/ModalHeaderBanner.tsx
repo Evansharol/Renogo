@@ -6,19 +6,19 @@ import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import type { DmRequest } from "../../../types";
 import { generateQuotationPdf } from "../../../utils/generateQuotationPdf";
+import type { Quotation } from "../../../../../types/quotation";
 
 type ModalHeaderBannerProps = {
     requestId: string;
     request?: DmRequest | null;
+    quotation?: Quotation | null;
 };
 
-export default function ModalHeaderBanner({ requestId, request }: ModalHeaderBannerProps) {
-    const effectiveQuotationNo = request?.quotationNo || `QTN-${requestId}`;
+export default function ModalHeaderBanner({ requestId, request, quotation }: ModalHeaderBannerProps) {
+    const effectiveQuotationNo = request?.quotationNo || quotation?.id || "Not available";
 
     const formatDate = (isoString?: string) => {
-        if (!isoString) {
-            return new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-        }
+        if (!isoString) return "—";
         const d = new Date(isoString);
         return isNaN(d.getTime())
             ? isoString
@@ -31,7 +31,14 @@ export default function ModalHeaderBanner({ requestId, request }: ModalHeaderBan
         generateQuotationPdf({
             requestId,
             request,
+            quotation,
             quotationNo: effectiveQuotationNo,
+            bankDetails: quotation?.bankDetails ? {
+                beneficiaryName: quotation.bankDetails.beneficiaryName,
+                accountNumber: quotation.bankDetails.accountNumber,
+                ifscCode: quotation.bankDetails.ifscCode,
+                bankBranch: quotation.bankDetails.bankBranch,
+            } : undefined,
         });
     };
 
@@ -71,7 +78,7 @@ export default function ModalHeaderBanner({ requestId, request }: ModalHeaderBan
                             {requestId}
                         </Typography>
                         <Chip
-                            label="Approved by Sales Manager"
+                            label={request?.orderStatus || "Status unavailable"}
                             size="small"
                             sx={{
                                 backgroundColor: "#dcfce7",
@@ -92,6 +99,7 @@ export default function ModalHeaderBanner({ requestId, request }: ModalHeaderBan
 
             <Button
                 variant="contained"
+                disabled={!quotation}
                 startIcon={<DownloadOutlinedIcon sx={{ fontSize: "16px !important" }} />}
                 onClick={handleDownloadPdf}
                 sx={{
@@ -112,4 +120,3 @@ export default function ModalHeaderBanner({ requestId, request }: ModalHeaderBan
         </Box>
     );
 }
-

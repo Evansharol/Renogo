@@ -7,14 +7,16 @@ import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import FormatListBulletedOutlinedIcon from "@mui/icons-material/FormatListBulletedOutlined";
 import Navbar from "../../../components/Navbar";
 import Sidebar from "../../../components/Sidebar";
-import { getOrders } from "../../../api/orders";
 import { getQuotationByOrderId } from "../../../api/quotations";
 import type { Order } from "../../../types/order";
 import type { Quotation } from "../../../types/quotation";
+import { useGetOrdersQuery } from "../../../features/orders/ordersApi";
+import { getOrderDisplayNumber } from "../../../utils/orderDisplay";
+import { getRequestRowDomId, useRequestRowFocus } from "../../../hooks/useRequestRowFocus";
 import ReviewQuotation, { type VehicleStock } from "./ReviewQuotation";
 import "./Dashboard.css";
 
-type LoginState = { name?: string };
+type LoginState = { name?: string; requestId?: string };
 type Filter = "all" | "pending" | "approved" | "rejected";
 type SortKey = "id" | "dealerId" | "vehicleModel" | "quantity" | "status" | "orderDate";
 type ManufacturerRequest = {
@@ -34,23 +36,23 @@ const isRejected = (status: string) => /reject|decline/.test(status.toLowerCase(
 export default function FinanceheadDashboard() {
     const location = useLocation();
     const financeheadName = (location.state as LoginState | null)?.name ?? "Louis Bernard";
-    const [orders, setOrders] = useState<Order[]>([]);
+    const targetRequestId = new URLSearchParams(location.search).get("requestId") ?? undefined;
+    const { data: allOrders = [], isLoading: ordersLoading, isError: ordersError } = useGetOrdersQuery();
     const [manufacturerRequests, setManufacturerRequests] = useState<ManufacturerRequest[]>([]);
     const [vehicleStock, setVehicleStock] = useState<VehicleStock[]>([]);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [quotation, setQuotation] = useState<Quotation | null>(null);
     const [filter, setFilter] = useState<Filter>("all");
-    const [search, setSearch] = useState("");
+    const [search, setSearch] = useState(targetRequestId ?? "");
     const [sortKey, setSortKey] = useState<SortKey>("orderDate");
     const [sortAscending, setSortAscending] = useState(false);
     const [page, setPage] = useState(1);
-    const [loading, setLoading] = useState(true);
+    const [dashboardLoading, setDashboardLoading] = useState(true);
     const [error, setError] = useState("");
     const pageSize = 10;
 
     useEffect(() => {
         Promise.all([
-            getOrders(),
             fetch("/api/manufacturer-dashboard.json").then((response) => {
                 if (!response.ok) throw new Error("Unable to load manufacturer allocations.");
                 return response.json() as Promise<ManufacturerDashboard>;
@@ -60,19 +62,22 @@ export default function FinanceheadDashboard() {
                 return response.json() as Promise<VehicleStock[]>;
             }),
         ])
-            .then(([loadedOrders, manufacturerDashboard, loadedVehicleStock]) => {
-                const allocatedOrderIds = new Set(
-                    manufacturerDashboard.dealerRequests
-                        .filter((request) => request.manufacturerStatus !== "Not Allocated")
-                        .map((request) => request.orderId),
-                );
+            .then(([manufacturerDashboard, loadedVehicleStock]) => {
                 setManufacturerRequests(manufacturerDashboard.dealerRequests);
-                setOrders(loadedOrders.filter((order) => allocatedOrderIds.has(order.id) || ["pending finance approval", "pending finance quotation"].includes(order.status.toLowerCase())));
                 setVehicleStock(loadedVehicleStock);
             })
             .catch(() => setError("Unable to load finance head dashboard."))
-            .finally(() => setLoading(false));
+            .finally(() => setDashboardLoading(false));
     }, []);
+
+    const allocatedOrderIds = useMemo(
+        () => new Set(manufacturerRequests.filter((request) => request.manufacturerStatus !== "Not Allocated").map((request) => request.orderId)),
+        [manufacturerRequests],
+    );
+    const orders = useMemo(
+        () => allOrders.filter((order) => allocatedOrderIds.has(order.id) || ["pending finance approval", "pending finance quotation"].includes(order.status.toLowerCase())),
+        [allOrders, allocatedOrderIds],
+    );
 
     const stats = useMemo(() => ({
         total: orders.length,
@@ -106,6 +111,7 @@ export default function FinanceheadDashboard() {
 
     const pageCount = Math.max(1, Math.ceil(filteredOrders.length / pageSize));
     const visibleOrders = filteredOrders.slice((page - 1) * pageSize, page * pageSize);
+    useRequestRowFocus(targetRequestId, visibleOrders.map((order) => order.id));
 
     const selectFilter = (nextFilter: Filter) => {
         setFilter(nextFilter);
@@ -148,9 +154,9 @@ export default function FinanceheadDashboard() {
                         <h1>Welcome, {financeheadName} !!</h1>
                         <p>Monitor allocated dealer requests and quotation progress.</p>
                     </div>
-                    {loading && <p>Loading dashboard...</p>}
-                    {error && <p className="financehead-error" role="alert">{error}</p>}
-                    {!loading && !error && (
+                    {(dashboardLoading || ordersLoading) && <p>Loading dashboard...</p>}
+                    {(error || ordersError) && <p className="financehead-error" role="alert">{error || "Unable to load orders."}</p>}
+                    {!dashboardLoading && !ordersLoading && !error && !ordersError && (
                         <>
                             <section className="financehead-dashboard-grid" aria-label="Request summary">
                                 {cards.map((card) => (
@@ -202,9 +208,13 @@ export default function FinanceheadDashboard() {
                                         </thead>
                                         <tbody>
                                             {visibleOrders.map((order) => (
-                                                <tr key={order.id}>
+                                                <tr
+                                                    key={order.id}
+                                                    id={getRequestRowDomId(order.id)}
+                                                    className={order.id === targetRequestId ? "notification-target-row" : undefined}
+                                                >
                                                     <td>{order.dealerId}</td>
-                                                    <td><strong>{order.requestNumber ?? order.id}</strong></td>
+                                                    <td><strong>{getOrderDisplayNumber(order)}</strong></td>
                                                     <td>{order.vehicleModel}</td>
                                                     <td>{order.quantity}</td>
                                                     <td><span className={`financehead-status financehead-status--${order.status.toLowerCase().replace(/\s+/g, "-")}`}>{order.status}</span></td>
@@ -230,13 +240,13 @@ export default function FinanceheadDashboard() {
             </div>
             {selectedOrder && (
                 <ReviewQuotation
+                    key={selectedOrder.id}
                     order={selectedOrder}
                     quotation={quotation}
                     manufacturerRequest={manufacturerRequests.find((request) => request.orderId === selectedOrder.id)}
                     vehicleStock={vehicleStock}
                     onQuotationChange={setQuotation}
                     onOrderStatusChange={(updatedOrder) => {
-                        setOrders((current) => current.map((candidate) => candidate.id === updatedOrder.id ? updatedOrder : candidate));
                         setSelectedOrder(updatedOrder);
                     }}
                     onClose={() => setSelectedOrder(null)}

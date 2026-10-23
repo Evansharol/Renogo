@@ -9,18 +9,22 @@ import { sectionCardStyle, actionCircleIconStyle } from "../modalStyles";
 
 type ManagerActionsBarProps = {
     acknowledged: boolean;
+    acknowledging?: boolean;
     onAcknowledge: () => void;
     onViewPaymentDetails?: () => void;
     onUploadPaymentProof?: () => void;
     paymentSubmitted?: boolean;
+    canUploadPayment?: boolean;
 };
 
 export default function ManagerActionsBar({
     acknowledged,
+    acknowledging = false,
     onAcknowledge,
     onViewPaymentDetails,
     onUploadPaymentProof,
     paymentSubmitted = false,
+    canUploadPayment = true,
 }: ManagerActionsBarProps) {
     return (
         <Box
@@ -61,7 +65,7 @@ export default function ManagerActionsBar({
                 <Button
                     variant="contained"
                     startIcon={<CheckCircleOutlinedIcon sx={{ fontSize: "16px !important" }} />}
-                    disabled={acknowledged}
+                    disabled={acknowledged || acknowledging}
                     onClick={onAcknowledge}
                     sx={{
                         backgroundColor: acknowledged ? "#16a34a" : "#0f2b5c",
@@ -76,7 +80,7 @@ export default function ManagerActionsBar({
                         "&:hover": { backgroundColor: acknowledged ? "#15803d" : "#1e3a8a" },
                     }}
                 >
-                    {acknowledged ? "✓ Acknowledged" : "Acknowledge"}
+                    {acknowledged ? "✓ Acknowledged" : acknowledging ? "Saving..." : "Acknowledge"}
                 </Button>
 
                 {/* 2. View Payment Details */}
@@ -111,6 +115,7 @@ export default function ManagerActionsBar({
                         )
                     }
                     onClick={onUploadPaymentProof}
+                    disabled={!canUploadPayment}
                     sx={{
                         borderColor: paymentSubmitted ? "#16a34a" : "#2563eb",
                         backgroundColor: paymentSubmitted ? "#16a34a" : "transparent",

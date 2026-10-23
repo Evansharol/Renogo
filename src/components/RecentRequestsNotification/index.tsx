@@ -1,304 +1,249 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import CloseIcon from "@mui/icons-material/Close";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import IconButton from "@mui/material/IconButton";
-import { getOrders } from "../../api/orders";
+import { useNavigate } from "react-router-dom";
+import { useGetOrdersQuery } from "../../features/orders/ordersApi";
 import type { Order } from "../../types/order";
-import { getDmRequests, FALLBACK_DM_REQUESTS } from "../../api/dmRequests";
-import type { DmRequest } from "../../pages/DealerManager/types";
-import RequestDetailsModal from "../../pages/DealerManager/components/RequestDetailsModal/RequestDetailsModal";
+import { getOrderDisplayNumber } from "../../utils/orderDisplay";
 import "./RecentRequestsNotification.css";
 
-const DEALER_NAMES: Record<string, string> = {
-	D001: "ABC Motors · Chennai",
-	D002: "Royal Autos · Bangalore",
-	D003: "Chennai Cars · Chennai",
-};
-
-const FALLBACK_DEALER_ORDERS: Order[] = [
-	{
-		id: "ORD-1002",
-		dealerId: "D001",
-		vehicleModel: "Renault Kiger",
-		quantity: 50,
-		status: "Manufacturer Review",
-		orderDate: "2026-09-20T00:00:00.000Z",
-		etaDelivery: "2026-10-25",
-	},
-	{
-		id: "ORD-1001",
-		dealerId: "D001",
-		vehicleModel: "Renault Duster",
-		quantity: 50,
-		status: "Finance Head Review",
-		orderDate: "2026-10-15T00:00:00.000Z",
-		etaDelivery: "2026-11-20",
-	},
-	{
-		id: "ORD-3001",
-		dealerId: "D003",
-		vehicleModel: "Renault Triber",
-		quantity: 40,
-		status: "Manufacturer Review",
-		orderDate: "2026-09-02T00:00:00.000Z",
-		etaDelivery: "2026-10-20",
-	},
-	{
-		id: "ORD-3002",
-		dealerId: "D003",
-		vehicleModel: "Renault Kiger",
-		quantity: 18,
-		status: "Dealer Manager Review",
-		orderDate: "2026-09-18T00:00:00.000Z",
-		etaDelivery: "2026-10-22",
-	},
-];
+type RequestRole = "Dealer" | "Manufacturer" | "Finance Head" | "Sales Manager" | "Dealer Manager";
 
 type RecentRequestsNotificationProps = {
-	showLabel?: boolean;
-	customLabel?: string;
+  role: string;
+  dealerId?: string;
 };
 
-export default function RecentRequestsNotification({
-	showLabel = true,
-	customLabel,
-}: RecentRequestsNotificationProps) {
-	const [isOpen, setIsOpen] = useState(false);
-	const [orders, setOrders] = useState<Order[]>(FALLBACK_DEALER_ORDERS);
-	const [dmRequests, setDmRequests] = useState<DmRequest[]>(FALLBACK_DM_REQUESTS);
-	const [selectedRequest, setSelectedRequest] = useState<DmRequest | null>(null);
-	const containerRef = useRef<HTMLDivElement>(null);
+const ROLE_REQUESTS: Record<RequestRole, { statuses: string[]; route: string }> = {
+  Dealer: { statuses: [], route: "/dealer/my-requests" },
+  Manufacturer: { statuses: ["Pending Manufacturer Review"], route: "/manufacturer/view-requests" },
+  "Finance Head": {
+    statuses: ["Pending Finance Quotation", "Pending Finance Approval"],
+    route: "/financehead/dashboard",
+  },
+  "Sales Manager": { statuses: ["Pending Sales Manager Approval", "Pending Approval"], route: "/salesmanager/verification-approval" },
+  "Dealer Manager": {
+    statuses: ["Approved by Sales Manager", "Awaiting Payment", "Payment Submitted"],
+    route: "/dealermanager/requests",
+  },
+};
 
-	useEffect(() => {
-		let isMounted = true;
-		getDmRequests()
-			.then((data) => {
-				if (isMounted && Array.isArray(data) && data.length > 0) {
-					setDmRequests(data);
-				}
-			})
-			.catch(() => {});
+const formatDate = (dateStr?: string) => {
+  if (!dateStr) return "Date unavailable";
+  const date = new Date(dateStr);
+  if (Number.isNaN(date.getTime())) return "Date unavailable";
+  return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(date);
+};
 
-		getOrders()
-			.then((data) => {
-				if (isMounted && Array.isArray(data) && data.length > 0) {
-					// Sort latest orders first
-					const sorted = [...data].sort((a, b) => {
-						const dateA = new Date(a.orderDate || 0).getTime() || 0;
-						const dateB = new Date(b.orderDate || 0).getTime() || 0;
-						return dateB - dateA;
-					});
-					setOrders(sorted);
-				}
-			})
-			.catch(() => {
-				// Keep fallback orders
-			});
+const formatAmount = (amount?: number) =>
+  amount == null ? "Not available" : `₹${amount.toLocaleString("en-IN")}`;
 
-		return () => {
-			isMounted = false;
-		};
-	}, []);
+export default function RecentRequestsNotification({ role, dealerId }: RecentRequestsNotificationProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [expandedRequestId, setExpandedRequestId] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const normalizedRole = role.toLowerCase().replace(/\s+/g, "");
+  const requestRole = (Object.keys(ROLE_REQUESTS) as RequestRole[]).find(
+    (candidate) => candidate.toLowerCase().replace(/\s+/g, "") === normalizedRole,
+  );
 
-	// Close dropdown when clicking outside
-	useEffect(() => {
-		function handleClickOutside(event: MouseEvent) {
-			if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-				setIsOpen(false);
-			}
-		}
+  const { data: orders = [], isLoading, isError } = useGetOrdersQuery();
+  const roleConfig = requestRole ? ROLE_REQUESTS[requestRole] : null;
+  const recentRequests = useMemo(() => {
+    if (!requestRole) return [];
+    const scopedOrders = requestRole === "Dealer"
+      ? orders.filter((order) => order.dealerId === dealerId)
+      : orders.filter((order) => roleConfig?.statuses.includes(order.status));
+    return [...scopedOrders]
+      .sort((first, second) => new Date(second.orderDate ?? 0).getTime() - new Date(first.orderDate ?? 0).getTime())
+      .slice(0, 5);
+  }, [dealerId, orders, requestRole, roleConfig]);
 
-		if (isOpen) {
-			document.addEventListener("mousedown", handleClickOutside);
-		}
-		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
-		};
-	}, [isOpen]);
+  const pendingCount = useMemo(() => {
+    if (!requestRole || requestRole === "Dealer") return 0;
+    return orders.filter((order) => roleConfig?.statuses.includes(order.status)).length;
+  }, [orders, requestRole, roleConfig]);
 
-	// Only count orders that are actively in a review or pending stage (not already delivered, rejected, or completed)
-	const isUnderReview = (status?: string) => {
-		const s = (status || "").toLowerCase();
-		return s.includes("review") || s.includes("pending") || s.includes("awaiting");
-	};
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) setIsOpen(false);
+    };
+    if (isOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen]);
 
-	const reviewPendingOrders = orders.filter((o) => isUnderReview(o.status));
-	// Show recent orders (max 5)
-	const recentRequests = orders.slice(0, 5);
-	// Real count of requests needing review (or 3 if none flagged)
-	const pendingCount = reviewPendingOrders.length > 0 ? Math.min(reviewPendingOrders.length, 3) : 3;
+  if (!requestRole || !roleConfig) return null;
 
-	const formatDate = (dateStr?: string) => {
-		if (!dateStr) return "Recent";
-		try {
-			const d = new Date(dateStr);
-			if (isNaN(d.getTime())) return dateStr;
-			return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short" }).format(d);
-		} catch {
-			return dateStr;
-		}
-	};
+  const openRoleRequests = (requestId?: string) => {
+    setIsOpen(false);
+    navigate(requestId ? `${roleConfig.route}?requestId=${encodeURIComponent(requestId)}` : roleConfig.route);
+  };
 
-	const getStatusClass = (status: string) => {
-		const s = (status || "").toLowerCase().replace(/[^a-z0-9]+/g, "-");
-		return `recent-status--${s}`;
-	};
+  const getRoleDetails = (order: Order) => {
+    switch (requestRole) {
+      case "Dealer":
+        return (
+          <>
+            <strong>Workflow progress</strong>
+            {(order.workflowHistory ?? []).slice(-3).reverse().map((stage) => (
+              <span key={`${stage.status}-${stage.timestamp}`}>{stage.status} · {formatDate(stage.timestamp)}</span>
+            ))}
+            {order.remarks && <span>Latest update: {order.remarks}</span>}
+          </>
+        );
+      case "Manufacturer":
+        return (
+          <>
+            <span>Allocation: {order.allocation?.manufacturerStatus ?? "Awaiting allocation"}</span>
+            <span>Requested units: {order.quantity}</span>
+            {order.items?.map((item) => (
+              <span key={item.id}>{item.model} · {item.variant} · {item.quantity} units · {item.color ?? "Any color"}</span>
+            ))}
+          </>
+        );
+      case "Finance Head":
+        return (
+          <>
+            <span>Estimated total: {formatAmount(order.estimatedTotal)}</span>
+            <span>Current owner: {order.currentOwner ?? "Finance Head"}</span>
+            {order.remarks && <span>Request note: {order.remarks}</span>}
+          </>
+        );
+      case "Sales Manager":
+        return (
+          <>
+            <span>Allocation: {order.allocation?.manufacturerStatus ?? "Manufacturer allocation recorded"}</span>
+            <span>Estimated total: {formatAmount(order.estimatedTotal)}</span>
+            {order.remarks && <span>Review note: {order.remarks}</span>}
+          </>
+        );
+      case "Dealer Manager":
+        return (
+          <>
+            <span>Payment status: {order.status === "Approved by Sales Manager" ? "Awaiting acknowledgement" : order.status}</span>
+            <span>Quotation total: {formatAmount(order.estimatedTotal)}</span>
+            {order.paymentProof && <span>Payment proof: {order.paymentProof.fileName}</span>}
+            {order.paymentProof?.remarks && <span>Payment note: {order.paymentProof.remarks}</span>}
+          </>
+        );
+    }
+  };
 
-	const handleOpenRequestDetails = (order: Order) => {
-		const matched =
-			dmRequests.find((r) => r.id === order.id) ||
-			FALLBACK_DM_REQUESTS.find((r) => r.id === order.id);
+  const title = requestRole === "Dealer" ? "My Recent Requests" : `${requestRole} Requests`;
+  const subtitle = requestRole === "Dealer"
+    ? "Your latest fleet requests and workflow updates"
+    : "Requests currently waiting for your role";
 
-		if (matched) {
-			setSelectedRequest(matched);
-		} else {
-			const fallbackReq: DmRequest = {
-				id: order.id,
-				dealerId: order.dealerId,
-				dealerName: DEALER_NAMES[order.dealerId] || order.dealerId || "ABC Motors Pvt. Ltd.",
-				vehicleModel: order.vehicleModel,
-				totalQuantity: order.quantity || 1,
-				quotationAmount: (order as unknown as { quotationAmount?: string }).quotationAmount || "₹ 4,13,00,000",
-				status: "Awaiting Acknowledgement",
-				paymentStatus: "Pending",
-				orderDate: order.orderDate || new Date().toISOString(),
-			};
-			setSelectedRequest(fallbackReq);
-		}
-		setIsOpen(false);
-	};
+  return (
+    <div className="recent-requests-widget" ref={containerRef}>
+      <button
+        type="button"
+        className={`recent-requests-trigger ${isOpen ? "is-active" : ""}`}
+        onClick={() => setIsOpen((previous) => !previous)}
+        title={`View ${title}`}
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
+        aria-label={`${title}${pendingCount ? `, ${pendingCount} awaiting action` : ""}`}
+      >
+        <span className="recent-icon-wrapper">
+          <NotificationsNoneIcon className="recent-bell-icon" />
+          {pendingCount > 0 && <span className="recent-badge-count">{pendingCount > 99 ? "99+" : pendingCount}</span>}
+        </span>
+      </button>
 
-	const messageOnIcon = customLabel || `${pendingCount} New Requests`;
+      {isOpen && (
+        <div className="recent-requests-dropdown" role="dialog" aria-label={title}>
+          <div className="recent-dropdown-header">
+            <div className="recent-dropdown-title-row">
+              <div className="recent-dropdown-icon"><DirectionsCarIcon fontSize="small" /></div>
+              <div>
+                <h3>{title}</h3>
+                <p>{subtitle}</p>
+              </div>
+            </div>
+            <div className="recent-dropdown-actions">
+              {requestRole !== "Dealer" && <span className="recent-active-chip">{pendingCount} Awaiting</span>}
+              <IconButton size="small" onClick={() => setIsOpen(false)} aria-label="Close recent requests" sx={{ color: "#64748b" }}>
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </div>
+          </div>
 
-	return (
-		<div className="recent-requests-widget" ref={containerRef}>
-			{/* Trigger button with icon and message */}
-			<button
-				type="button"
-				className={`recent-requests-trigger ${isOpen ? "is-active" : ""}`}
-				onClick={() => setIsOpen((prev) => !prev)}
-				title="Recent Dealer Requests — Click to view"
-				aria-expanded={isOpen}
-				aria-haspopup="true"
-			>
-				<div className="recent-icon-wrapper">
-					<NotificationsNoneIcon className="recent-bell-icon" />
-					{pendingCount > 0 && (
-						<span className="recent-badge-count">{pendingCount}</span>
-					)}
-				</div>
+          <div className="recent-dropdown-list">
+            {isLoading ? (
+              <div className="recent-empty-state"><p>Loading requests...</p></div>
+            ) : isError ? (
+              <div className="recent-empty-state"><p role="alert">Unable to load recent requests.</p></div>
+            ) : recentRequests.length === 0 ? (
+              <div className="recent-empty-state"><p>No requests need your attention right now.</p></div>
+            ) : recentRequests.map((order) => {
+              const expanded = expandedRequestId === order.id;
+              return (
+                <article
+                  key={order.id}
+                  className="recent-request-card"
+                  role="link"
+                  tabIndex={0}
+                  aria-label={`Show ${getOrderDisplayNumber(order)} in the request table`}
+                  onClick={() => openRoleRequests(order.id)}
+                  onKeyDown={(event) => {
+                    if (event.target !== event.currentTarget) return;
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      openRoleRequests(order.id);
+                    }
+                  }}
+                >
+                  <div className="recent-card-top">
+                    <div className="recent-req-id-badge">
+                      <strong>{getOrderDisplayNumber(order)}</strong>
+                      <span className="recent-dealer-name">{order.dealerId}</span>
+                    </div>
+                    <span className={`recent-status-pill ${`recent-status--${order.status.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}`}>
+                      {order.status}
+                    </span>
+                  </div>
+                  <div className="recent-card-details">
+                    <div className="recent-model-info">
+                      <DirectionsCarIcon sx={{ fontSize: 15, color: "#64748b" }} />
+                      <span>{order.vehicleModel}</span>
+                      <strong className="recent-qty-badge">{order.quantity} units</strong>
+                    </div>
+                    <div className="recent-date-info">
+                      <AccessTimeOutlinedIcon sx={{ fontSize: 13, color: "#94a3b8" }} />
+                      <span>{formatDate(order.orderDate)}</span>
+                    </div>
+                  </div>
+                  {expanded && <div className="recent-role-details">{getRoleDetails(order)}</div>}
+                  <div className="recent-card-action">
+                    <button
+                      type="button"
+                      className="recent-view-details-action-btn"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setExpandedRequestId(expanded ? null : order.id);
+                      }}
+                      aria-expanded={expanded}
+                    >
+                      {expanded ? "Hide Details" : "View Details"}
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
 
-				{/* Message on Icon */}
-				{showLabel && (
-					<span className="recent-icon-message">
-						<span className="recent-pulse-dot" />
-						<span className="recent-message-text">{messageOnIcon}</span>
-					</span>
-				)}
-			</button>
-
-			{/* Dropdown Popover */}
-			{isOpen && (
-				<div className="recent-requests-dropdown" role="dialog" aria-label="Recent Dealer Requests">
-					{/* Dropdown Header */}
-					<div className="recent-dropdown-header">
-						<div className="recent-dropdown-title-row">
-							<div className="recent-dropdown-icon">
-								<DirectionsCarIcon fontSize="small" />
-							</div>
-							<div>
-								<h3>Recent Dealer Requests</h3>
-								<p>Latest incoming procurement orders from dealers</p>
-							</div>
-						</div>
-						<div className="recent-dropdown-actions">
-							<span className="recent-active-chip">{pendingCount} Active</span>
-							<IconButton
-								size="small"
-								onClick={() => setIsOpen(false)}
-								aria-label="Close recent requests"
-								sx={{ color: "#64748b" }}
-							>
-								<CloseIcon fontSize="small" />
-							</IconButton>
-						</div>
-					</div>
-
-					{/* List of Recent Requests */}
-					<div className="recent-dropdown-list">
-						{recentRequests.length === 0 ? (
-							<div className="recent-empty-state">
-								<p>No recent dealer requests found.</p>
-							</div>
-						) : (
-							recentRequests.map((req) => (
-								<div
-									key={req.id}
-									className="recent-request-card"
-									onClick={() => handleOpenRequestDetails(req)}
-								>
-									<div className="recent-card-top">
-										<div className="recent-req-id-badge">
-											<strong>{req.id}</strong>
-											<span className="recent-dealer-name">
-												{DEALER_NAMES[req.dealerId] || req.dealerId}
-											</span>
-										</div>
-										<span className={`recent-status-pill ${getStatusClass(req.status)}`}>
-											{req.status}
-										</span>
-									</div>
-
-									<div className="recent-card-details">
-										<div className="recent-model-info">
-											<DirectionsCarIcon sx={{ fontSize: 15, color: "#64748b" }} />
-											<span>{req.vehicleModel}</span>
-											<strong className="recent-qty-badge">{req.quantity} units</strong>
-										</div>
-
-										<div className="recent-date-info">
-											<AccessTimeOutlinedIcon sx={{ fontSize: 13, color: "#94a3b8" }} />
-											<span>{formatDate(req.orderDate)}</span>
-										</div>
-									</div>
-
-									<div className="recent-card-action">
-										<button
-											type="button"
-											className="recent-view-details-action-btn"
-											onClick={(e) => {
-												e.stopPropagation();
-												handleOpenRequestDetails(req);
-											}}
-										>
-											View Details <OpenInNewIcon sx={{ fontSize: 13 }} />
-										</button>
-									</div>
-								</div>
-							))
-						)}
-					</div>
-
-					{/* Dropdown Footer */}
-					<div className="recent-dropdown-footer">
-						<span className="recent-footer-note">
-							Updates propagate across Manufacturer &rarr; Finance Head &rarr; Sales Manager
-						</span>
-					</div>
-				</div>
-			)}
-
-			{/* Request Details & Payment Modal */}
-			{selectedRequest && (
-				<RequestDetailsModal
-					open={Boolean(selectedRequest)}
-					onClose={() => setSelectedRequest(null)}
-					request={selectedRequest}
-				/>
-			)}
-		</div>
-	);
+          <div className="recent-dropdown-footer">
+            <button type="button" className="recent-open-requests-btn" onClick={() => openRoleRequests()}>
+              Open {requestRole === "Dealer" ? "My Requests" : "Request Queue"}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }

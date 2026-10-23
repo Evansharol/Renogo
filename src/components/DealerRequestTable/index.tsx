@@ -4,6 +4,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { Link } from "react-router-dom";
 import DealerRequestReviewModal from "../../pages/Manufacturer/DealerRequestReviewModal";
+import { getRequestRowDomId, useRequestRowFocus } from "../../hooks/useRequestRowFocus";
 
 export type DealerRequest = {
   requestId: string;
@@ -26,10 +27,11 @@ const PAGE_SIZE = 3;
 type DealerRequestTableProps = {
   requests: DealerRequest[];
   onRequestAllocated?: (request: DealerRequest) => void;
+  targetRequestId?: string;
 };
 
-export default function DealerRequestTable({ requests, onRequestAllocated }: DealerRequestTableProps) {
-  const [search, setSearch] = useState("");
+export default function DealerRequestTable({ requests, onRequestAllocated, targetRequestId }: DealerRequestTableProps) {
+  const [search, setSearch] = useState(targetRequestId ?? "");
   const [selectedModel, setSelectedModel] = useState("All Models");
   const [page, setPage] = useState(1);
   const [selectedRequest, setSelectedRequest] = useState<DealerRequest | null>(null);
@@ -51,6 +53,7 @@ export default function DealerRequestTable({ requests, onRequestAllocated }: Dea
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
   );
+  useRequestRowFocus(targetRequestId, visibleRequests.map((request) => request.requestId));
 
   const updateSearch = (value: string) => {
     setSearch(value);
@@ -108,7 +111,11 @@ export default function DealerRequestTable({ requests, onRequestAllocated }: Dea
           </thead>
           <tbody>
             {visibleRequests.map((request) => (
-              <tr key={request.requestId}>
+              <tr
+                key={request.requestId}
+                id={getRequestRowDomId(request.requestId)}
+                className={request.requestId === targetRequestId ? "notification-target-row" : undefined}
+              >
                 <td className="manufacturer-dealer-id">{request.dealerId}</td>
                 <td className="manufacturer-dealer-name">{request.dealerName}</td>
                 <td>

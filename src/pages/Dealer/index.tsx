@@ -4,15 +4,16 @@
  * Owns:  dealer identity, orders list, active tab, dialog state
  * Renders: Sidebar + Navbar shell, then delegates each tab to its own component
  */
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
 
 import Sidebar from "../../components/Sidebar";
 import Navbar from "../../components/Navbar";
 import OrderDetailsDialog from "../../components/OrderDetailsDialog";
-import { getOrdersByDealerId } from "../../api/orders";
+import { useGetDealerOrdersQuery } from "../../features/orders/ordersApi";
 import type { Order } from "../../types/order";
+import { getOrderDisplayNumber } from "../../utils/orderDisplay";
 
 import CreateRequestDialog from "./CreateRequest";
 
@@ -27,16 +28,6 @@ type LoginState = {
   location?: string;
 };
 
-// ── Seed orders (shown while backend is offline) ──────────────────────────────
-
-const SEED_ORDERS: Order[] = [
-  { id: "REQ001", dealerId: "D001", vehicleModel: "Kiger",  quantity: 50,  status: "Finance Head Review",       orderDate: "2024-10-12T00:00:00.000Z", etaDelivery: "2024-11-20" },
-  { id: "REQ002", dealerId: "D001", vehicleModel: "Triber", quantity: 100, status: "Manufacturer Review",     orderDate: "2024-10-10T00:00:00.000Z", etaDelivery: "2024-11-28" },
-  { id: "REQ003", dealerId: "D001", vehicleModel: "Duster", quantity: 30,  status: "Sales Manager Approval",  orderDate: "2024-10-05T00:00:00.000Z", etaDelivery: "2024-11-15" },
-  { id: "REQ004", dealerId: "D001", vehicleModel: "Kwid",   quantity: 25,  status: "Delivered",               orderDate: "2024-10-01T00:00:00.000Z", etaDelivery: "2024-11-05" },
-  { id: "REQ005", dealerId: "D001", vehicleModel: "Triber", quantity: 15,  status: "Rejected",                orderDate: "2024-09-24T00:00:00.000Z", etaDelivery: "2024-10-30" },
-];
-
 export type DealerOutletContext = {
   dealerName: string;
   dealerId: string;
@@ -45,6 +36,8 @@ export type DealerOutletContext = {
   openRequest: (vehicleName?: string) => void;
   onViewOrder: (order: Order) => void;
   onOrderSubmitted?: (order: Order) => void;
+  isOrdersLoading: boolean;
+  ordersError: string;
 };
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -59,27 +52,11 @@ export default function DealerPortal() {
   const dealerId       = loginState?.dealerId ?? "D001";
   const dealerLocation = loginState?.location ?? "Chennai, TN";
 
-  const [orders,         setOrders]         = useState<Order[]>(SEED_ORDERS);
+  const { data: orders = [], isLoading: isOrdersLoading, isError: isOrdersError } = useGetDealerOrdersQuery(dealerId);
   const [selectedOrder,  setSelectedOrder]  = useState<Order | null>(null);
   const [requestVehicle, setRequestVehicle] = useState("");
   const [isRequestOpen,  setIsRequestOpen]  = useState(false);
   const [successMsg,     setSuccessMsg]     = useState("");
-
-  // Merge backend orders with seed data
-  useEffect(() => {
-    let active = true;
-    getOrdersByDealerId(dealerId)
-      .then((fetched) => {
-        if (!active || !fetched?.length) return;
-        setOrders((prev) => {
-          const merged = [...fetched];
-          prev.forEach((o) => { if (!merged.some((f) => f.id === o.id)) merged.push(o); });
-          return merged;
-        });
-      })
-      .catch(() => {/* keep seed data */});
-    return () => { active = false; };
-  }, [dealerId]);
 
   const openRequest = (vehicleName = "") => {
     setRequestVehicle(vehicleName);
@@ -87,9 +64,8 @@ export default function DealerPortal() {
   };
 
   const handleOrderSubmitted = (order: Order) => {
-    setOrders((prev) => [order, ...prev]);
     setIsRequestOpen(false);
-    setSuccessMsg(`Request ${order.requestNumber ?? order.id} sent to Finance Head for approval.`);
+    setSuccessMsg(`Request ${getOrderDisplayNumber(order)} sent to Finance Head for approval.`);
     setTimeout(() => setSuccessMsg(""), 6000);
   };
 
@@ -115,7 +91,12 @@ export default function DealerPortal() {
             </div>
           )}
 
-          <Outlet context={{ dealerName, dealerId, dealerLocation, orders, openRequest, onViewOrder: setSelectedOrder, onOrderSubmitted: handleOrderSubmitted } satisfies DealerOutletContext} />
+          {isOrdersLoading
+            ? <p role="status">Loading your requests...</p>
+            : isOrdersError
+              ? <p role="alert">Unable to load your requests. Please try again.</p>
+              : <Outlet context={{ dealerName, dealerId, dealerLocation, orders, openRequest, onViewOrder: setSelectedOrder, onOrderSubmitted: handleOrderSubmitted, isOrdersLoading, ordersError: "" } satisfies DealerOutletContext} />
+          }
         </main>
       </div>
 

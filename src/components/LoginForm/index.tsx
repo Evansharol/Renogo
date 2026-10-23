@@ -5,8 +5,8 @@ import "./LoginForm.css";
 import Alert from '@mui/material/Alert';
 
 type LoginRole = "admin" | "dealer" | "manufacturer" | "financehead" | "salesmanager" | "dealermanager";
-type DummyUser = { userId: string; name: string; password: string; dealerId?: string };
-type ManagedUser = { id: string; name: string; password: string; role: string; status: "Active" | "Inactive" };
+type DummyUser = { userId: string; userIdAliases?: string[]; name: string; password: string; dealerId?: string };
+type ManagedUser = { id: string | number; name: string; password: string; role: string; status: "Active" | "Inactive" };
 
 const DUMMY_USERS: Record<LoginRole, DummyUser> = {
   admin: {
@@ -22,6 +22,7 @@ const DUMMY_USERS: Record<LoginRole, DummyUser> = {
   },
   manufacturer: {
     userId: "M001",
+    userIdAliases: ["MANUFACTURER"],
     name: "Noah Wilson",
     password: "Mr123",
   },
@@ -47,13 +48,30 @@ function getManagedUsers(): ManagedUser[] {
   if (!storedUsers) return [];
 
   try {
-    return JSON.parse(storedUsers) as ManagedUser[];
+    const parsed: unknown = JSON.parse(storedUsers);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((user: unknown): user is ManagedUser => {
+      if (typeof user !== "object" || user === null) return false;
+      const candidate = user as Record<string, unknown>;
+      return (typeof candidate.id === "string" || typeof candidate.id === "number")
+        && typeof candidate.name === "string"
+        && typeof candidate.password === "string"
+        && typeof candidate.role === "string"
+        && (candidate.status === "Active" || candidate.status === "Inactive");
+    });
   } catch {
     return [];
   }
 }
 
 function isMatchingManagedUser(user: ManagedUser, normalizedUserId: string, selectedRole: string) {
+  if (
+    (typeof user.id !== "string" && typeof user.id !== "number")
+    || typeof user.name !== "string"
+    || typeof user.role !== "string"
+    || (user.status !== "Active" && user.status !== "Inactive")
+  ) return false;
+
   const normalizedRole = user.role.toLowerCase();
   const roleMatches = selectedRole === "dealer"
     ? normalizedRole === "dealer"
@@ -65,7 +83,7 @@ function isMatchingManagedUser(user: ManagedUser, normalizedUserId: string, sele
 
   if (!roleMatches || user.status !== "Active") return false;
 
-  const matchesStoredId = user.id.toUpperCase() === normalizedUserId;
+  const matchesStoredId = String(user.id).trim().toUpperCase() === normalizedUserId;
   const matchesLegacyDealerId = selectedRole === "dealer"
     && /^D\d+$/.test(normalizedUserId)
     && user.name.trim().toUpperCase() === normalizedUserId;
@@ -107,13 +125,21 @@ export default function UserLoginForm() {
     } catch {
       // Use the cached users when the API is unavailable.
     }
-    const selectedUser = managedUser
+    let selectedUser = managedUser
       ? { userId: normalizedUserId, name: managedUser.name, password: managedUser.password, dealerId: role === "dealer" ? normalizedUserId : undefined }
       : DUMMY_USERS[role as LoginRole];
+    const fallbackUser = DUMMY_USERS[role as LoginRole];
+    const matchesFallbackId = fallbackUser && (
+      normalizedUserId === fallbackUser.userId
+      || fallbackUser.userIdAliases?.includes(normalizedUserId)
+    );
+    if ((!selectedUser || selectedUser.password !== password) && matchesFallbackId) {
+      selectedUser = fallbackUser;
+    }
 
     if (
       selectedUser &&
-      normalizedUserId === selectedUser.userId &&
+      (normalizedUserId === selectedUser.userId || selectedUser.userIdAliases?.includes(normalizedUserId)) &&
       password === selectedUser.password
     ) {
       setMessage("");

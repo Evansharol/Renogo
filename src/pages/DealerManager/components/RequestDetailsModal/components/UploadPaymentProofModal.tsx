@@ -15,69 +15,27 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutlined";
 import ImageIcon from "@mui/icons-material/Image";
 import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutlined";
 
-import type { DmRequest, VehicleLineItem } from "../../../types";
-
 interface UploadPaymentProofModalProps {
     open: boolean;
     onClose: () => void;
     requestId: string;
-    request?: DmRequest | null;
     defaultAmount?: string;
-    onSuccess?: (details: { utr: string; amount: string; fileName: string; imageUrl?: string }) => void;
+    onSuccess?: (details: { utr: string; amount: string; fileName: string; imageUrl?: string }) => Promise<void> | void;
 }
 
 export default function UploadPaymentProofModal({
     open,
     onClose,
     requestId,
-    request,
     defaultAmount,
     onSuccess,
 }: UploadPaymentProofModalProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const computeInitialAmount = () => {
-        if (defaultAmount) return defaultAmount;
-        let rawItems: VehicleLineItem[] = [];
-        if (request?.items && request.items.length > 0) {
-            rawItems = request.items;
-        } else if (requestId === "ORD-1001") {
-            rawItems = [
-                { id: 1, model: "Renault Kiger", variant: "RXE MT Petrol", qty: 20, unitPrice: 750000 },
-                { id: 2, model: "Renault Triber", variant: "RXZ Easy-R AMT", qty: 15, unitPrice: 650000 },
-                { id: 3, model: "Renault Duster", variant: "RXZ Turbo CVT", qty: 15, unitPrice: 800000 },
-            ];
-        } else if (request) {
-            const qty = Math.max(1, request.totalQuantity || 1);
-            let price = 800000;
-            if (request.quotationAmount) {
-                const num = Number(request.quotationAmount.replace(/[^0-9]/g, ""));
-                if (num > 0) price = Math.round((num / 1.18) / qty);
-            }
-            rawItems = [{ id: 1, model: request.vehicleModel, qty, unitPrice: price }];
-        } else {
-            rawItems = [
-                { id: 1, model: "Renault Kiger", variant: "RXE MT Petrol", qty: 20, unitPrice: 750000 },
-                { id: 2, model: "Renault Triber", variant: "RXZ Easy-R AMT", qty: 15, unitPrice: 650000 },
-                { id: 3, model: "Renault Duster", variant: "RXZ Turbo CVT", qty: 15, unitPrice: 800000 },
-            ];
-        }
-
-        const grossSubtotal = rawItems.reduce((sum, it) => sum + (it.qty * it.unitPrice), 0);
-        const discount = Math.min(grossSubtotal, Math.max(0, request?.discountAmount !== undefined ? request.discountAmount : (requestId === "ORD-1001" ? 1750000 : 0)));
-        const taxableAmount = Math.max(0, grossSubtotal - discount);
-        const gstRate = request?.taxRate ?? 18;
-        const gstAmount = Math.round(taxableAmount * (gstRate / 100));
-        const finalTotal = taxableAmount + gstAmount;
-        const advanceRate = request?.depositRate ?? 20;
-        const advanceAmount = Math.round(finalTotal * (advanceRate / 100));
-        return advanceAmount.toLocaleString("en-IN");
-    };
-
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [utrNumber, setUtrNumber] = useState("");
-    const [amount, setAmount] = useState(computeInitialAmount);
+    const [amount, setAmount] = useState(defaultAmount ?? "");
     const [paymentMode, setPaymentMode] = useState("RTGS");
     const [paymentDate, setPaymentDate] = useState(() => new Date().toISOString().split("T")[0]);
     const [notes, setNotes] = useState("");
@@ -137,7 +95,7 @@ export default function UploadPaymentProofModal({
         }
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!selectedFile) {
             setErrorMsg("Please upload a payment proof image or counterfoil.");
             return;
@@ -149,23 +107,23 @@ export default function UploadPaymentProofModal({
 
         setErrorMsg("");
         setSubmitting(true);
-
-        setTimeout(() => {
-            setSubmitting(false);
+        try {
+            await onSuccess?.({
+                utr: utrNumber,
+                amount,
+                fileName: selectedFile.name,
+                imageUrl: previewUrl || undefined,
+            });
             setSubmitted(true);
-            if (onSuccess) {
-                onSuccess({
-                    utr: utrNumber,
-                    amount,
-                    fileName: selectedFile.name,
-                    imageUrl: previewUrl || undefined,
-                });
-            }
             setTimeout(() => {
                 handleReset();
                 onClose();
             }, 1600);
-        }, 1000);
+        } catch (error) {
+            setErrorMsg(error instanceof Error ? error.message : "Unable to submit payment proof.");
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     const handleReset = () => {

@@ -1,696 +1,597 @@
-# RenoGo — Complete Architectural & Learning Guide (`learning.readme`)
+# RenoGo: Application Workflow and Presentation Guide
 
-Welcome to the definitive learning guide and technical breakdown for **RenoGo** — an enterprise Fleet Order & Supply Chain Management portal built for Renault.
+This guide explains what RenoGo does, how a fleet request moves through the application, why the main pages and components exist, where the data comes from, and how to present a working demonstration.
 
-This document covers **every folder and file in the project**, detailing its purpose, internal mechanics, React concepts, and every **callback function** and event mechanism used.
-
----
-
-## Table of Contents
-
-1. [High-Level System Architecture](#1-high-level-system-architecture)
-2. [Role-Based Workflow & End-to-End Request Lifecycle](#2-role-based-workflow--end-to-end-request-lifecycle)
-3. [Global Project Structure](#3-global-project-structure)
-4. [Root Configuration & Setup Files](#4-root-configuration--setup-files)
-5. [Backend Layer (`backend/`)](#5-backend-layer-backend)
-6. [API Service Layer (`src/api/`)](#6-api-service-layer-srcapi)
-7. [TypeScript Domain Models (`src/types/`)](#7-typescript-domain-models-srctypes)
-8. [Custom React Hooks (`src/hooks/`)](#8-custom-react-hooks-srchooks)
-9. [Shared & Reusable Components (`src/components/`)](#9-shared--reusable-components-srccomponents)
-10. [Application Entry & Core Routing (`src/`)](#10-application-entry--core-routing-src)
-11. [Pages & Portals Deep Dive (`src/pages/`)](#11-pages--portals-deep-dive-srcpages)
-    - [Login (`src/pages/Login/`)](#111-login-srcpageslogin)
-    - [Admin Dashboard (`src/pages/AdminDashBoard/`)](#112-admin-dashboard-srcpagesadmindashboard)
-    - [Dealer Portal (`src/pages/Dealer/`)](#113-dealer-portal-srcpagesdealer)
-    - [Dealer Manager Portal (`src/pages/DealerManager/`)](#114-dealer-manager-portal-srcpagesdealermanager)
-    - [Manufacturer Portal (`src/pages/Manufacturer/`)](#115-manufacturer-portal-srcpagesmanufacturer)
-    - [Supervisor Portal (`src/pages/Supervisor/`)](#116-supervisor-portal-srcpagessupervisor)
-    - [Sales Manager Portal (`src/pages/SalesManager/`)](#117-sales-manager-portal-srcpagessalesmanager)
-12. [Public & Static Assets (`public/` & `src/assets/`)](#12-public--static-assets)
-13. [Key React Patterns, Mechanics & Callback Glossary](#13-key-react-patterns-mechanics--callback-glossary)
+It describes the current implementation in this repository. RenoGo is a workflow prototype with a React frontend and JSON-backed APIs; some dashboards still include demonstration metrics, and not every visible action is backed by persistent storage.
 
 ---
 
-## 1. High-Level System Architecture
+## 1. Project in one minute
 
-RenoGo is a single-page web application (SPA) created using:
-- **Build Tool**: Vite (with `@vitejs/plugin-react`)
-- **UI Library**: React 19 + React DOM 19
-- **Language**: TypeScript with strict typing
-- **Routing**: React Router DOM (v7)
-- **UI Frameworks**: Material-UI (MUI core `@mui/material`, `@mui/icons-material`, `@mui/x-charts`) & custom CSS stylesheets
-- **Mock REST API**: `json-server` (running on port `5000`) with Vite reverse proxying `/api/*` to `http://localhost:5000/*`
+**RenoGo** is a role-based fleet procurement and order tracking portal. A dealer requests vehicles, the manufacturer allocates stock or production, the Finance Head prepares a quotation, the Sales Manager reviews it, and the Dealer Manager handles acknowledgement and payment evidence. The dealer can follow the request's progress, while administrators manage the dealer network, users, and catalog overview.
 
-### Network & Proxy Flow:
-```
-Browser (React Frontend at http://localhost:5173)
-       │
-       ▼ (calls fetch('/api/orders') or fetch('/api/dealers'))
-Vite Dev Server (vite.config.ts Proxy)
-       │
-       │ rewrites path: /api/orders  ──►  /orders
-       ▼
-json-server (running on port 5000 from backend/db.json)
-```
+The application's key ideas are:
+
+- Separate workspaces for different roles.
+- A shared order record that advances through workflow statuses.
+- Stock allocation and quotation information attached to the order.
+- Searchable request lists, detail/review dialogs, and notification shortcuts.
+- A JSON-backed API for the main order and dealer data.
+
+### One-sentence presentation summary
+
+> RenoGo connects dealer fleet demand to manufacturer allocation, finance quotation, sales approval, and dealer-manager payment handling in one role-based workflow.
 
 ---
 
-## 2. Role-Based Workflow & End-to-End Request Lifecycle
+## 2. Roles and what each one is responsible for
 
-The application orchestrates a 6-tier supply chain:
+| Role | Main responsibility | Main route |
+|---|---|---|
+| Administrator | View overall activity; manage users, dealers, and the vehicle catalog; inspect dealer order/production details. | `/admindb` |
+| Dealer | Browse vehicles, build and submit fleet requests, and track request status. | `/dealer/dashboard` |
+| Manufacturer | Review incoming requests and allocate existing stock versus units to manufacture. | `/manufacturer/dashboard` |
+| Finance Head | Prepare and maintain unit price, tax, advance, payment terms, and quotation details. | `/financehead/dashboard` |
+| Sales Manager | Review the request and quotation, then approve or decline with a reason/note. | `/salesmanager/dashboard` |
+| Dealer Manager | Acknowledge the quotation, view bank/payment information, and submit payment evidence. | `/dealermanager/dashboard` |
 
-```
-[1. Dealer]
-    └── Creates Fleet Request (e.g., 50 Kiger units)
-           │
-           ▼
-[2. Manufacturer]
-    └── Reviews Request, maps physical inventory, splits between:
-        - "Available" (in warehouse)
-        - "To Manufacture" (needs factory production)
-           │
-           ▼
-[3. Supervisor]
-    └── Reviews allocated request, configures Quotation, GST,
-        advance deposit %, and Manufacturer Bank Details.
-           │
-           ▼
-[4. Sales Manager]
-    └── Verifies the entire order & financial quote;
-        Approves or Declines with notes.
-           │
-           ▼
-[5. Dealer Manager]
-    └── Receives approved request, acknowledges terms,
-        views bank details, and submits payment proof.
-           │
-           ▼
-[6. Admin]
-    └── High-level system overview: dealer network, user management,
-        catalog tracking, and production stage tracking.
+The sidebar changes its links according to the portal. The navbar shows the current role and user, provides logout, and includes the recent-request notification for supported operational roles.
+
+---
+
+## 3. End-to-end request workflow
+
+### Workflow overview
+
+```text
+Dealer
+  creates a request from the catalog or Quick Request
+        |
+        v
+Manufacturer
+  reviews the request and assigns inventory / production quantities
+        |
+        v
+Finance Head
+  creates or edits the quotation and sends it for approval
+        |
+        v
+Sales Manager
+  reviews the quote and approves or declines
+        |
+        v
+Dealer Manager
+  acknowledges terms, views bank details, and submits payment evidence
+        |
+        v
+Administrator / Dealer
+  can inspect the request and its recorded progress
 ```
 
----
+### Step-by-step lifecycle
 
-## 3. Global Project Structure
+1. **Dealer creates a request**
+   - The dealer opens **Vehicle Catalog**, chooses models/variants/colours and quantities, and adds them to the order cart; or uses **Quick Request**.
+   - Catalog requests include the catalog starting price on their line items. The cart uses those values to calculate an estimated total.
+   - On submission, a new order is created with dealer ID, requested vehicles, quantity, delivery date, notes, and an initial workflow history.
+   - Initial status: `Pending Manufacturer Review`; current owner: `Manufacturer`.
 
-```
-Renogo/
-├── backend/                       # Mock database & static JSON files for json-server
-│   ├── db.json                    # Main relational mock database (dealers, orders, quotations, etc.)
-│   ├── manufacturer-dashboard.json# Manufacturer KPIs, inventory stats & dealer request allocations
-│   └── vehicle.json               # Master catalog of Renault vehicles, variants & colors
-├── public/                        # Static web assets served untouched by Vite
-│   ├── favicon.svg                # Application browser favicon
-│   └── icons.svg                  # SVG symbol sheet
-├── src/                           # Application source code
-│   ├── api/                       # HTTP API client functions using fetch()
-│   ├── assets/                    # Project images, model photos, icons, and logos
-│   │   └── dealer/                # Promotional banners and car models for dealer portal
-│   ├── components/                # Shared reusable UI components
-│   │   ├── AvailabilityProgressBar/
-│   │   ├── AvailableModels/
-│   │   ├── DealerRequestTable/
-│   │   ├── Form/
-│   │   ├── Header/
-│   │   ├── KpiCard/
-│   │   ├── LoginForm/
-│   │   ├── ModelCard/
-│   │   ├── Navbar/
-│   │   ├── OrderDetailsDialog/
-│   │   ├── RequestStatus/
-│   │   ├── Sidebar/
-│   │   └── WorkFlow/
-│   ├── hooks/                     # Custom React hooks (useDealer, useOrder)
-│   ├── pages/                     # Role-specific dashboards & screens
-│   │   ├── AdminDashBoard/        # Admin portal (Overview, Dealers, Users, Catalog)
-│   │   ├── Dealer/                # Dealer portal (Dashboard, Catalog, Requests, Profile)
-│   │   ├── DealerManager/         # Dealer Manager portal (KPIs, Charts, Approvals, Modals)
-│   │   ├── Login/                 # Authentication screen
-│   │   ├── Manufacturer/          # Factory & Production portal (Dashboard, Stocks, Requests)
-│   │   ├── SalesManager/          # Sales Manager portal (Verification & Approvals)
-│   │   └── Supervisor/            # Supervisor portal (Quotation Generation & Review)
-│   ├── types/                     # Shared TypeScript type definitions
-│   ├── App.css                    # Application layout and global animation classes
-│   ├── App.tsx                    # Top-level Router configuration & route declarations
-│   ├── index.css                  # Global CSS resets, typography & color variables
-│   └── main.tsx                   # React root mount point (DOM mounting)
-├── .cursorrules                   # IDE AI assistant rule guidelines
-├── .gitignore                     # Git ignore rules for node_modules, dist, etc.
-├── eslint.config.js               # ESLint linting configuration
-├── index.html                     # HTML root page template
-├── package.json                   # Project npm dependencies and scripts
-├── package-lock.json              # Dependency lockfile
-├── tsconfig.json                  # Root TypeScript project references configuration
-├── tsconfig.app.json              # TypeScript compilation rules for application code
-├── tsconfig.node.json             # TypeScript compilation rules for Vite/Node configs
-└── vite.config.ts                 # Vite bundler, React plugin & API reverse proxy settings
+2. **Manufacturer allocates stock**
+   - Incoming requests appear on the manufacturer dashboard and View Requests page.
+   - The manufacturer opens **Review**, checks stock, and adjusts **Available From Inventory** and **To Manufacture**. The allocation must account for the requested total.
+   - Submitting the allocation stores the allocation summary and moves the order to `Pending Finance Quotation`, with `Finance Head` as owner.
+   - The allocation modal also collects manufacturer comments.
+
+3. **Finance Head prepares the quotation**
+   - Finance Head reviews allocated orders and stock information.
+   - The unit price defaults from the vehicle catalog / saved request data when available; it is editable. Existing quotations can also be edited.
+   - The quote includes base unit price, tax rate, advance percentage, payment terms, and bank details. The displayed totals are calculated from price, quantity, and tax.
+   - Finance Head can save the quotation and generate a PDF. Sending the quotation updates its status and moves the order to `Pending Sales Manager Approval`, owned by `Sales Manager`.
+
+4. **Sales Manager reviews**
+   - The review shows dealer/order information, allocation, quotation totals, tax, advance, payment terms, and bank details.
+   - The Sales Manager can approve and send the request to the Dealer Manager, optionally with a note. The order becomes `Approved by Sales Manager`, owned by `Dealer Manager`.
+   - Declining requires a reason; the order becomes `Rejected` and is assigned to `Admin`.
+
+5. **Dealer Manager handles acknowledgement and payment**
+   - The Dealer Manager opens request details to inspect the status, quotation, bank details, and activity.
+   - Acknowledging the quotation moves it to `Awaiting Payment`.
+   - The modal supports viewing exact bank details and uploading payment evidence.
+   - In the current upload-success handler, a successfully submitted proof records the proof information and transitions the order directly to `Completed` (owner `Admin`). Although intermediate payment statuses exist in the order type and data conversion, this particular UI path does not currently stop at `Payment Submitted`.
+
+6. **Dealer tracks the result**
+   - The dealer's **My Requests** page lists only orders returned for the logged-in dealer ID.
+   - The dealer can open the order details/lifecycle view and follow status history and updates.
+
+### Order statuses represented by the application
+
+The shared `WorkflowStage` type includes:
+
+```text
+Dealer Request Created
+Pending Manufacturer Review
+Stock Allocated by Manufacturer
+Pending Finance Quotation
+Quotation Sent
+Pending Sales Manager Approval
+Approved by Sales Manager
+Rejected
+Awaiting Payment
+Payment Submitted
+Payment Verified
+Completed
 ```
 
----
-
-## 4. Root Configuration & Setup Files
-
-### `package.json`
-- **Need / Purpose**: Declares project metadata, npm scripts, and third-party dependencies.
-- **Key Scripts**:
-  - `npm run dev`: Runs Vite dev server on port `5173`.
-  - `npm run server`: Launches `json-server` on port `5000` serving `backend/db.json` and static files in `backend/`.
-  - `npm run build`: Type-checks with `tsc -b` and builds production bundle using `vite build`.
-  - `npm run lint`: Checks TypeScript/JSX syntax with `eslint .`.
-- **Core Dependencies**: React 19, React DOM 19, React Router DOM v7, Material UI (`@mui/material`, `@mui/icons-material`, `@mui/x-charts`), Emotion (`@emotion/react`, `@emotion/styled`).
-- **Mechanisms & Concepts**: NPM dependency management, module bundling, JSON-based project descriptor.
-
-### `package-lock.json`
-- **Need / Purpose**: Records the exact version tree of every installed package and transitive dependency to guarantee reproducible builds across environments.
-
-### `vite.config.ts`
-- **Need / Purpose**: Configures the Vite development server and build pipeline.
-- **Mechanisms & Concepts**:
-  - **Reverse Proxy**: Defines `server.proxy` for `/api`. It redirects browser requests targeting `/api/*` to `http://localhost:5000/*`.
-  - **Path Rewrite Callback**: `rewrite: (path) => path.replace(/^\/api/, "")`. Strips `/api` prefix so that `fetch('/api/dealers')` seamlessly requests `http://localhost:5000/dealers`.
-  - **CORS Prevention**: With `changeOrigin: true`, browsers avoid cross-origin restrictions in local development.
-
-### `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`
-- **Need / Purpose**: Configures TypeScript compiler settings.
-  - `tsconfig.json`: Root aggregator referencing `tsconfig.app.json` (frontend code) and `tsconfig.node.json` (build scripts).
-  - `tsconfig.app.json`: Configures browser DOM types, React 19 JSX runtime (`"jsx": "react-jsx"`), strict mode (`strict: true`), and ES module resolution.
-  - `tsconfig.node.json`: Configures Node.js execution environment for `vite.config.ts`.
-- **Concepts**: Project References (`composite: true`), Type safety, Compilation targets.
-
-### `eslint.config.js`
-- **Need / Purpose**: Modern flat-configuration ESLint file enforcing coding standards, detecting unused variables, and validating React Hooks usage (`eslint-plugin-react-hooks`, `eslint-plugin-react-refresh`).
-
-### `index.html`
-- **Need / Purpose**: The single HTML page loaded by the browser. Contains `<div id="root"></div>` where React mounts, and loads `<script type="module" src="/src/main.tsx">`.
-
-### `.gitignore`
-- **Need / Purpose**: Specifies files and folders Git should ignore (`node_modules`, `dist`, `.env`, temporary logs).
-
-### `.cursorrules`
-- **Need / Purpose**: Workspace-specific instructions and coding guidelines for AI-assisted development tools.
-
-### `README.md`
-- **Need / Purpose**: Project overview, setup instructions, and execution commands.
+The application also contains older/demo statuses such as `Pending`, `Pending Approval`, `Approved`, and `In Production`. These coexist with the more explicit workflow stages in the JSON seed data. When presenting, use the explicit lifecycle above for a newly created request, and point out that legacy records may use older labels.
 
 ---
 
-## 5. Backend Layer (`backend/`)
+## 4. Pages: why they exist and what to show
 
-### `backend/db.json`
-- **Need / Purpose**: The mock database consumed by `json-server`.
-- **Collections Included**:
-  - `dealers`: List of certified dealers (e.g., `D001` ABC Motors, `D002` Royal Autos).
-  - `users`: User directory for Admin User Management (`USR-1001`, `USR-1002`, etc.).
-  - `loginUsers`: Default credentials for authentication testing.
-  - `orders`: Master order records (`ORD-1001`, `ORD-1002`, etc.) linking dealers to vehicle models, quantities, and statuses.
-  - `quotations`: Detailed financial quotes with `basePrice`, `taxRate`, `depositRate`, and bank account details.
-  - `dmRequests`: Pre-populated requests tracking Dealer Manager workflow states and payment status.
-- **Mechanisms**: RESTful routing generated by `json-server` (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`).
+### Login
 
-### `backend/vehicle.json`
-- **Need / Purpose**: Static JSON data representing inventory units per vehicle model, variant (`RXL`, `RXT`, `Climber`), fuel type (`Petrol`, `Electric`), transmission (`Manual`, `AMT`), color (`Fiery Red`, `Ice Cool White`), and quantity.
-- **Mechanisms**: Fetched directly by Admin Vehicle Catalog, Manufacturer Stocks, and Supervisor Quotation views.
+**Route:** `/`
 
-### `backend/manufacturer-dashboard.json`
-- **Need / Purpose**: Stores dashboard KPIs, stock health indicators, and allocation breakdown records for manufacturer requests.
-- **Mechanisms**: Provides `stockBreakdown` color mapping (e.g. White: 30, Black: 12, Grey: 18) for vehicle requests.
+The login page collects a user ID, password, and role. The login form checks seeded/demo users and managed-user data, stores the selected identity in `localStorage` as `loginState`, and navigates to the corresponding dashboard. The selected role matters because it determines the portal and role-specific menu.
 
----
+**Presentation point:** Explain that this is a prototype role selector/login flow, not production-grade identity management or route authorization.
 
-## 6. API Service Layer (`src/api/`)
+### Administrator portal
 
-This directory encapsulates all HTTP communication into clean, asynchronous functions. Components call these instead of embedding raw `fetch` calls.
+#### Overview dashboard — `/admindb`
 
-### `src/api/dealers.ts`
-- **Need / Purpose**: Performs CRUD operations on `/api/dealers`.
-- **Exported Functions**:
-  - `getDealers(): Promise<Dealer[]>`: Fetches list of all dealers.
-  - `getDealerById(id: string): Promise<Dealer>`: Fetches single dealer by ID.
-  - `createDealer(dealer: NewDealer): Promise<Dealer>`: Sends a `POST` request with JSON body to add a new dealer.
-- **Callbacks & Mechanisms**:
-  - Promise chaining: `await response.json()`.
-  - HTTP error checking: `if (!response.ok) throw new Error(...)`.
-- **Concepts**: Asynchronous programming, RESTful API consumption, Data serialization (`JSON.stringify`).
+The overview displays total orders, dealer count, and total estimated revenue. The KPI values are read from the orders and dealers APIs. The page also includes the request-status and available-models analytics cards.
 
-### `src/api/orders.ts`
-- **Need / Purpose**: Manages dealer orders on `/api/orders`.
-- **Exported Functions**:
-  - `getOrders(): Promise<Order[]>`: Fetches all orders.
-  - `getOrdersByDealerId(dealerId: string): Promise<Order[]>`: Queries `/api/orders?dealerId={id}` using `encodeURIComponent`.
-  - `createOrder(order: Omit<Order, "id">): Promise<Order>`: Issues a `POST` request to register a new order.
-- **Callbacks & Mechanisms**: `encodeURIComponent` query string formatting, Promise resolution.
+**Why needed:** Gives an administrator a quick operational snapshot before drilling into a specific dealer, user, or vehicle.
 
-### `src/api/quotations.ts`
-- **Need / Purpose**: Handles financial quotations on `/api/quotations`.
-- **Exported Functions**:
-  - `getQuotationByDealerId(dealerId: string): Promise<Quotation>`: Retrieves quote for a dealer.
-  - `getQuotationByOrderId(orderId: string): Promise<Quotation>`: Retrieves quote for a specific order.
-  - `updateQuotation(id: string, changes: Partial<Quotation>): Promise<Quotation>`: Issues a `PATCH` request to update specific fields (e.g. `bankDetails`, `status`).
-- **Callbacks & Mechanisms**: `PATCH` partial update mechanism, async error handling.
+**Note:** Some chart values/data sets are demonstration content rather than live aggregates. Distinguish live KPI counts from sample analytics when presenting.
 
-### `src/api/dmRequests.ts`
-- **Need / Purpose**: Fetches requests for the Dealer Manager portal.
-- **Exported Functions**:
-  - `getDmRequests(): Promise<DmRequest[]>`: Fetches from `/api/dmRequests`. Includes fallback to `FALLBACK_DM_REQUESTS` if the backend is down or empty.
-  - `getDmRequestsByStatus(status: string): Promise<DmRequest[]>`: Queries requests filtered by status with fallback filtering:
-    - **Array Callback**: `FALLBACK_DM_REQUESTS.filter((r) => r.status === status)`.
-- **Mechanisms & Concepts**: Graceful degradation, Defensive programming, Offline resilience.
+#### User Management — `/usermg`
 
----
+The user table supports searching/filtering, adding, editing, and deleting users. It contains active/inactive summaries and role counts.
 
-## 7. TypeScript Domain Models (`src/types/`)
+**Why needed:** Provides an administrative view of who can use each persona in the prototype.
 
-### `src/types/dealer.ts`
-- **Need / Purpose**: Defines the shape of a Dealer entity.
-- **Types Defined**:
-  - `Dealer`: `{ id: string; name: string; location: string; orders: number; status: string; }`.
-  - `NewDealer`: Uses TypeScript utility type `Omit<Dealer, "orders"> & { orders?: number }` for creating new dealers.
-- **Concepts**: Utility types (`Omit`), Strict typing.
+**Data note:** The current page requests user data from `/spring-api/` and also maintains local cached/fallback state. The Vite proxy sends this path to the Spring service on port `8080`; the route therefore requires that service if live user data is expected.
 
-### `src/types/order.ts`
-- **Need / Purpose**: Defines the Order data model.
-- **Types Defined**:
-  - `Order`: `{ id: string; dealerId: string; vehicleModel: string; quantity: number; status: string; orderDate?: string; etaDelivery?: string; }`.
+#### Dealer Management — `/dealers`
 
-### `src/types/quotation.ts`
-- **Need / Purpose**: Defines quotation financials and banking data.
-- **Types Defined**:
-  - `Quotation`: Includes `basePrice`, `taxRate`, `depositRate`, `gstNumber`, `paymentTerms`, and nested `bankDetails: { beneficiaryName, accountNumber, ifscCode, bankBranch }`.
+The administrator can view dealers and their orders, select an order per dealer, open dealer details, and inspect a selected order's approval/production workflow. Summary cards show dealer/order/pending information.
 
----
+**Why needed:** Connects the network-level dealer record with its order activity and supports a management-level inspection.
 
-## 8. Custom React Hooks (`src/hooks/`)
+#### Dealer Details — `/dealers/details/:dealerId`
 
-Custom hooks extract stateful logic and asynchronous data fetching into reusable functions.
+Shows the selected dealer's profile and related information using the dealer ID from the route.
 
-### `src/hooks/useDealer.ts`
-- **Need / Purpose**: Fetches a single dealer by ID and encapsulates loading and error states.
-- **Arguments**: `dealerId?: string`.
-- **Returns**: `{ dealer, isLoading, error }`.
-- **Mechanisms & Hooks**:
-  - `useState<Dealer | null>(null)`: Holds fetched dealer data.
-  - `useState(true)`: Tracks loading status.
-  - `useState("")`: Stores potential errors.
-  - `useEffect`: Runs whenever `dealerId` changes.
-- **Callbacks Used**:
-  - `.then(setDealer)`: Promise resolution callback updating state.
-  - `.catch(() => setError("Unable to load dealer"))`: Promise rejection callback.
-  - `.finally(() => setIsLoading(false))`: Completion callback.
+**Why needed:** Provides a focused view of one dealer when the administrator needs more than the summary row.
 
-### `src/hooks/useOrder.ts`
-- **Need / Purpose**: Fetches orders for a given dealer and selects the specified order ID.
-- **Arguments**: `dealerId?: string`, `orderId?: string`.
-- **Returns**: `{ order, isLoading, error }`.
-- **Mechanisms & Hooks**:
-  - `useState<LoadedOrder | null>(null)`: Caches loaded order metadata.
-  - `useEffect` with **Race Condition Prevention**:
-    - Uses a local flag `let isActive = true`.
-    - **Cleanup Callback**: `return () => { isActive = false; };`. Prevents state updates if the component unmounts or arguments change before the fetch completes.
-- **Callbacks Used**:
-  - Array search callback: `orders.find((item) => item.id === orderId)`.
-  - Promise resolution `.then(...)` and rejection `.catch(...)`.
+#### Approval & Production — `/dealers/approval/:dealerId`
 
----
+Shows the selected dealer's approval/production information.
 
-## 9. Shared & Reusable Components (`src/components/`)
+**Why needed:** Gives the administrator a dedicated route for inspecting order progress beyond the dealer list.
 
-### `src/components/AvailabilityProgressBar/index.tsx`
-- **Need / Purpose**: Dual-segment progress bar showing the ratio of immediately available stock vs. units requiring factory manufacturing.
-- **Props**: `{ available: number; manufacturing: number; total: number }`.
-- **Mechanisms**: Calculates dynamic inline CSS percentage widths (`width: ${availablePercentage}%`). Accessible via `aria-label`.
+#### Admin Vehicle Catalog — `/vehiclecatalog`
 
-### `src/components/AvailableModels/`
-- **`index.tsx`**: Card container wrapping model breakdown data and rendering the pie chart.
-- **`Piechart/index.tsx`**: Renders MUI `@mui/x-charts/PieChart` with custom donut inner/outer radii.
-  - **Callbacks Used**: Array transformation callback:
-    `data.map(({ name, value, color }, index) => ({ id: index, label: name, value, color }))`.
-- **`AvailableModels.css`**: Card typography and chart container styling.
+Loads vehicle records and provides model, variant, colour, and availability filters.
 
-### `src/components/DealerRequestTable/index.tsx`
-- **Need / Purpose**: Paginated, searchable, and filterable table displaying dealer requests in the manufacturer view.
-- **Props**: `{ requests: DealerRequest[] }`.
-- **Mechanisms**:
-  - Client-side pagination (`PAGE_SIZE = 3`).
-  - Search filter by dealer ID, dealer name, model, and color.
-  - Opens `DealerRequestReviewModal` when clicking "Review".
-- **Callbacks & Event Handlers**:
-  - `onChange={(e) => updateSearch(e.target.value)}`: Text input search callback.
-  - `onChange={(e) => updateModel(e.target.value)}`: Model dropdown selection callback.
-  - `onClick={() => setPage((p) => Math.max(1, p - 1))}`: Previous page callback.
-  - `onClick={() => setPage((p) => Math.min(pageCount, p + 1))}`: Next page callback.
-  - `onClick={() => setSelectedRequest(request)}`: Modal opener callback.
-  - `onClose={() => setSelectedRequest(null)}`: Modal dismiss callback passed to modal.
-  - `useMemo` filter callbacks: `requests.filter(...)`, `[...].some(...)`.
+**Why needed:** Gives administrators a searchable inventory/catalog view.
 
-### `src/components/Form/`
-- **`index.tsx`**: Highly reusable generic modal form component.
-  - **Props**: `{ title, subtitle, fields, values, onChange, onSubmit, onClose, closeLabel }`.
-  - **Callbacks**:
-    - `onMouseDown={onClose}` on overlay with `event.stopPropagation()` on the dialog.
-    - `onChange={(e) => onChange(field.name, e.target.value)}` for inputs and select elements.
-    - `onSubmit={onSubmit}` form submission handler.
-- **`DealerForm/index.tsx`**: Specialized wrapper around `Form` configured with fields for Dealer Name, Location, and Status.
-  - **Callbacks**: `onSave(newDealer)` callback invoked upon form submission.
-- **`UserForm/index.tsx`**: Specialized wrapper around `Form` for creating and editing system users.
-- **`Form.css`**: Modal backdrop, animation, grid layout, and form button styling.
+### Dealer portal
 
-### `src/components/Header/index.tsx` & `index.css`
-- **Need / Purpose**: Brand header component displaying the Renault "RenoGo" logo and typography.
+The `/dealer` route is the shared shell for dealer pages. It resolves dealer identity, fetches that dealer's orders, provides outlet context to nested pages, and owns the request and order-detail dialogs.
 
-### `src/components/KpiCard/index.tsx`
-- **Need / Purpose**: Modular metric card displaying a numeric value, label, subtitle, icon, and colored accent variant (`blue`, `orange`, `green`, `purple`).
+#### Dealer dashboard — `/dealer/dashboard`
 
-### `src/components/LoginForm/index.tsx` & `LoginForm.css`
-- **Need / Purpose**: Controlled authentication form supporting 6 distinct user roles.
-- **Mechanisms & Callbacks**:
-  - `onChange={(e) => setUserId(e.target.value)}`: Updates controlled username input.
-  - `onChange={(e) => setPassword(e.target.value)}`: Updates controlled password input.
-  - `onChange={(e) => setRole(e.target.value)}`: Updates role selection dropdown.
-  - `onSubmit={handleSubmit}`:
-    1. Validates against predefined `DUMMY_USERS` or dynamically loaded `localStorage` users (`getManagedUsers().find(...)`).
-    2. Writes user session to `localStorage.setItem("loginState", ...)`.
-    3. Triggers `navigate(...)` with route state to redirect user to their respective dashboard.
+Shows an introduction, request-status summary cards, and shortcuts to create a request, browse the catalog, or open My Requests.
 
-### `src/components/ModelCard/index.tsx`
-- **Need / Purpose**: Visual catalog card showing a car's image, name, stock level badge, available units, and percentage progress bar.
+**Why needed:** Provides a starting point and shortcuts for the dealer's most common tasks.
 
-### `src/components/Navbar/index.tsx` & `Navbar.css`
-- **Need / Purpose**: Top navigation bar featuring user identity, unread notification counter, and session management.
-- **Props**: `{ adminName, variant, dealerLocation, dealerAvatar, notificationsCount }`.
-- **Mechanisms & Callbacks**:
-  - `handleLogout`: Callback removing `localStorage.removeItem("loginState")` and invoking `navigate("/", { replace: true })`.
-  - `onClick={handleLogout}` attached to logout button and dropdown triggers.
+#### Vehicle Catalog — `/dealer/catalog`
 
-### `src/components/OrderDetailsDialog/index.tsx` & `OrderDetailsDialog.css`
-- **Need / Purpose**: Fly-out drawer (`@mui/material/Drawer`) displaying full order breakdown, status stepper, and formatted dates.
-- **Props**: `{ order: Order | null; onClose: () => void }`.
-- **Mechanisms**: Right-side drawer opening when `order !== null`.
-- **Callbacks**: `onClose={onClose}` passed to MUI Drawer and Close `IconButton`.
+Displays vehicle cards with photos, starting prices, specifications, variant/colour selectors, and quantity controls. Dealers can add one or more vehicles to a cart.
 
-### `src/components/RequestStatus/index.tsx` & `RequestStatus.css`
-- **Need / Purpose**: Overview analytics card displaying request completion breakdown (Completed: 68%, Ongoing: 21%, Pending: 11%) using animated progress tracks.
+**Why needed:** Makes vehicle selection and fleet-order construction part of the same process rather than asking the dealer to manually re-enter catalog information.
 
-### `src/components/Sidebar/index.tsx` & `Sidebar.css`
-- **Need / Purpose**: Responsive navigation sidebar supporting multiple personas (`admin`, `dealer`, `manufacturer`, `supervisor`, `salesmanager`, `dealermanager`).
-- **Mechanisms**:
-  - Collapsible state (`isOpen` boolean).
-  - Synchronized layout spacer preventing content shifts during collapse.
-  - React Router `<NavLink>` elements with active state callback:
-    `className={({ isActive }) => \`sidebar-link ${isActive ? "active-dealer-tab" : ""}\`}`.
-- **Callbacks**:
-  - `onClick={() => setIsOpen(false)}`: Closes sidebar.
-  - `onClick={() => setIsOpen(true)}`: Re-expands sidebar.
+#### Order cart / Fleet Cart Drawer
 
-### `src/components/WorkFlow/index.tsx` & `WorkFlow.css`
-- **Need / Purpose**: Layout wrapper (`WorkflowShell`) providing a unified header, breadcrumbs, dealer label, and layout shell for multi-step approval workflows.
-- **Props**: `{ title, subtitle, dealerLabel, children, isModal, onClose }`.
-- **Mechanisms**: Polymorphic display — renders either as a full-page layout with Sidebar/Navbar or as a floating modal overlay when `isModal === true`.
+The cart shows selected models, variants, colours, quantities, estimated price, delivery-date input, and request notes. Submit creates one order containing its line items.
+
+**Why needed:** Consolidates multiple requested vehicles into a single fleet request.
+
+#### Quick Request — dialog
+
+Provides a compact model/variant/colour/quantity form with estimated line amounts and delivery date.
+
+**Why needed:** Supports a faster request path when the dealer already knows what they want.
+
+#### My Requests — `/dealer/my-requests`
+
+Lists the logged-in dealer's requests, with text search, model/status filters, delivery details, and a **Track Lifecycle** action.
+
+**Why needed:** Gives the requesting dealer visibility into progress without requiring access to internal role dashboards.
+
+#### Dealership Profile — `/dealer/profile`
+
+Displays the current dealer identity/location and profile/account fields.
+
+**Why needed:** Makes the active dealer account visible in the portal. Several displayed profile values are currently presentation/demo values.
+
+### Manufacturer portal
+
+#### Manufacturer dashboard — `/manufacturer/dashboard`
+
+Shows manufacturer KPIs, a selection of model cards, and incoming requests that are awaiting manufacturer review.
+
+**Why needed:** Places workload, inventory overview, and the manufacturer's actionable request list together.
+
+#### View Requests — `/manufacturer/view-requests`
+
+Provides the full incoming request list. It supports search and model filtering, pagination, and a review dialog.
+
+**Why needed:** Gives the manufacturer a dedicated workspace for processing requests beyond the short dashboard list.
+
+#### Dealer Request Review modal
+
+Shows request details, inventory breakdown, allocation summary, available units, units to manufacture, status, and manufacturer comments. Saving updates the order and routes it onward.
+
+**Why needed:** Keeps the allocation decision tied to the exact dealer request and enforces the stock-versus-production total.
+
+#### Stocks — `/manufacturer/stocks`
+
+Loads vehicle/variant/colour inventory and supports search, category/fuel/transmission/availability filters, add-vehicle and stock-detail dialogs, and in-session stock editing.
+
+**Why needed:** Gives the manufacturer an inventory-oriented view separate from the order queue.
+
+**Data note:** The page loads `vehicle.json` and updates its React state for its add/edit/delete UI. Those UI changes are not currently persisted back to the static JSON file by this page.
+
+### Finance Head portal
+
+#### Finance Head dashboard — `/financehead/dashboard`
+
+Shows order summary cards and a sortable/searchable dealer request table. Selecting a request opens the quotation preparation drawer.
+
+**Why needed:** Centralizes allocated orders that require financial review.
+
+#### Quotation Preparation drawer
+
+Shows order details, vehicle breakdown, stock availability, and Pricing & Finance fields. It supports catalog-derived editable pricing, tax, advance percentage, payment terms, saving/updating the quote, bank-detail editing, PDF generation, and sending the quote to Sales Manager.
+
+**Why needed:** Ensures the financial quote is attached to the correct request and can be reviewed before the approval step.
+
+### Sales Manager portal
+
+#### Sales Manager dashboard — `/salesmanager/dashboard`
+
+Shows KPI cards, a monthly requests chart, approval gauge, recent requests, and quick actions. KPI data is derived from current orders where possible; trend/graph content may come from dashboard JSON or fallback demonstration values.
+
+**Why needed:** Offers a workload overview and a quick path into approvals.
+
+#### Verification & Approval — `/salesmanager/verification-approval`
+
+Displays all requests with status filters and search. Each request can be opened in the Sales Manager review modal.
+
+**Why needed:** Separates the decision queue from the high-level dashboard and supports focused review.
+
+#### Sales Manager review modal
+
+Shows order, allocation, quotation and bank details, plus note and decline-reason fields. Approve/decline actions update the order's workflow.
+
+**Why needed:** Gives the approver the information required for a decision and captures a reason/note with the outcome.
+
+### Dealer Manager portal
+
+#### Dealer Manager dashboard — `/dealermanager/dashboard`
+
+Shows KPI cards, a chart, notifications, and a table panel that can be revealed from the KPIs. The table can filter/search requests and opens request details.
+
+**Why needed:** Helps the Dealer Manager prioritize acknowledgement and payment work.
+
+**Data note:** Request KPI counts are derived from current order records, while the notification list/chart data are currently demo constants.
+
+#### Approval & Request — `/dealermanager/requests`
+
+Provides status tabs and search for dealer-manager requests, with a request table and details modal.
+
+**Why needed:** Offers the full queue for managing acknowledgement and payment-related work.
+
+#### Request Details & Payment modal
+
+The modal is split into focused components for the header, metrics, workflow stepper, order summary, bank details, quotation, recent activity, and actions. Nested dialogs handle exact bank details and payment proof.
+
+**Why needed:** A request can require substantial financial and audit context; separating sections keeps it readable and maintainable.
+
+### Notification shortcuts
+
+The navbar notification dropdown filters recent orders by role; dealer users see orders for their dealer ID. Clicking a request card navigates to that role's request table with the request ID in the URL, then filters, scrolls to, and highlights the matching row. **View Details** expands additional role-specific information within the dropdown.
+
+**Why needed:** Reduces navigation steps and helps users find a specific request in a long table.
 
 ---
 
-## 10. Application Entry & Core Routing (`src/`)
+## 5. Shared components: what each does
 
-### `src/main.tsx`
-- **Need / Purpose**: React application entry point.
-- **Mechanisms**: Locates `<div id="root">` via `document.getElementById("root")!` and creates the React 19 root via `createRoot(...).render(<App />)` wrapped in `<StrictMode>`.
+| Component | Why it is needed |
+|---|---|
+| `Header` | Displays RenoGo branding and logo. |
+| `Sidebar` | Provides role-specific navigation and a collapsible layout. |
+| `Navbar` | Displays user/role, notification entry point, and logout. |
+| `LoginForm` | Owns controlled login inputs, role selection, demo credential checks, and redirect. |
+| `KpiCard` | Standardizes a metric card's value, label, subtitle, icon, and colour variant. |
+| `ModelCard` | Displays a vehicle model, image, stock summary, and availability. |
+| `AvailabilityProgressBar` | Visualizes how requested units split between available inventory and manufacturing. |
+| `DealerRequestTable` | Searchable/paginated manufacturer request table with a review action. |
+| `RecentDealerRequestsTable` | Reusable recent-request table on the Sales Manager dashboard. |
+| `RecentRequestsNotification` | Role-filtered recent requests and links to the exact request row. |
+| `OrderDetailsDialog` | Dealer-facing order details/lifecycle view. |
+| `RequestStatus` | Administrator request-status analytics card; current values are sample percentages. |
+| `AvailableModels` and `Piechart` | Administrator available-model visualization; intended for an inventory overview. |
+| `Form` and its admin form wrappers | Reusable modal form structure and specialized dealer/user fields. |
+| `SalesManagerStatCards` | Renders Sales Manager dashboard metrics and forwards card selection. |
+| `FleetRequestsBarChart` | Visualizes monthly request counts. |
+| `RequestApprovalGauge` | Summarizes approval/pending/rejection performance. |
+| `SalesManagerQuickActions` | Reusable shortcuts into the Sales Manager request workflow. |
+| Dealer Manager dashboard cards/chart/notifications/table panel | Separates KPI display, trend display, notification content, and request filtering into smaller UI units. |
+| Dealer Manager request modal subcomponents | Isolates the header, metrics, stepper, summary, bank/quote details, activity, and actions for easier maintenance. |
+| Manufacturer `AddVehicleDialog` / `StockDetailsDialog` | Separate inventory creation from stock inspection/editing. |
 
-### `src/App.tsx`
-- **Need / Purpose**: Defines the application routing tree using React Router DOM.
-- **Mechanisms**:
-  - `BrowserRouter as Router`: Wraps route context.
-  - `AnimatedRoutes`: Uses `useLocation()` to supply a distinct `key={`${location.pathname}${location.search}`}` to trigger CSS route transitions.
-  - **Nested Route Structure**:
-    - The `/dealer` route mounts `<DealerPortal />` with nested child routes:
-      - `index` redirects to `dashboard`
-      - `dashboard` -> `<DashboardHome />`
-      - `catalog` -> `<DealerVehicleCatalog />`
-      - `my-requests` -> `<MyRequests />`
-      - `profile` -> `<DealerProfile />`
-    - Top-level routes for `/admindb`, `/usermg`, `/dealers`, `/vehiclecatalog`, `/manufacturer/*`, `/supervisor/*`, `/salesmanager/*`, and `/dealermanager/*`.
+### Why split pages into components?
 
-### `src/App.css` & `src/index.css`
-- **Need / Purpose**:
-  - `index.css`: Global typography (Inter, system-ui), CSS variables, base colors, reset rules.
-  - `App.css`: Route transition keyframe animations (`fadeIn`, `slideUp`), shared card elevation, and layout utility classes.
-
----
-
-## 11. Pages & Portals Deep Dive (`src/pages/`)
-
-### 11.1 Login (`src/pages/Login/`)
-- **`index.tsx` & `Login.css`**: Renders the login page hero container, background image, branding header, and mounts `<UserLoginForm />`.
-
----
-
-### 11.2 Admin Dashboard (`src/pages/AdminDashBoard/`)
-
-#### `Dashboard/index.tsx` & `Dashboard.css`
-- **Need / Purpose**: Main administrator overview.
-- **Mechanisms**: Displays top-level KPI cards (Total Orders: 1,248, Total Dealers: 86, Total Revenue: $48,920) and embeds `<RequestStatus />` and `<AvailableModels />`.
-
-#### `Dealers/index.tsx` & `Dealers.css`
-- **Need / Purpose**: Dealer management screen. Lists registered dealerships, total order volume, and status.
-- **Mechanisms**:
-  - Parallel data fetching: `Promise.all([getDealers(), getOrders()])`.
-  - Groups orders by dealer using `orders.reduce(...)`.
-  - Can open `<DealerForm />` for creating dealerships, or open modal workflow views for Details / Approval.
-- **Callbacks**:
-  - `handleAddDealer`: Invokes `createDealer(dealer)` API and updates state with `setDealerList((prev) => [...prev, newDealer])`.
-  - `onClick={() => openWorkflowView("details", dealer.id)}`.
-  - `onClick={() => openWorkflowView("approval", dealer.id)}`.
-
-#### `Dealers/DealersDetails/index.tsx`
-- **Need / Purpose**: Comprehensive profile of a dealership and their primary order context.
-- **Mechanisms**: Reads route param `useParams()` or component props. Utilizes `useDealer(dealerId)` and `useOrder(dealerId, orderId)`.
-
-#### `Dealers/ApprovalProduction/index.tsx`
-- **Need / Purpose**: Full lifecycle workflow tracker (Dealer Request -> Finance Approval -> Production Review -> Manufacturing -> Logistics -> Delivery).
-- **Mechanisms**: Renders approval tracker badges and an audit trail history table.
-
-#### `UserManagement/index.tsx` & `UserManagement.css`
-- **Need / Purpose**: Admin screen to create, edit, filter, and delete system users across all roles.
-- **Mechanisms**:
-  - State initialization callback from `localStorage`: `useState<User[]>(loadUsers)`.
-  - Synchronizes changes to `localStorage` via `useEffect`.
-  - Multi-condition filtering by text search query and role dropdown.
-- **Callbacks**:
-  - `handleSaveUser`: Upserts user via `map(...)` if editing or array spread `[...prev, user]` if creating.
-  - `handleDeleteUser`: Filters out user ID via `filter((u) => u.id !== id)`.
-
-#### `VehicleCatalog/index.tsx` & `VehicleCatalog.css`
-- **Need / Purpose**: Admin vehicle inventory catalog.
-- **Mechanisms**: Fetches `/api/vehicle.json`, provides multi-faceted filtering (Model, Variant, Color, Availability).
+- **Reuse:** A shared table/card can be used without rebuilding its markup for each screen.
+- **Single responsibility:** A modal section that formats a quotation is easier to understand than one enormous component.
+- **Testability:** Smaller functions and components are easier to validate independently.
+- **Consistency:** Shared navigation, request statuses, and UI patterns behave similarly across roles.
+- **Change isolation:** A style or behavior change to one well-scoped component has fewer unrelated effects.
 
 ---
 
-### 11.3 Dealer Portal (`src/pages/Dealer/`)
+## 6. Data and technical architecture
 
-#### `index.tsx`, `Dealer.css` & `utils.ts`
-- **Need / Purpose**: Master layout shell for the Dealer portal.
-- **Mechanisms**:
-  - Manages dealer identity (`dealerId`, `dealerName`, `dealerLocation`) resolved from `location.state` or `localStorage`.
-  - Manages orders state seeded with `SEED_ORDERS` and merged with live `/api/orders` responses.
-  - Exposes `OutletContext` (`DealerOutletContext`) to all nested routes:
-    `{ dealerName, dealerId, dealerLocation, orders, openRequest, onViewOrder }`.
-- **Callbacks**:
-  - `handleOrderSubmitted`: Adds new order to top of list `[order, ...prev]`, closes request dialog, triggers a 6-second banner toast notification with `setTimeout`.
+### Frontend stack
 
-#### `DashBoard/index.tsx`, `DashBoard.css` & `types.ts`
-- **Need / Purpose**: Dealer home dashboard.
-- **Mechanisms**:
-  - Consumes parent context via `useOutletContext<DealerOutletContext>()`.
-  - Derives statistics (`deriveStats(orders)`) for Pending, Approved, and Rejected orders.
-  - Quick action buttons to open request dialog, view catalog, or check requests.
-- **Callbacks**:
-  - `onClick={() => openRequest(POPULAR_MODELS[0].name)}`.
-  - `onClick={() => onViewOrder(order)}` opens slide-out order drawer.
+- React 19 and TypeScript.
+- Vite for development/build.
+- React Router for navigation.
+- Redux Toolkit Query for shared order data and mutations.
+- Material UI for some dialogs, tables, icons, and charts; application-specific CSS for layouts and visual styling.
 
-#### `CreateRequest/index.tsx` & `CreateRequest.css`
-- **Need / Purpose**: Modal dialog for dealers to submit new vehicle fleet orders.
-- **Mechanisms**: Controlled form for vehicle model, quantity, requested ETA, and remarks.
-- **Callbacks**:
-  - `handleSubmit`: Form submission callback calling `createOrder(...)`, creating a new order object with `Date.now()`, and triggering `onSubmitted(newOrder)`.
-  - `onClose`: Dialog dismissal callback.
+### Application startup and routing
 
-#### `MyRequests/index.tsx` & `MyRequests.css`
-- **Need / Purpose**: List of all requests raised by the logged-in dealer with status tracking badges and quick search.
-- **Callbacks**: `onClick={() => onViewOrder(o)}` callback to inspect order details.
+```text
+index.html
+  -> src/main.tsx
+      -> Redux Provider (store)
+      -> App.tsx (BrowserRouter and route table)
+          -> role-specific page
+```
 
-#### `VehicleCatalog/index.tsx` & `VehicleCatalog.css`
-- **Need / Purpose**: Dealership model browser displaying high-res imagery, starting prices, engine specs, and "Request Fleet Order" buttons.
+`main.tsx` mounts React, wraps the app in `StrictMode`, and provides the Redux store. `App.tsx` defines the routes and nested dealer pages. The route transition wrapper keys screens using the current URL.
 
-#### `Profile/index.tsx` & `Profile.css`
-- **Need / Purpose**: Displays authorized dealer credentials, GSTIN ID, primary contact email, and quarterly allocation quotas.
+### Main data sources
 
----
+| Source | Used for |
+|---|---|
+| `GET /api/orders` | Shared order list for dashboards, workflow queues, counts, and notifications. |
+| `GET /api/orders?dealerId=...` | Orders for the active dealer. |
+| `POST /api/orders` | Create a dealer order. |
+| `PUT /api/orders/:id` | Save workflow/allocation/other order changes. |
+| `GET /api/dealers` | Dealer list and admin overview counts. |
+| `GET /api/quotations?orderId=...` | Load a quotation for a specific order. |
+| `POST /api/quotations`, `PATCH /api/quotations/:id` | Create/update quotation details. |
+| `/api/vehicle.json` | Vehicle stock/catalog seed data. |
+| `/api/manufacturer-dashboard.json` | Manufacturer dashboard display data and allocation seed data used by related role screens. |
+| `/api/sales-manager-dashboard.json` | Sales Manager dashboard display/trend data. |
+| `/spring-api/` | User data used by login/admin user functionality when the Spring service is running. |
 
-### 11.4 Dealer Manager Portal (`src/pages/DealerManager/`)
+The `/api` calls are proxied by Vite to JSON Server on `localhost:5000`. `/spring-api` is proxied to a Spring service on `localhost:8080`. The frontend therefore needs the corresponding service(s) running for those live requests.
 
-#### `DashBoard/index.tsx` & `DealerManager.css`
-- **Need / Purpose**: Operational dashboard for Dealer Managers.
-- **Mechanisms**:
-  - Fetches requests via `getDmRequests()`.
-  - Computes KPIs dynamically via `useMemo` based on request statuses.
-- **Sub-Components**:
-  - `KpiCards.tsx`: Displays summary cards.
-  - `OverviewChart.tsx`: Renders MUI `@mui/x-charts/BarChart` with daily trend metrics.
-  - `NotificationsCard.tsx`: Displays activity notifications list.
+### Redux Toolkit Query and workflow helpers
 
-#### `Approvals/index.tsx`
-- **Need / Purpose**: Filterable approvals and requests screen with status tabs (`All`, `Awaiting Acknowledgement`, `Ready for Payment`, `Payment Submitted`, `Completed`).
-- **Callbacks**:
-  - `onChange={(e, val) => setSelectedTab(val)}`: MUI Tab switch callback.
-  - `onChange={(e) => setSearchQuery(e.target.value)}`: Search field input callback.
+`src/features/orders/ordersApi.ts` defines the orders API. `useGetOrdersQuery` shares/caches the order list, while create/update mutations invalidate order tags so subscribed views can refresh. `applyWorkflowTransition` creates the new status, owner, timestamped workflow-history entry, and notification record before the update is sent.
 
-#### `components/RecentRequestsTable.tsx`
-- **Need / Purpose**: Interactive table showing orders, quotation amounts, statuses, and payment states.
-- **Callbacks**:
-  - `onClick={() => handleOpenDetails(req)}`: Opens modal.
-  - `onClick={() => navigate("/dealermanager/requests")}`: View all navigation.
+### Important domain types
 
-#### `components/RequestDetailsModal/RequestDetailsModal.tsx` & Sub-components
-- **Need / Purpose**: Comprehensive dialog for a Dealer Manager to review and action an order.
-- **Modular Sub-components**:
-  - `ModalHeaderBanner.tsx`: Shows vehicle model, request ID, dealer name, and close button.
-  - `ModalMetricCards.tsx`: Displays unit count, unit base price, and advance deposit.
-  - `RequestStatusStepper.tsx`: Step progress tracker (Quotation Generated -> Acknowledged -> Ready for Payment -> Payment Verified).
-  - `RequestSummarySection.tsx`: Detailed tabular breakdown of order specifications.
-  - `ManufacturerBankDetails.tsx`: Displays bank beneficiary, account number, IFSC code, and branch.
-  - `FinalQuotationSection.tsx`: Financial summary card showing total cost, tax, advance due, and download quote action.
-  - `RecentActivitySection.tsx`: Chronological audit log of timestamps and status changes.
-  - `ManagerActionsBar.tsx`:
-    - **Callbacks**:
-      - `onAcknowledge`: Callback updating acknowledgment state.
-      - "Upload Proof" file trigger callback.
-      - "Proceed to Payment" action callback.
+- `Order`: A request/order, its dealer, quantity, vehicle line items, current status/owner, estimated total, allocation, workflow history, and optional payment proof.
+- `OrderItem`: Model, variant, colour, quantity, catalog starting price/unit price, and vehicle specifications.
+- `Quotation`: Order/dealer link, base price, tax/advance rates, GST/payment terms, bank details, and quote status.
+- `Dealer`: Dealer ID, name, location, order count, and status.
+- `DmRequest`: A display/workflow representation used by Dealer Manager pages, derived from orders by `ordersToDmRequests`.
+
+### Persistence boundaries to explain honestly
+
+- Orders and quotations use API requests and are the main persisted workflow data.
+- `vehicle.json` is a static JSON source. Manufacturer stock screen changes currently live in page state and are not written back by that screen.
+- User Management includes local storage/cache behavior and requests the Spring user API. Its behavior depends on whether that service is available.
+- Some charts and notification data are demonstration values; do not describe every chart as a live analytics pipeline.
+- This project is a prototype: UI role selection is not equivalent to server-side authorization.
 
 ---
 
-### 11.5 Manufacturer Portal (`src/pages/Manufacturer/`)
+## 7. Main source folders and why they exist
 
-#### `DashBoard/index.tsx`
-- **Need / Purpose**: Factory overview showing total fleet orders, units awaiting allocation, and model inventory levels.
-- **Mechanisms**: Fetches `/api/manufacturer-dashboard.json`, renders `KpiCard` grid, `ModelCard` inventory scroll, and `<DealerRequestTable />`.
+```text
+src/
+  api/              HTTP service functions for users, dealers, quotations, and dashboard data
+  app/              Redux store setup
+  assets/           Logos, vehicle photos, and visual assets
+  components/       Shared navigation, cards, tables, dialogs, and controls
+  features/orders/  RTK Query API and workflow transition helper
+  hooks/            Reusable stateful helpers, including request row focus
+  pages/            Role-specific screens and page-local components
+  types/            Shared TypeScript domain models
+  utils/            Shared formatting and price parsing helpers
+```
 
-#### `DealerRequestReviewModal/index.tsx`
-- **Need / Purpose**: Stock allocation modal where factory managers split an incoming request between existing warehouse stock and factory manufacturing.
-- **Mechanisms**:
-  - Syncs available units vs manufacturing units: `available + manufacturing = total requested quantity`.
-  - Attaches keyboard listener for `Escape` key in `useEffect` and cleans it up.
-- **Callbacks**:
-  - `updateAvailable(val)`: Updates available count and adjusts manufacturing count automatically.
-  - `updateManufacturing(val)`: Adjusts manufacturing count and available count.
-  - `onClose()`: Modal dismiss callback.
+Other important folders/files:
 
-#### `Stocks/index.tsx`, `Stocks.css` & `types.ts`
-- **Need / Purpose**: Factory inventory management portal.
-- **Mechanisms**:
-  - Groups flat stock items into structured vehicle models with color breakdown.
-  - Filter by category, fuel type, transmission, and availability.
-- **Sub-Dialogs**:
-  - `AddVehicleDialog/index.tsx`: Controlled dialog to add new vehicle stock.
-    - **Callbacks**: `onSubmit`, `onNameChange`, `onVariantChange`, `onColorChange`, `onQuantityChange`, `onImageChange`.
-  - `StockDetailsDialog/index.tsx`: Dialog to view breakdown by color, edit total quantity, or delete stock.
-    - **Callbacks**: `onEdit`, `onDelete`, `onSave`, `onEditNameChange`, `onEditQuantityChange`, `onCancelEdit`.
-
-#### `ViewRequests/index.tsx`
-- **Need / Purpose**: Dedicated full-page view of all incoming dealer requests for the manufacturer.
+- `backend/db.json`: JSON Server collections such as dealers, users, orders, and quotations.
+- `backend/vehicle.json`: Static vehicle stock/catalog records.
+- `backend/manufacturer-dashboard.json` and `backend/sales-manager-dashboard.json`: Dashboard/role-support JSON.
+- `public/`: Static files served directly.
+- `vite.config.ts`: React plugin and local `/api` and `/spring-api` proxy configuration.
+- `package.json`: Dependencies and developer scripts.
+- `tsconfig*.json`: TypeScript project/compiler options.
+- `eslint.config.js`: ESLint rules, including React Hooks checks.
+- `learning.readme`: This architecture, workflow, and presentation guide.
 
 ---
 
-### 11.6 Supervisor Portal (`src/pages/Supervisor/`)
+## 8. Run the application for a presentation
 
-#### `Dashboard/index.tsx` & `Dashboard.css`
-- **Need / Purpose**: Supervisor dashboard tracking pending allocations and approved requests.
-- **Mechanisms**:
-  - Fetches `/api/orders` and `/api/manufacturer-dashboard.json`.
-  - Filters out unallocated requests.
-  - Uses `useMemo` to compute pending, approved, and confirmed order counters.
+Install dependencies once:
 
-#### `ViewRequests/index.tsx` & `ViewRequests.css`
-- **Need / Purpose**: Screen for supervisors to view allocated dealer requests and open the quotation review editor.
-- **Mechanisms**: Cross-references orders, manufacturer allocations, and vehicle stock.
-- **Callbacks**:
-  - `openRequest(order)`: Asynchronously loads quotation via `getQuotationByOrderId(order.id)` and opens `<ReviewQuotation />`.
+```bash
+npm install
+```
 
-#### `ViewRequests/Review&Quotation/index.tsx`
-- **Need / Purpose**: Interactive quotation builder and financial verification screen.
-- **Mechanisms**:
-  - Computes base total (`basePrice * quantity`), GST tax amount, total quotation sum, and required advance payment percentage.
-  - Renders `<AvailabilityProgressBar />` for allocated stock percentage.
-  - Allows in-place editing of Manufacturer Bank Details.
-- **Callbacks**:
-  - `saveBankDetails`: Invokes `updateQuotation(...)` API to persist updated bank details and calls parent `onQuotationChange(updatedQuote)`.
-  - `onClose`: Closes review panel.
+Start the JSON API in one terminal:
 
----
+```bash
+npm run server
+```
 
-### 11.7 Sales Manager Portal (`src/pages/SalesManager/`)
+Start the Vite frontend in another terminal:
 
-#### `Dashboard/index.tsx`
-- **Need / Purpose**: Sales management dashboard to review finalized supervisor quotations and grant executive approval.
-- **Mechanisms**:
-  - Loads orders and manufacturer allocation data.
-  - Clicking "Review" opens `<SalesManagerReviewModal />`.
-- **Callbacks**:
-  - `handleReviewAction(action)`: Updates local order status (`Approved` or `Declined`) upon approval or decline.
+```bash
+npm run dev
+```
 
-#### `Dashboard/SalesManagerReviewModal/index.tsx` & `SalesManagerReviewModal.css`
-- **Need / Purpose**: Modal dialog presenting full dealer details, stock allocation progress bar, pricing breakdown, and decision buttons.
-- **Mechanisms**: Includes conditional textarea for "Decline Reason" when declining a request.
-- **Callbacks**:
-  - `onChange={(e) => setNote(e.target.value)}`: Note text input callback.
-  - `onChange={(e) => setDeclineReason(e.target.value)}`: Decline reason callback.
-  - `onClick={() => onAction("Approved")}`: Approval action callback.
-  - `onClick={() => onAction("Declined")}`: Decline action callback.
+Open the local address printed by Vite (normally `http://localhost:5173`). User data can require the Spring service on port `8080`; explain if it is not available.
 
-#### `Verification&Approval/index.tsx`
-- **Need / Purpose**: Dedicated placeholder view for standalone sales verification workflows.
+Useful checks:
+
+```bash
+npm run lint
+npm run build
+```
+
+`npm run build` runs TypeScript project checks followed by the Vite production build.
 
 ---
 
-## 12. Public & Static Assets
+## 9. Suggested live demonstration
 
-- `public/favicon.svg`: SVG icon for browser tabs.
-- `public/icons.svg`: SVG icon sprite definitions.
-- `src/assets/logo.png`: RenoGo brand logo.
-- `src/assets/hero.png`, `bg1.webp`, `sb.png`, `sidebar_bg.png`: Layout backgrounds and decorative elements.
-- `src/assets/*.jpg` / `*.png` (`clio.jpg`, `etech.jpg`, `megane.jpg`, `rafale.png`, `twingo.jpg`, `zoe.jpg`): High-resolution model imagery for vehicles.
-- `src/assets/dealer/*` (`duster.jpg`, `fleet_promo.jpg`, `hero_banner.jpg`, `kiger.jpg`, `kwid.jpg`, `triber.jpg`): Marketing banners and vehicle catalog photography for the Dealer Portal.
+### Demo sequence (5-7 minutes)
+
+1. **Introduce the problem**
+   - A large fleet request involves multiple teams and can be hard to track in disconnected spreadsheets.
+   - RenoGo gives each team a role-specific workspace and keeps the request status in a shared order record.
+
+2. **Show the Dealer portal**
+   - Open the catalog and explain model, variant, colour, quantity, and catalog starting price.
+   - Add one or more vehicles to the cart; point out that catalog price drives the estimate.
+   - Submit a request with a delivery date and note.
+   - Open My Requests and show that the new request is trackable.
+
+3. **Show the Manufacturer portal**
+   - Open the incoming request.
+   - Explain stock allocation: units available now plus units that must be manufactured.
+   - Save/send the allocation to Finance Head.
+
+4. **Show Finance Head**
+   - Open the allocated request.
+   - Point out that catalog price is prefilled but editable.
+   - Show tax/advance/payment terms and quotation totals.
+   - Save the quote, optionally generate a PDF, and send it to Sales Manager.
+
+5. **Show Sales Manager**
+   - Inspect allocation and finance information.
+   - Demonstrate approve or explain decline requires a reason.
+   - Show that approval routes the request to Dealer Manager.
+
+6. **Show Dealer Manager**
+   - Open the request details, acknowledge terms, and inspect bank/payment sections.
+   - Explain the payment proof step and current completion behavior.
+
+7. **Show notification shortcut and Admin**
+   - Click a notification request card to show how it takes the user to the matching request row.
+   - Finish with Admin Overview / Dealer Management to show the system-wide view.
+
+### Presentation script
+
+> "A dealer starts by selecting vehicles from the catalog. The request is created once, with its line items and estimated value. The manufacturer then allocates available inventory and identifies any quantity that needs production. Finance prepares a quotation using the catalog price as an editable starting point. Sales reviews the full commercial request and either approves it or records a decline reason. The Dealer Manager handles acknowledgement and payment evidence, while the dealer can track progress and the administrator can inspect the network and request data. Because the workflow is represented on the order, each role sees the same request at its current stage rather than creating disconnected copies."
+
+### Questions you may be asked
+
+**What is the main benefit?**
+
+Role-based handoffs and visible request status reduce the need to chase updates across separate teams.
+
+**Where does the price come from?**
+
+Catalog item price is attached to the request when available and used as the initial Finance Head unit price. Finance can edit that amount before saving the quotation.
+
+**What happens when a role updates a request?**
+
+The order status, owner, and workflow history are updated through the orders API. RTK Query invalidation allows screens using that shared data to refresh.
+
+**Are all dashboard values live?**
+
+No. Core order/dealer KPIs are increasingly derived from JSON API records, but some charts/notifications remain seeded sample data. The guide and demo should identify those accurately.
+
+**Is authentication production-ready?**
+
+No. This is a prototype login/persona flow. Production would require secure authentication, server-side authorization, validation, and protected API endpoints.
 
 ---
 
-## 13. Key React Patterns, Mechanics & Callback Glossary
+## 10. Design choices worth explaining
 
-### 1. Controlled Form Inputs
-- **Concept**: Form input values are driven strictly by React state (`value={state}` + `onChange={(e) => setState(e.target.value)}`).
-- **Where used**: `LoginForm`, `UserForm`, `DealerForm`, `CreateRequestDialog`, `AddVehicleDialog`, `StockDetailsDialog`.
+- **One shared order model:** Teams act on one request as it progresses; the order records the current status and owner.
+- **Explicit ownership:** `currentOwner` and workflow history show who is expected to act and what happened before.
+- **Role-focused screens:** A dealer sees their own requests, while internal roles see their queues and the information they need for their decision.
+- **Reusable components:** Common tables, navigation, request cards, and modal sections reduce duplication and improve consistency.
+- **Typed domain data:** Shared TypeScript types make the shape of orders, quotations, dealers, and workflow stages explicit.
+- **API cache invalidation:** RTK Query refreshes subscribed order views after mutations rather than requiring manual reloads.
+- **Notification deep links:** A request selection can take the user directly to its matching row in the corresponding work queue.
 
-### 2. Event Bubbling Suppression
-- **Mechanism**: Modal overlay backdrops use `onMouseDown={onClose}`, while the modal dialog card specifies `onMouseDown={(e) => e.stopPropagation()}` to prevent clicks inside the modal from accidentally closing it.
-- **Where used**: `src/components/Form/index.tsx`, `SalesManagerReviewModal/index.tsx`, `WorkflowShell`.
+---
 
-### 3. Asynchronous Promise Callbacks
-- **Mechanism**: Handling API requests with `.then()`, `.catch()`, and `.finally()`.
-- **Example in codebase**:
-  ```ts
-  getDmRequests()
-    .then(setRequests)
-    .catch(() => setError("Unable to load requests."))
-    .finally(() => setLoading(false));
-  ```
+## 11. Prototype limitations and future improvements
 
-### 4. Array Higher-Order Function Callbacks
-Used across the entire project for data transformation and rendering:
-- `.map()`: Transforms domain models into JSX elements (e.g., rendering table rows, card lists, select options).
-- `.filter()`: Filters lists based on search keywords, status tabs, or role selectors.
-- `.reduce()`: Groups flat orders by dealer ID or aggregates stock quantities.
-- `.some()`: Performs multi-field search match checks.
-- `.sort()`: Chronologically orders requests by date.
+Be transparent about these areas in a presentation:
 
-### 5. Effect Cleanup & Race Condition Guards
-- **Mechanism**: Inside `useOrder.ts` and `Dealer/index.tsx`, an `active = true` flag is toggled to `false` in the `useEffect` cleanup function. If the component unmounts or parameters change mid-flight, stale promise responses are safely discarded.
+1. **Authentication and authorization:** The role picker/local storage is suitable for a demonstration, but does not secure routes or APIs.
+2. **Static dashboard analytics:** Some charts and notification content use sample JSON/fallback values and should be connected to validated aggregates.
+3. **Inventory persistence:** Manufacturer stock add/edit/delete currently changes local React state; a production inventory API should persist it.
+4. **Payment lifecycle consistency:** The shared type includes payment intermediate statuses, but the current payment-proof success path transitions directly to `Completed`. A production flow should define and enforce each payment-verification stage.
+5. **Data validation and auditability:** Server-side validation, durable audit events, role permissions, and error monitoring would be needed for production.
+6. **User service availability:** User management/login can depend on the Spring API on port `8080`, unlike the JSON Server endpoints.
 
-### 6. React Router Outlet Context Pattern
-- **Mechanism**: `<Outlet context={{ ... }} />` allows parent route layouts (e.g. `DealerPortal`) to supply shared state, methods, and callbacks directly to nested child routes without prop drilling. Children consume it using `useOutletContext<T>()`.
+These are natural next steps rather than reasons to obscure what the prototype currently demonstrates.
+
+---
+
+## 12. Key files to open while explaining
+
+| Presentation topic | File |
+|---|---|
+| Route map | `src/App.tsx` |
+| Application bootstrap and Redux provider | `src/main.tsx` |
+| Role navigation | `src/components/Sidebar/index.tsx` |
+| Login/persona redirect | `src/components/LoginForm/index.tsx` |
+| Shared order API and status transitions | `src/features/orders/ordersApi.ts` |
+| Order and workflow types | `src/types/order.ts` |
+| Dealer request creation | `src/pages/Dealer/components/FleetCartDrawer.tsx` |
+| Manufacturer allocation | `src/pages/Manufacturer/DealerRequestReviewModal/index.tsx` |
+| Finance quotation | `src/pages/FinanceHead/Dashboard/ReviewQuotation/index.tsx` |
+| Sales decision | `src/pages/SalesManager/Dashboard/SalesManagerReviewModal/index.tsx` |
+| Dealer Manager action flow | `src/pages/DealerManager/components/RequestDetailsModal/RequestDetailsModal.tsx` |
+| Request notification | `src/components/RecentRequestsNotification/index.tsx` |
+| Local API proxies | `vite.config.ts` |
+| JSON demo data | `backend/db.json`, `backend/vehicle.json` |
+
+---
+
+## 13. Glossary
+
+- **Fleet request:** A dealer's request for one or more vehicles, often in multiple units.
+- **Allocation:** Manufacturer's decision about which requested units can come from current inventory and which require production.
+- **Quotation:** Finance's price/tax/advance/payment-terms proposal for a request.
+- **Workflow status:** The request's current stage, such as `Pending Manufacturer Review`.
+- **Current owner:** The role expected to act on the request next.
+- **Workflow history:** Timestamped record of past stages and the role that performed each transition.
+- **RTK Query:** Redux Toolkit's data fetching and cache synchronization layer used for orders.
+- **JSON Server:** A lightweight local REST API generated from JSON data for demonstration and development.
+- **SPA:** Single-page application; client-side routing changes views without loading a new HTML page for every route.

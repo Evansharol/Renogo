@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import WorkflowShell from "../../../../components/WorkFlow";
 import { useDealer } from "../../../../hooks/useDealer";
 import { useOrder } from "../../../../hooks/useOrder";
+import { getOrderDisplayNumber } from "../../../../utils/orderDisplay";
 
 /**
  * Workflow steps — the correct order flow as defined by the business:
@@ -139,7 +140,7 @@ export default function ApprovalProduction({ dealerId: dealerIdProp, orderId, is
 		{/* Request Summary */}
 		<section className="workflow-card">
 			<div className="request-summary">
-				<div><span>Request ID</span><strong>{order.requestNumber ?? order.id}</strong></div>
+				<div><span>Request ID</span><strong>{getOrderDisplayNumber(order)}</strong></div>
 				<div><span>Dealer Name</span><strong>{dealer.name}</strong></div>
 				<div><span>Vehicle Model</span><strong>{order.vehicleModel}</strong></div>
 				<div><span>Total Quantity</span><strong>{order.quantity} units</strong></div>

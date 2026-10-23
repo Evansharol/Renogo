@@ -11,6 +11,7 @@ import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import PrecisionManufacturingOutlinedIcon from "@mui/icons-material/PrecisionManufacturingOutlined";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import { sectionCardStyle, tableHeadStyle, tableBodyStyle } from "../modalStyles";
+import type { Order } from "../../../../../types/order";
 
 const commitmentPillStyle = {
     display: "flex",
@@ -26,19 +27,21 @@ import type { DmRequest } from "../../../types";
 
 type RequestSummarySectionProps = {
     request?: DmRequest | null;
+    order?: Order;
 };
 
-export default function RequestSummarySection({ request }: RequestSummarySectionProps) {
-    const baseDate = request?.orderDate ? new Date(request.orderDate) : new Date();
-    const validDate = isNaN(baseDate.getTime()) ? new Date() : baseDate;
-    const deliveryDate = new Date(validDate.getTime() + 45 * 24 * 60 * 60 * 1000);
-    const deliveryDateStr = deliveryDate.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-
-    const vehicleRows = [
-        { model: "Kiger", variant: "RXE", req: 20, avail: 15, prod: 5 },
-        { model: "Triber", variant: "RXZ", req: 15, avail: 10, prod: 5 },
-        { model: "Duster", variant: "RXZ", req: 15, avail: 8, prod: 7 },
-    ];
+export default function RequestSummarySection({ request, order }: RequestSummarySectionProps) {
+    const deliveryDate = order?.etaDelivery ? new Date(order.etaDelivery) : null;
+    const deliveryDateStr = deliveryDate && !Number.isNaN(deliveryDate.getTime())
+        ? deliveryDate.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+        : "—";
+    const vehicleRows = order?.items?.length
+        ? order.items.map((item) => ({ model: item.model, variant: item.variant, quantity: item.quantity }))
+        : order
+            ? [{ model: order.vehicleModel, variant: "—", quantity: order.quantity }]
+            : request
+                ? [{ model: request.vehicleModel, variant: "—", quantity: request.totalQuantity }]
+                : [];
 
     return (
         <Box sx={sectionCardStyle}>
@@ -67,11 +70,14 @@ export default function RequestSummarySection({ request }: RequestSummarySection
                             <TableRow key={i} sx={{ "&:last-child td": { borderBottom: 0 } }}>
                                 <TableCell sx={tableBodyStyle}><strong>{row.model}</strong></TableCell>
                                 <TableCell sx={tableBodyStyle}>{row.variant}</TableCell>
-                                <TableCell sx={tableBodyStyle}>{row.req}</TableCell>
-                                <TableCell sx={tableBodyStyle}>{row.avail}</TableCell>
-                                <TableCell sx={tableBodyStyle}>{row.prod}</TableCell>
+                                <TableCell sx={tableBodyStyle}>{row.quantity}</TableCell>
+                                <TableCell sx={tableBodyStyle}>—</TableCell>
+                                <TableCell sx={tableBodyStyle}>—</TableCell>
                             </TableRow>
                         ))}
+                        {vehicleRows.length === 0 && (
+                            <TableRow><TableCell colSpan={5} sx={tableBodyStyle}>No vehicle details available.</TableCell></TableRow>
+                        )}
                     </TableBody>
                 </Table>
             </TableContainer>
@@ -88,14 +94,18 @@ export default function RequestSummarySection({ request }: RequestSummarySection
                     <Inventory2OutlinedIcon sx={{ fontSize: 16, color: "#2563eb", flexShrink: 0 }} />
                     <Box>
                         <Typography sx={{ fontSize: "10.5px", fontWeight: 600, color: "#64748b" }}>Stock Allocation</Typography>
-                        <Typography sx={{ fontSize: "11.5px", fontWeight: 700, color: "#0f172a" }}>33 vehicles available</Typography>
+                        <Typography sx={{ fontSize: "11.5px", fontWeight: 700, color: "#0f172a" }}>
+                            {order?.allocation ? `${order.allocation.available} vehicles available` : "—"}
+                        </Typography>
                     </Box>
                 </Box>
                 <Box sx={commitmentPillStyle}>
                     <PrecisionManufacturingOutlinedIcon sx={{ fontSize: 16, color: "#2563eb", flexShrink: 0 }} />
                     <Box>
                         <Typography sx={{ fontSize: "10.5px", fontWeight: 600, color: "#64748b" }}>Manufacturing Commitment</Typography>
-                        <Typography sx={{ fontSize: "11.5px", fontWeight: 700, color: "#0f172a" }}>17 vehicles to be produced</Typography>
+                        <Typography sx={{ fontSize: "11.5px", fontWeight: 700, color: "#0f172a" }}>
+                            {order?.allocation ? `${order.allocation.toManufacture} vehicles to be produced` : "—"}
+                        </Typography>
                     </Box>
                 </Box>
                 <Box sx={commitmentPillStyle}>

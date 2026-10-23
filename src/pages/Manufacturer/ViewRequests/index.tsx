@@ -1,15 +1,13 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import Sidebar from "../../../components/Sidebar";
 import Navbar from "../../../components/Navbar";
 import DealerRequestTable from "../../../components/DealerRequestTable";
 import type { DealerRequest } from "../../../components/DealerRequestTable";
-import { getOrders } from "../../../api/orders";
 import type { Order } from "../../../types/order";
+import { useGetOrdersQuery } from "../../../features/orders/ordersApi";
+import { getOrderDisplayNumber } from "../../../utils/orderDisplay";
 import "../../Dealer/Dealer.css";
-
-type DashboardRequestsResponse = {
-  dealerRequests: DealerRequest[];
-};
 
 const DEFAULT_STOCK_BY_MODEL: Record<string, number> = {
   "Renault Kiger": 10,
@@ -20,7 +18,7 @@ const DEFAULT_STOCK_BY_MODEL: Record<string, number> = {
 
 const orderToRequest = (order: Order): DealerRequest => ({
   requestId: order.id,
-  requestNumber: order.requestNumber,
+  requestNumber: getOrderDisplayNumber(order),
   dealerId: order.dealerId,
   dealerName: order.dealerId,
   model: order.items?.map((item) => item.model).join(", ") ?? order.vehicleModel,
@@ -38,26 +36,14 @@ const orderToRequest = (order: Order): DealerRequest => ({
 });
 
 export default function ManufacturerViewRequests() {
-  const [requests, setRequests] = useState<DealerRequest[]>([]);
-  const [error, setError] = useState("");
+  const [searchParams] = useSearchParams();
+  const targetRequestId = searchParams.get("requestId") ?? undefined;
+  const { data: orders = [], isLoading: ordersLoading, isError: ordersError } = useGetOrdersQuery();
 
-  useEffect(() => {
-    Promise.all([
-      fetch("/api/manufacturer-dashboard.json").then((response) => {
-        if (!response.ok) throw new Error(`Unable to load dealer requests (${response.status})`);
-        return response.json() as Promise<DashboardRequestsResponse>;
-      }),
-      getOrders(),
-    ])
-      .then(([data, orders]) => setRequests([
-        ...orders.filter((order) => order.status === "Pending Manufacturer Review").map(orderToRequest),
-        ...data.dealerRequests.filter((request) => !orders.some((order) => order.id === request.requestId)),
-      ]))
-      .catch((loadError: unknown) => {
-        setError(loadError instanceof Error ? loadError.message : "Unable to load dealer requests");
-      });
-  }, []);
-
+  const requests = useMemo(
+    () => orders.filter((order) => order.status === "Pending Manufacturer Review").map(orderToRequest),
+    [orders],
+  );
   return (
     <div className="dealer-layout">
       <Sidebar variant="manufacturer" />
@@ -70,7 +56,9 @@ export default function ManufacturerViewRequests() {
               <p>Review and allocate dealer fleet requests.</p>
             </div>
           </div>
-          {error ? <p role="alert">{error}</p> : <DealerRequestTable requests={requests} />}
+          {ordersError && <p role="alert">Unable to load orders.</p>}
+          {ordersLoading && <p>Loading requests...</p>}
+          {!ordersLoading && !ordersError && <DealerRequestTable requests={requests} targetRequestId={targetRequestId} />}
         </main>
       </div>
     </div>

@@ -5,9 +5,15 @@ import DirectionsCarOutlinedIcon from "@mui/icons-material/DirectionsCarOutlined
 import CurrencyRupeeIcon from "@mui/icons-material/CurrencyRupee";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import type { DmRequest } from "../../../types";
+import type { Order } from "../../../../../types/order";
+import type { Quotation } from "../../../../../types/quotation";
+import { getOrderQuotation } from "../../../utils/orderQuotation";
+import { formatInr } from "../../../utils/generateQuotationPdf";
 
 type ModalMetricCardsProps = {
     request?: DmRequest | null;
+    order?: Order;
+    quotation?: Quotation | null;
 };
 
 const metricCardStyle = {
@@ -32,7 +38,12 @@ const metricIconStyle = {
     flexShrink: 0,
 };
 
-export default function ModalMetricCards({ request }: ModalMetricCardsProps) {
+export default function ModalMetricCards({ request, order, quotation }: ModalMetricCardsProps) {
+    const totals = getOrderQuotation(quotation ?? null);
+    const deliveryDate = order?.etaDelivery ? new Date(order.etaDelivery) : null;
+    const deliveryDateLabel = deliveryDate && !Number.isNaN(deliveryDate.getTime())
+        ? deliveryDate.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+        : "—";
     return (
         <Box
             sx={{
@@ -48,8 +59,8 @@ export default function ModalMetricCards({ request }: ModalMetricCardsProps) {
                 </Box>
                 <Box>
                     <Typography sx={{ fontSize: "11.5px", color: "#64748b", fontWeight: 600 }}>Requested by</Typography>
-                    <Typography sx={{ fontSize: "15px", fontWeight: 800, color: "#0f172a" }}>Rahul Mehta</Typography>
-                    <Typography sx={{ fontSize: "11px", color: "#94a3b8" }}>Salesman (Dealer)</Typography>
+                    <Typography sx={{ fontSize: "15px", fontWeight: 800, color: "#0f172a" }}>{request?.dealerName || order?.dealerId || "—"}</Typography>
+                    <Typography sx={{ fontSize: "11px", color: "#94a3b8" }}>Dealer</Typography>
                 </Box>
             </Box>
 
@@ -61,7 +72,7 @@ export default function ModalMetricCards({ request }: ModalMetricCardsProps) {
                 <Box>
                     <Typography sx={{ fontSize: "11.5px", color: "#64748b", fontWeight: 600 }}>Total Vehicles</Typography>
                     <Typography sx={{ fontSize: "20px", fontWeight: 800, color: "#0f172a", lineHeight: 1.2 }}>
-                        {request?.totalQuantity || 50}
+                        {order?.quantity ?? request?.totalQuantity ?? "—"}
                     </Typography>
                 </Box>
             </Box>
@@ -74,7 +85,7 @@ export default function ModalMetricCards({ request }: ModalMetricCardsProps) {
                 <Box>
                     <Typography sx={{ fontSize: "11.5px", color: "#64748b", fontWeight: 600 }}>Total Quotation Amount</Typography>
                     <Typography sx={{ fontSize: "17px", fontWeight: 800, color: "#0f172a", lineHeight: 1.2 }}>
-                        {request?.quotationAmount || "₹ 4,13,00,000"}
+                        {totals ? formatInr(totals.finalTotal) : "—"}
                     </Typography>
                 </Box>
             </Box>
@@ -87,12 +98,7 @@ export default function ModalMetricCards({ request }: ModalMetricCardsProps) {
                 <Box>
                     <Typography sx={{ fontSize: "11.5px", color: "#64748b", fontWeight: 600 }}>Expected Delivery</Typography>
                     <Typography sx={{ fontSize: "16px", fontWeight: 800, color: "#0f172a", lineHeight: 1.2 }}>
-                        {(() => {
-                            const baseDate = request?.orderDate ? new Date(request.orderDate) : new Date();
-                            const validDate = isNaN(baseDate.getTime()) ? new Date() : baseDate;
-                            const deliveryDate = new Date(validDate.getTime() + 35 * 24 * 60 * 60 * 1000);
-                            return deliveryDate.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-                        })()}
+                        {deliveryDateLabel}
                     </Typography>
                 </Box>
             </Box>

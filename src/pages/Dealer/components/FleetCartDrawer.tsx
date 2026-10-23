@@ -7,8 +7,9 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import DirectionsCarOutlinedIcon from "@mui/icons-material/DirectionsCarOutlined";
 import { useState } from "react";
 import { useFleetCart } from "../useFleetCart";
-import { createOrder } from "../../../api/orders";
+import { useCreateOrderMutation } from "../../../features/orders/ordersApi";
 import type { Order } from "../../../types/order";
+import { parseCatalogPrice } from "../../../utils/vehiclePricing";
 import "./FleetCartDrawer.css";
 
 type Props = {
@@ -18,21 +19,19 @@ type Props = {
   onClose: () => void;
 };
 
-const PRICE_BY_MODEL: Record<string, number> = {
-  "Renault Kiger": 950000,
-  "Renault Triber": 850000,
-  "Renault Duster": 1200000,
-  "Renault Kwid": 650000,
-  "Renault Arkana": 1450000,
-};
-
 export default function FleetCartDrawer({ open, dealerId, onSubmitted, onClose }: Props) {
+  const [createOrder] = useCreateOrderMutation();
   const { cart, clearCart, updateQuantity, removeFromCart, totalModels, totalVehicles } = useFleetCart();
   const [deliveryDate, setDeliveryDate] = useState("");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const estimatedTotal = cart.reduce((total, item) => total + (PRICE_BY_MODEL[item.model] ?? Number.parseInt(item.startingPrice?.replace(/[^0-9]/g, "") ?? "0", 10)) * item.quantity, 0);
+  const estimatedTotal = cart.reduce(
+    (total, item) => total + (item.unitPrice && item.unitPrice > 0
+      ? item.unitPrice
+      : parseCatalogPrice(item.startingPrice) ?? 0) * item.quantity,
+    0,
+  );
 
   const handleSubmit = async () => {
     if (!cart.length) {
@@ -45,9 +44,12 @@ export default function FleetCartDrawer({ open, dealerId, onSubmitted, onClose }
     }
     setSubmitting(true);
     setError("");
-    const requestNumber = `REQ-${dealerId}-${deliveryDate.replace(/-/g, "")}-${Date.now().toString().slice(-4)}`;
-    const order: Order = {
-      id: "",
+    const orderDate = new Date().toISOString();
+    const datePart = orderDate.slice(0, 10).replace(/-/g, "");
+    const timePart = orderDate.slice(11, 19).replace(/:/g, "");
+    const milliseconds = orderDate.slice(20, 23);
+    const requestNumber = `REQ-${dealerId}-${datePart}-${timePart}-${milliseconds}`;
+    const order: Omit<Order, "id"> = {
       requestNumber,
       dealerId,
       vehicleModel: cart.map((item) => `${item.model} - ${item.variant} (${item.quantity})`).join(", "),
@@ -70,14 +72,14 @@ export default function FleetCartDrawer({ open, dealerId, onSubmitted, onClose }
         createdAt: new Date().toISOString(),
         read: false,
       }],
-      orderDate: new Date().toISOString(),
+      orderDate,
       etaDelivery: deliveryDate,
       remarks: notes.trim() || undefined,
       items: cart,
       estimatedTotal,
     };
     try {
-      const createdOrder = await createOrder(order);
+      const createdOrder = await createOrder(order).unwrap();
       onSubmitted?.(createdOrder);
       clearCart();
       setDeliveryDate("");

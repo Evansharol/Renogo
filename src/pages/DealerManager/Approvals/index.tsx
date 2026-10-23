@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
@@ -6,11 +6,13 @@ import InputAdornment from "@mui/material/InputAdornment";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import SearchIcon from "@mui/icons-material/Search";
+import { useSearchParams } from "react-router-dom";
 import Navbar from "../../../components/Navbar";
 import Sidebar from "../../../components/Sidebar";
 import RecentRequestsTable from "../components/RecentRequestsTable";
 import type { DmRequest } from "../types";
-import { getDmRequests } from "../../../api/dmRequests";
+import { ordersToDmRequests } from "../../../api/dmRequests";
+import { useGetOrdersQuery } from "../../../features/orders/ordersApi";
 import "../DealerManager.css";
 
 const STATUS_TABS = [
@@ -22,18 +24,12 @@ const STATUS_TABS = [
 ];
 
 export default function ApprovalRequests() {
+    const [searchParams] = useSearchParams();
+    const targetRequestId = searchParams.get("requestId") ?? undefined;
     const [selectedTab, setSelectedTab] = useState(0);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [requests, setRequests] = useState<DmRequest[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
-
-    useEffect(() => {
-        getDmRequests()
-            .then(setRequests)
-            .catch(() => setError("Unable to load requests."))
-            .finally(() => setLoading(false));
-    }, []);
+    const [searchQuery, setSearchQuery] = useState(targetRequestId ?? "");
+    const { data: orders = [], isLoading: loading, isError } = useGetOrdersQuery();
+    const requests = useMemo(() => ordersToDmRequests(orders), [orders]);
 
     const filteredRequests = useMemo(() => {
         return requests.filter((req: DmRequest) => {
@@ -149,18 +145,19 @@ export default function ApprovalRequests() {
                         </Typography>
                     )}
 
-                    {error && (
+                    {isError && (
                         <Typography sx={{ color: "#dc2626", mt: 3, fontSize: "14px" }}>
-                            {error}
+                            Unable to load requests.
                         </Typography>
                     )}
 
                     {/* ── Requests Table with Popup Integration ── */}
-                    {!loading && !error && (
+                    {!loading && !isError && (
                         <RecentRequestsTable
                             requests={filteredRequests}
                             title={`Requests List (${filteredRequests.length})`}
                             showViewAll={false}
+                            highlightedRequestId={targetRequestId}
                         />
                     )}
                 </main>

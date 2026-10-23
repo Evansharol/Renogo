@@ -12,8 +12,10 @@
 .recent-requests-trigger {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 6px;
   border: 1px solid rgba(203, 213, 225, 0.7);
   border-radius: 999px;
   background: #ffffff;
@@ -340,7 +342,9 @@
 /* Review action button */
 .recent-card-action {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: 8px;
   padding-top: 6px;
   border-top: 1px dashed #f1f5f9;
 }
@@ -375,6 +379,40 @@
   background: #f8fafc;
   border-top: 1px solid #e2e8f0;
   text-align: center;
+}
+
+.recent-role-details {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px 9px;
+  border-radius: 7px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.recent-role-details strong {
+  color: #334155;
+  font-size: 11px;
+}
+
+.recent-open-requests-btn {
+  width: 100%;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 7px;
+  background: #0284c7;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.recent-open-requests-btn:hover {
+  background: #0369a1;
 }
 
 .recent-footer-note {

@@ -2,6 +2,7 @@ import { useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import type { Order } from "../../../../types/order";
 import type { Quotation } from "../../../../types/quotation";
+import { getOrderDisplayNumber } from "../../../../utils/orderDisplay";
 import AvailabilityProgressBar from "../../../../components/AvailabilityProgressBar";
 import "./SalesManagerReviewModal.css";
 
@@ -45,7 +46,7 @@ export default function SalesManagerReviewModal({
         }}>
             <section className="sales-manager-review-modal" role="dialog" aria-modal="true" aria-labelledby="sales-manager-review-title">
                 <header className="sales-manager-review-header">
-                    <div><p>Sales Manager Review</p><h2 id="sales-manager-review-title">Review Request</h2><span>{order.requestNumber ?? order.id} · {order.vehicleModel}</span></div>
+                    <div><p>Sales Manager Review</p><h2 id="sales-manager-review-title">Review Request</h2><span>{getOrderDisplayNumber(order)} · {order.vehicleModel}</span></div>
                     <button type="button" onClick={onClose} aria-label="Close review"><CloseIcon /></button>
                 </header>
                 <div className="sales-manager-review-body">
@@ -54,7 +55,7 @@ export default function SalesManagerReviewModal({
                         <div className="sales-manager-detail-grid">
                             <span>Dealer ID<strong>{order.dealerId}</strong></span>
                             <span>Dealer Name<strong>{allocation?.dealerName ?? "Dealer account"}</strong></span>
-                            <span>Order ID<strong>{order.requestNumber ?? order.id}</strong></span>
+                            <span>Order ID<strong>{getOrderDisplayNumber(order)}</strong></span>
                             <span>Vehicle Model<strong>{order.vehicleModel}</strong></span>
                             <span>Quantity<strong>{order.quantity} Units</strong></span>
                             <span>Order Status<strong>{order.status}</strong></span>

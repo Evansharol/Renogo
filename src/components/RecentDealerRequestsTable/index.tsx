@@ -1,5 +1,6 @@
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import type { Order } from "../../types/order";
+import { getOrderDisplayNumber } from "../../utils/orderDisplay";
 import "./RecentDealerRequestsTable.css";
 
 export type DisplayRequest = {
@@ -97,7 +98,7 @@ export default function RecentDealerRequestsTable({
             {hasOrders && orders && orders.map((order) => (
               <tr key={order.id}>
                 <td className="req-id-cell">
-                  <strong>{order.requestNumber ?? order.id}</strong>
+                  <strong>{getOrderDisplayNumber(order)}</strong>
                 </td>
                 <td className="req-dealer-cell">{order.dealerId}</td>
                 <td className="req-model-cell">{order.vehicleModel}</td>

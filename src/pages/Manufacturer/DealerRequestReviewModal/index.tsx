@@ -3,9 +3,9 @@ import CloseIcon from "@mui/icons-material/Close";
 
 import type { DealerRequest } from "../../../components/DealerRequestTable";
 import AvailabilityProgressBar from "../../../components/AvailabilityProgressBar";
-import { transitionOrder } from "../../../api/workflow";
-import { getOrders, updateOrder } from "../../../api/orders";
 import type { WorkflowStage } from "../../../types/order";
+import { applyWorkflowTransition, useGetOrdersQuery, useUpdateOrderMutation } from "../../../features/orders/ordersApi";
+import { getOrderDisplayNumber } from "../../../utils/orderDisplay";
 
 type DealerRequestReviewModalProps = {
   request: DealerRequest;
@@ -18,6 +18,8 @@ export default function DealerRequestReviewModal({
   onAllocated,
   onClose,
 }: DealerRequestReviewModalProps) {
+  const { data: orders = [], isError: ordersError } = useGetOrdersQuery();
+  const [updateOrder] = useUpdateOrderMutation();
   const colorStock = request.items?.length
     ? request.items.reduce((total, item) => total + (request.stockBreakdown[item.color ?? "Any"] ?? 5), 0)
     : request.stockBreakdown[request.color] ?? 5;
@@ -71,7 +73,7 @@ export default function DealerRequestReviewModal({
       <div className="manufacturer-review-modal" role="dialog" aria-modal="true" aria-labelledby="review-request-title">
         <header className="manufacturer-review-header">
           <div>
-            <p className="manufacturer-review-eyebrow">{request.requestNumber ?? request.requestId}</p>
+            <p className="manufacturer-review-eyebrow">{request.requestNumber ?? getOrderDisplayNumber({ id: request.requestId, dealerId: request.dealerId, orderDate: request.requestDate })}</p>
             <h2 id="review-request-title">Review Dealer Fleet Request</h2>
             <p>{request.dealerName} <span>•</span> {modelName} <span>•</span> {request.color} <span>•</span> {request.quantity} Units</p>
           </div>
@@ -167,16 +169,16 @@ export default function DealerRequestReviewModal({
                 setSubmitting(true);
                 setError("");
                 try {
-                  const orders = await getOrders();
                   const order = orders.find((candidate) => candidate.id === request.requestId);
+                  if (ordersError) throw new Error("Unable to load orders. Please try again.");
                   if (!order) throw new Error("The order could not be found.");
-                  const allocatedOrder = await transitionOrder(order, {
+                  const allocatedOrder = applyWorkflowTransition(order, {
                     status: manufacturerStatus === "Not Allocated" ? "Pending Manufacturer Review" : "Stock Allocated by Manufacturer",
                     owner: "Manufacturer",
                     remarks: comments.trim() || `Allocated ${available} units from stock and ${manufacturing} units to manufacture.`,
                   });
                   const transitionedOrder = allocationStatus === "Pending Finance Quotation"
-                    ? await transitionOrder(allocatedOrder, {
+                    ? applyWorkflowTransition(allocatedOrder, {
                       status: "Pending Finance Quotation",
                       owner: "Finance Head",
                     })
@@ -189,7 +191,7 @@ export default function DealerRequestReviewModal({
                       manufacturerStatus,
                       updatedAt: new Date().toISOString(),
                     },
-                  });
+                  }).unwrap();
                   onAllocated?.({ ...request, manufacturerStatus });
                   if (updatedOrder.status !== allocationStatus) throw new Error("The workflow status was not updated.");
                   onClose();

@@ -14,7 +14,7 @@ import "./UserManagement.css";
 
 type LoginState = { name?: string };
 
-const initialUsers: User[] = [
+/*const initialUsers: User[] = [
 	{ id: "USR-1001", name: "Amelia Martin", email: "amelia.martin@renogo.com", role: "Administrator", password: "admin123", status: "Active" },
 	{ id: "USR-1002", name: "Louis Bernard", email: "louis.bernard@renogo.com", role: "Manufacturer", password: "manufacturer123", status: "Active" },
 	{ id: "USR-1003", name: "Sofia Garcia", email: "sofia.garcia@renogo.com", role: "Dealer", password: "dealer123", status: "Inactive" },
@@ -31,9 +31,12 @@ const loadUsers = () => {
 		return initialUsers;
 	}
 };
+*/
 
 export default function Usermg() {
-	const [users, setUsers] = useState<User[]>(loadUsers);
+//	const [users, setUsers] = useState<User[]>(loadUsers);
+	const [users, setUsers] = useState<User[]>([]);
+	const [error, setError] = useState("");
 	const [searchTerm, setSearchTerm] = useState(() => localStorage.getItem("user-search") ?? "");
 	const [selectedRole, setSelectedRole] = useState("All Roles");
 	const [isUserFormOpen, setIsUserFormOpen] = useState(false);
@@ -45,7 +48,7 @@ export default function Usermg() {
 	const activeUsers = users.filter((user) => user.status === "Active").length;
 	const inactiveUsers = users.length - activeUsers;
 
-	useEffect(() => {
+/*	useEffect(() => {
 		getUsers()
 			.then((apiUsers) => {
 				if (Array.isArray(apiUsers) && apiUsers.length > 0) {
@@ -56,9 +59,33 @@ export default function Usermg() {
 			.catch(() => {
 				// Fallback to localStorage / initialUsers when json-server is not running
 			});
+	}, []); */
+
+/*	useEffect(() => {
+		fetch("/spring-api/")
+			.then((response) => {
+				if (!response.ok) {
+					throw new Error(`Failed to load users: ${response.status}`);
+				}
+				return response.json();
+    })
+    .then((users) => setUsers(users))
+    .catch((error) => {
+      console.error("Unable to load users from Spring Boot:", error);
+    });
+}, []); */
+	useEffect(() => {
+		getUsers()
+			.then((apiUsers) => {
+				setUsers(apiUsers);
+				setError("");
+			})
+			.catch((error: unknown) => {
+				setError(error instanceof Error ? error.message : "Unable to load users");
+			});
 	}, []);
 
-	useEffect(() => {
+	/*useEffect(() => {
 		localStorage.setItem("user-search", searchTerm);
 	}, [searchTerm]);
 
@@ -69,7 +96,6 @@ export default function Usermg() {
 	const handleSaveUser = async (user: User) => {
 		const userToSave: User = {
 			...user,
-			id: user.id || `USR-${Math.floor(1000 + Math.random() * 9000)}`,
 		};
 
 		if (editingUser) {
@@ -90,6 +116,33 @@ export default function Usermg() {
 		setEditingUser(null);
 		setIsUserFormOpen(false);
 	};
+	*/
+	const handleSaveUser = async (user: User) => {
+		const userToSave: User = {
+			...user,
+			id: user.id || `USR-${Math.floor(1000 + Math.random() * 9000)}`,
+		};
+
+		try {
+			const savedUser = editingUser
+				? await updateUser(userToSave)
+				: await createUser(userToSave);
+
+			setUsers((currentUsers) =>
+				editingUser
+					? currentUsers.map((currentUser) =>
+							currentUser.id === editingUser.id ? savedUser : currentUser
+						)
+					: [...currentUsers, savedUser]
+			);
+
+			setError("");
+			setEditingUser(null);
+			setIsUserFormOpen(false);
+		} catch (error: unknown) {
+			setError(error instanceof Error ? error.message : "Unable to save user");
+		}
+	};
 
 	const handleEditUser = (user: User) => {
 		setEditingUser(user);
@@ -97,19 +150,31 @@ export default function Usermg() {
 	};
 
 	const handleDeleteUser = async (user: User) => {
-		if (window.confirm(`Delete ${user.name}?`)) {
-			try {
-				await deleteUser(user.id);
-			} catch {
-				// Continue with local removal if API call fails
-			}
+		if (!window.confirm(`Delete ${user.name}?`)) return;
+
+		try {
+			await deleteUser(user.id);
 			setUsers((currentUsers) => currentUsers.filter((currentUser) => currentUser.id !== user.id));
+			setError("");
+		} catch (error: unknown) {
+			setError(error instanceof Error ? error.message : "Unable to delete user");
 		}
 	};
 
-	const filteredUsers = users.filter((user) => {
+/*	const filteredUsers = users.filter((user) => {
 		const matchesSearch = user.id.toLowerCase().includes(searchTerm.toLowerCase());
 		const matchesRole = selectedRole === "All Roles" || user.role === selectedRole;
+		return matchesSearch && matchesRole;
+	}); */
+
+	const filteredUsers = users.filter((user) => {
+		const matchesSearch = String(user.id ?? "")
+			.toLowerCase()
+			.includes(searchTerm.toLowerCase());
+
+		const matchesRole =
+			selectedRole === "All Roles" || user.role === selectedRole;
+
 		return matchesSearch && matchesRole;
 	});
 
@@ -123,6 +188,7 @@ export default function Usermg() {
 						<div><h1>User Management</h1><p>Manage people who can log in to the system.</p></div>
 						<button className="add-user-button" type="button" onClick={() => { setEditingUser(null); setIsUserFormOpen(true); }}>+ Add User</button>
 					</div>
+					{error && <p role="alert">{error}</p>}
 					<section className="user-summary-grid" aria-label="User summary">
 						<article className="user-summary-card"><span> <GroupIcon /> Total Users</span><strong>{users.length}</strong></article>
 						<article className="user-summary-card"><span> <HowToRegIcon /> Active Users</span><strong>{activeUsers}</strong></article>

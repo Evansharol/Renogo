@@ -3,19 +3,21 @@ import Typography from "@mui/material/Typography";
 import AccountBalanceOutlinedIcon from "@mui/icons-material/AccountBalanceOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { sectionCardStyle } from "../modalStyles";
+import type { Quotation } from "../../../../../types/quotation";
 
 type ManufacturerBankDetailsProps = {
     requestId: string;
+    quotation?: Quotation | null;
     onViewExactDetails?: () => void;
 };
 
-export default function ManufacturerBankDetails({ requestId, onViewExactDetails }: ManufacturerBankDetailsProps) {
+export default function ManufacturerBankDetails({ requestId, quotation, onViewExactDetails }: ManufacturerBankDetailsProps) {
+    const details = quotation?.bankDetails;
     const bankDetails = [
-        { label: "Beneficiary Name", val: "Renault India Pvt Ltd" },
-        { label: "Bank Name", val: "HDFC Bank Ltd." },
-        { label: "Account Number", val: "50200088991234" },
-        { label: "IFSC Code", val: "HDFC0001234" },
-        { label: "Branch", val: "Gurgaon, Haryana" },
+        { label: "Beneficiary Name", val: details?.beneficiaryName || "Not provided" },
+        { label: "Account Number", val: details?.accountNumber || "Not provided" },
+        { label: "IFSC Code", val: details?.ifscCode || "Not provided" },
+        { label: "Branch", val: details?.bankBranch || "Not provided" },
     ];
 
     return (
@@ -27,7 +29,7 @@ export default function ManufacturerBankDetails({ requestId, onViewExactDetails 
                         3. Manufacturer Bank Details
                     </Typography>
                 </Box>
-                {onViewExactDetails && (
+                {onViewExactDetails && quotation && (
                     <Typography
                         onClick={onViewExactDetails}
                         sx={{
@@ -85,7 +87,7 @@ export default function ManufacturerBankDetails({ requestId, onViewExactDetails 
                     </Typography>
                 </Box>
                 <Box component="ul" sx={{ m: 0, pl: 2, fontSize: "11px", color: "#3b82f6", lineHeight: 1.5 }}>
-                    <li>Make payment through NEFT / RTGS only.</li>
+                    <li>Use the payment method specified in your quotation.</li>
                     <li>Use the request ID (<strong>{requestId}</strong>) as reference.</li>
                     <li>Share transaction details and proof image after payment.</li>
                 </Box>

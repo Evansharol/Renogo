@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import WorkflowShell from "../../../../components/WorkFlow";
 import { useDealer } from "../../../../hooks/useDealer";
 import { useOrder } from "../../../../hooks/useOrder";
+import { getOrderDisplayNumber } from "../../../../utils/orderDisplay";
 
 type DealerDetailsProps = { dealerId?: string; orderId?: string; isModal?: boolean; onClose?: () => void };
 
@@ -34,7 +35,7 @@ export default function DealerDetails({ dealerId: dealerIdProp, orderId, isModal
 						<span className="workflow-section-label">Order lifecycle</span>
 						<h2>Order Overview</h2></div></div>
 						<div className="info-grid"><div><span>Order ID</span>
-						<strong>{order.requestNumber ?? order.id}</strong></div><div><span>Vehicle Model</span>
+						<strong>{getOrderDisplayNumber(order)}</strong></div><div><span>Vehicle Model</span>
 						<strong>{order.vehicleModel}</strong></div><div><span>Requested Quantity</span>
 						<strong>{order.quantity} units</strong></div><div><span>Order Status</span>
 						<strong>{order.status}</strong></div><div><span>Current Owner</span>

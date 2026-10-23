@@ -11,100 +11,53 @@ import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalance
 import ReceiptOutlinedIcon from "@mui/icons-material/ReceiptOutlined";
 import PaidOutlinedIcon from "@mui/icons-material/PaidOutlined";
 import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
+import Alert from "@mui/material/Alert";
+import CircularProgress from "@mui/material/CircularProgress";
 import { sectionCardStyle, tableHeadStyle, tableBodyStyle } from "../modalStyles";
-import type { DmRequest, VehicleLineItem } from "../../../types";
+import type { DmRequest } from "../../../types";
+import type { Order } from "../../../../../types/order";
+import type { Quotation } from "../../../../../types/quotation";
+import { getOrderQuotation } from "../../../utils/orderQuotation";
 import { formatInr } from "../../../utils/generateQuotationPdf";
 
 type FinalQuotationSectionProps = {
     requestId?: string;
     request?: DmRequest | null;
+    order?: Order;
+    quotation?: Quotation | null;
+    isLoading?: boolean;
     quotationNo?: string;
     date?: string;
 };
 
 export default function FinalQuotationSection({
-    requestId = "FR-2026-0048",
+    requestId = "",
     request,
+    order,
+    quotation,
+    isLoading = false,
     quotationNo,
     date,
 }: FinalQuotationSectionProps) {
-    const effectiveQuotationNo = quotationNo || request?.quotationNo || `QTN-${requestId}`;
+    const effectiveQuotationNo = quotationNo || request?.quotationNo || (quotation ? `QTN-${requestId}` : "Not available");
 
     const formatDate = (isoString?: string) => {
-        if (!isoString) {
-            return new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-        }
+        if (!isoString) return "—";
         const d = new Date(isoString);
         return isNaN(d.getTime())
             ? isoString
             : d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
     };
 
-    const effectiveDate = date || formatDate(request?.orderDate);
+    const effectiveDate = date || formatDate(order?.orderDate ?? request?.orderDate);
 
-    // Dynamic resolution of items
-    let rawItems: VehicleLineItem[] = [];
-    if (request?.items && request.items.length > 0) {
-        rawItems = request.items;
-    } else if (requestId === "ORD-1001") {
-        rawItems = [
-            { id: 1, model: "Renault Kiger", variant: "RXE MT Petrol", qty: 20, unitPrice: 750000 },
-            { id: 2, model: "Renault Triber", variant: "RXZ Easy-R AMT", qty: 15, unitPrice: 650000 },
-            { id: 3, model: "Renault Duster", variant: "RXZ Turbo CVT", qty: 15, unitPrice: 800000 },
-        ];
-    } else if (request) {
-        const qty = Math.max(1, request.totalQuantity || 1);
-        let price = 800000;
-        if (request.quotationAmount) {
-            const num = Number(request.quotationAmount.replace(/[^0-9]/g, ""));
-            if (num > 0) {
-                price = Math.round((num / 1.18) / qty);
-            }
-        }
-        rawItems = [
-            {
-                id: 1,
-                model: request.vehicleModel || "Renault Vehicle",
-                variant: "Standard Fleet Trim",
-                qty: qty,
-                unitPrice: price,
-            },
-        ];
-    } else {
-        rawItems = [
-            { id: 1, model: "Renault Kiger", variant: "RXE MT Petrol", qty: 20, unitPrice: 750000 },
-            { id: 2, model: "Renault Triber", variant: "RXZ Easy-R AMT", qty: 15, unitPrice: 650000 },
-            { id: 3, model: "Renault Duster", variant: "RXZ Turbo CVT", qty: 15, unitPrice: 800000 },
-        ];
-    }
-
-    const quotationRows = rawItems.map((item, idx) => {
-        const qty = Math.max(0, Number(item.qty) || 0);
-        const unitPrice = Math.max(0, Number(item.unitPrice) || 0);
-        const total = Math.round(qty * unitPrice);
-        return {
-            id: item.id || idx + 1,
-            model: item.model,
-            variant: item.variant || "Standard Trim",
-            qty,
-            unitPrice,
-            total,
-        };
-    });
-
-    const grossSubtotal = quotationRows.reduce((sum, r) => sum + r.total, 0);
-    const discount = Math.min(
-        grossSubtotal,
-        Math.max(0, request?.discountAmount !== undefined ? request.discountAmount : (requestId === "ORD-1001" ? 1750000 : 0))
-    );
-    const taxableAmount = Math.max(0, grossSubtotal - discount);
-    const taxRate = request?.taxRate ?? 18;
-    const gstAmount = Math.round(taxableAmount * (taxRate / 100));
-    const finalTotal = taxableAmount + gstAmount;
-
-    const advanceRate = request?.depositRate ?? 20;
-    const advanceAmount = Math.round(finalTotal * (advanceRate / 100));
-    const balanceAmount = finalTotal - advanceAmount;
+    const totals = getOrderQuotation(quotation ?? null);
+    const quotationRows = totals?.items.map((item) => ({
+        ...item,
+        total: item.qty * item.unitPrice,
+    })) ?? [];
+    const formatAmount = (amount: number | undefined) => amount === undefined ? "—" : formatInr(amount);
+    const formatPercentage = (value: number | undefined) => value === undefined ? "—" : `${value}%`;
 
     return (
         <Box sx={sectionCardStyle}>
@@ -164,6 +117,12 @@ export default function FinalQuotationSection({
                     </Box>
                 </Box>
             </Box>
+
+            {isLoading ? (
+                <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}><CircularProgress size={24} /></Box>
+            ) : !quotation ? (
+                <Alert severity="info" sx={{ mb: 2 }}>No quotation is available for this request.</Alert>
+            ) : null}
 
             {/* ── Vehicle Quotation Table ── */}
             <TableContainer sx={{ border: "1px solid #f1f5f9", borderRadius: "10px", mb: 2.5 }}>
@@ -236,10 +195,10 @@ export default function FinalQuotationSection({
                             Advance Payment
                         </Typography>
                         <Typography sx={{ fontSize: "12px", color: "#64748b" }}>
-                            ({advanceRate}% of Final Total)
+                            ({formatPercentage(totals?.advanceRate)} of Final Total)
                         </Typography>
                         <Typography sx={{ fontSize: "21px", fontWeight: 900, color: "#0f172a", mt: 1 }}>
-                            {formatInr(advanceAmount)}
+                            {formatAmount(totals?.advanceAmount)}
                         </Typography>
                     </Box>
                 </Box>
@@ -275,10 +234,10 @@ export default function FinalQuotationSection({
                             Balance Payable
                         </Typography>
                         <Typography sx={{ fontSize: "12px", color: "#64748b" }}>
-                            ({100 - advanceRate}% upon dispatch)
+                            ({totals ? `${100 - totals.advanceRate}%` : "—"} upon dispatch)
                         </Typography>
                         <Typography sx={{ fontSize: "21px", fontWeight: 900, color: "#0f172a", mt: 1 }}>
-                            {formatInr(balanceAmount)}
+                            {formatAmount(totals?.balanceAmount)}
                         </Typography>
                     </Box>
                 </Box>
@@ -315,7 +274,7 @@ export default function FinalQuotationSection({
                             Final Quotation Total
                         </Typography>
                         <Typography sx={{ fontSize: "22px", fontWeight: 900, color: "#ffffff", mt: 0.5 }}>
-                            {formatInr(finalTotal)}
+                            {formatAmount(totals?.finalTotal)}
                         </Typography>
                     </Box>
                 </Box>
@@ -355,25 +314,25 @@ export default function FinalQuotationSection({
                         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                             <Typography sx={{ fontSize: "12px", color: "#64748b" }}>Gross Subtotal</Typography>
                             <Typography sx={{ fontSize: "12.5px", fontWeight: 700, color: "#0f172a" }}>
-                                {formatInr(grossSubtotal)}
+                                {formatAmount(totals?.grossSubtotal)}
                             </Typography>
                         </Box>
                         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                             <Typography sx={{ fontSize: "12px", color: "#16a34a", fontWeight: 600 }}>Fleet Discount</Typography>
                             <Typography sx={{ fontSize: "12.5px", fontWeight: 700, color: "#16a34a" }}>
-                                - {formatInr(discount)}
+                                - {formatInr(0)}
                             </Typography>
                         </Box>
                         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                             <Typography sx={{ fontSize: "12px", color: "#64748b" }}>Taxable Amount</Typography>
                             <Typography sx={{ fontSize: "12.5px", fontWeight: 700, color: "#0f172a" }}>
-                                {formatInr(taxableAmount)}
+                                {formatAmount(totals?.taxableAmount)}
                             </Typography>
                         </Box>
                         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                            <Typography sx={{ fontSize: "12px", color: "#64748b" }}>GST ({taxRate}%)</Typography>
+                            <Typography sx={{ fontSize: "12px", color: "#64748b" }}>GST ({formatPercentage(totals?.taxRate)})</Typography>
                             <Typography sx={{ fontSize: "12.5px", fontWeight: 700, color: "#0f172a" }}>
-                                {formatInr(gstAmount)}
+                                {formatAmount(totals?.taxAmount)}
                             </Typography>
                         </Box>
                     </Box>
@@ -394,7 +353,7 @@ export default function FinalQuotationSection({
                             Net Final Total
                         </Typography>
                         <Typography sx={{ fontSize: "13px", fontWeight: 900, color: "#2563eb" }}>
-                            {formatInr(finalTotal)}
+                            {formatAmount(totals?.finalTotal)}
                         </Typography>
                     </Box>
                 </Box>

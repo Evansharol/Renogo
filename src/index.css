@@ -13,3 +13,22 @@ body {
 .route-transition {
   min-height: 100vh;
 }
+
+.notification-target-row {
+  animation: notification-row-highlight 2.5s ease-out;
+  scroll-margin: 120px;
+}
+
+@keyframes notification-row-highlight {
+  0%,
+  60% {
+    background-color: #bfdbfe;
+    outline: 2px solid #2563eb;
+    outline-offset: -2px;
+  }
+
+  100% {
+    background-color: transparent;
+    outline-color: transparent;
+  }
+}

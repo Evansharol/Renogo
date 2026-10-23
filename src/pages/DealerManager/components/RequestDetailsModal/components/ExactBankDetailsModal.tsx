@@ -15,14 +15,15 @@ import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
 
-import type { DmRequest, VehicleLineItem } from "../../../types";
+import type { Quotation } from "../../../../../types/quotation";
+import { getOrderQuotation } from "../../../utils/orderQuotation";
 import { formatInr } from "../../../utils/generateQuotationPdf";
 
 interface ExactBankDetailsModalProps {
     open: boolean;
     onClose: () => void;
     requestId: string;
-    request?: DmRequest | null;
+    quotation?: Quotation | null;
     onProceedToUpload?: () => void;
 }
 
@@ -30,42 +31,10 @@ export default function ExactBankDetailsModal({
     open,
     onClose,
     requestId,
-    request,
+    quotation,
     onProceedToUpload,
 }: ExactBankDetailsModalProps) {
-    let rawItems: VehicleLineItem[] = [];
-    if (request?.items && request.items.length > 0) {
-        rawItems = request.items;
-    } else if (requestId === "ORD-1001") {
-        rawItems = [
-            { id: 1, model: "Renault Kiger", variant: "RXE MT Petrol", qty: 20, unitPrice: 750000 },
-            { id: 2, model: "Renault Triber", variant: "RXZ Easy-R AMT", qty: 15, unitPrice: 650000 },
-            { id: 3, model: "Renault Duster", variant: "RXZ Turbo CVT", qty: 15, unitPrice: 800000 },
-        ];
-    } else if (request) {
-        const qty = Math.max(1, request.totalQuantity || 1);
-        let price = 800000;
-        if (request.quotationAmount) {
-            const num = Number(request.quotationAmount.replace(/[^0-9]/g, ""));
-            if (num > 0) price = Math.round((num / 1.18) / qty);
-        }
-        rawItems = [{ id: 1, model: request.vehicleModel, qty, unitPrice: price }];
-    } else {
-        rawItems = [
-            { id: 1, model: "Renault Kiger", variant: "RXE MT Petrol", qty: 20, unitPrice: 750000 },
-            { id: 2, model: "Renault Triber", variant: "RXZ Easy-R AMT", qty: 15, unitPrice: 650000 },
-            { id: 3, model: "Renault Duster", variant: "RXZ Turbo CVT", qty: 15, unitPrice: 800000 },
-        ];
-    }
-
-    const grossSubtotal = rawItems.reduce((sum, it) => sum + (it.qty * it.unitPrice), 0);
-    const discount = Math.min(grossSubtotal, Math.max(0, request?.discountAmount !== undefined ? request.discountAmount : (requestId === "ORD-1001" ? 1750000 : 0)));
-    const taxableAmount = Math.max(0, grossSubtotal - discount);
-    const gstRate = request?.taxRate ?? 18;
-    const gstAmount = Math.round(taxableAmount * (gstRate / 100));
-    const finalTotal = taxableAmount + gstAmount;
-    const advanceRate = request?.depositRate ?? 20;
-    const advanceAmount = Math.round(finalTotal * (advanceRate / 100));
+    const totals = getOrderQuotation(quotation ?? null);
     const [copiedField, setCopiedField] = useState<string | null>(null);
 
     const handleCopy = (text: string, fieldName: string) => {
@@ -75,13 +44,13 @@ export default function ExactBankDetailsModal({
     };
 
     const details = [
-        { label: "Beneficiary Name", value: "Renault India Private Limited", copyable: true },
-        { label: "Bank Name", value: "HDFC Bank Ltd.", copyable: false },
-        { label: "Account Number", value: "50200088991234", copyable: true, highlight: true },
-        { label: "Confirm Account Number", value: "50200088991234", copyable: true },
-        { label: "IFSC Code", value: "HDFC0001234", copyable: true, highlight: true },
-        { label: "Account Type", value: "Corporate Current Account", copyable: false },
-        { label: "Branch", value: "DLF Cyber City, Sector 24, Gurgaon, Haryana - 122002", copyable: false },
+        { label: "Beneficiary Name", value: quotation?.bankDetails?.beneficiaryName || "Not provided", copyable: Boolean(quotation?.bankDetails?.beneficiaryName) },
+        { label: "Bank Name", value: "Not provided", copyable: false },
+        { label: "Account Number", value: quotation?.bankDetails?.accountNumber || "Not provided", copyable: Boolean(quotation?.bankDetails?.accountNumber), highlight: true },
+        { label: "Confirm Account Number", value: quotation?.bankDetails?.accountNumber || "Not provided", copyable: Boolean(quotation?.bankDetails?.accountNumber) },
+        { label: "IFSC Code", value: quotation?.bankDetails?.ifscCode || "Not provided", copyable: Boolean(quotation?.bankDetails?.ifscCode), highlight: true },
+        { label: "Account Type", value: "Not provided", copyable: false },
+        { label: "Branch", value: quotation?.bankDetails?.bankBranch || "Not provided", copyable: false },
         { label: "Settlement Reference", value: `${requestId} - ADVANCE`, copyable: true, highlight: true },
     ];
 
@@ -167,7 +136,7 @@ export default function ExactBankDetailsModal({
                         <VerifiedUserOutlinedIcon sx={{ color: "#059669", fontSize: 20 }} />
                         <Box>
                             <Typography sx={{ fontSize: "12.5px", fontWeight: 700, color: "#065f46" }}>
-                                Verified Renault India OEM Account
+                                Payment details from quotation
                             </Typography>
                             <Typography sx={{ fontSize: "11px", color: "#047857" }}>
                                 Verified by National Financial Settlement Gateway
@@ -203,16 +172,16 @@ export default function ExactBankDetailsModal({
                 >
                     <Box>
                         <Typography sx={{ fontSize: "11.5px", fontWeight: 600, color: "#64748b" }}>
-                            Required Advance Amount ({advanceRate}%)
+                            Required Advance Amount ({totals ? `${totals.advanceRate}%` : "—"})
                         </Typography>
                         <Typography sx={{ fontSize: "22px", fontWeight: 900, color: "#0f2b5c" }}>
-                            {formatInr(advanceAmount)}
+                            {totals ? formatInr(totals.advanceAmount) : "—"}
                         </Typography>
                     </Box>
                     <Box sx={{ textAlign: "right" }}>
                         <Typography sx={{ fontSize: "11px", color: "#64748b" }}>Final Total Quotation</Typography>
                         <Typography sx={{ fontSize: "13px", fontWeight: 700, color: "#0f172a" }}>
-                            {formatInr(finalTotal)}
+                            {totals ? formatInr(totals.finalTotal) : "—"}
                         </Typography>
                     </Box>
                 </Box>
@@ -317,7 +286,7 @@ export default function ExactBankDetailsModal({
                     >
                         Close
                     </Button>
-                    {onProceedToUpload && (
+                    {onProceedToUpload && totals && quotation?.bankDetails?.accountNumber && quotation.bankDetails.ifscCode && (
                         <Button
                             variant="contained"
                             startIcon={<CloudUploadOutlinedIcon sx={{ fontSize: "16px !important" }} />}

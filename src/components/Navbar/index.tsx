@@ -1,5 +1,6 @@
 import LogoutIcon from "@mui/icons-material/Logout";
 import { useNavigate } from "react-router-dom";
+import RecentRequestsNotification from "../RecentRequestsNotification";
 
 import "./Navbar.css";
 
@@ -13,9 +14,8 @@ type NavbarProps = {
 export default function Navbar({ adminName, role: roleProp }: NavbarProps) {
   const navigate = useNavigate();
 
-  const loginState = JSON.parse(
-    localStorage.getItem("loginState") || "{}"
-  );
+  const storedLoginState = localStorage.getItem("loginState");
+  const loginState = storedLoginState ? JSON.parse(storedLoginState) as { name?: string; role?: string; dealerId?: string } : {};
 
   const name = adminName || loginState.name || "User";
   const role = roleProp || loginState.role || "User";
@@ -40,6 +40,7 @@ export default function Navbar({ adminName, role: roleProp }: NavbarProps) {
   return (
     <nav className="navbar">
       <div className="navbar-actions">
+        <RecentRequestsNotification role={role} dealerId={loginState.dealerId} />
         <div className="navbar-user-profile">
           <div className="navbar-user-avatar">
             {getInitials(name)}

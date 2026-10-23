@@ -1,9 +1,11 @@
 import jsPDF from "jspdf";
 import type { DmRequest, VehicleLineItem, BankSettlementDetails } from "../types";
+import type { Quotation } from "../../../types/quotation";
 
 export interface QuotationPdfOptions {
     requestId: string;
     request?: DmRequest | null;
+    quotation?: Quotation | null;
     quotationNo?: string;
     date?: string;
     validityDays?: number;
@@ -71,7 +73,7 @@ export function generateQuotationPdf(options: QuotationPdfOptions) {
     const isExpired = now.getTime() > expiryDateObj.getTime();
     const validityStatus = isExpired ? "Expired" : "Active";
 
-    const effectiveQuotationNo = options.quotationNo || request?.quotationNo || `QTN-${requestId}`;
+    const effectiveQuotationNo = options.quotationNo || options.quotation?.id || request?.quotationNo || "Not available";
     const rawDealerName = request?.dealerName || "ABC Motors Pvt. Ltd.";
     const dealerName = rawDealerName.length > 28 ? rawDealerName.slice(0, 26) + "..." : rawDealerName;
     const dealerId = request?.dealerId || "D001";
@@ -80,39 +82,26 @@ export function generateQuotationPdf(options: QuotationPdfOptions) {
 
     // ── 2. Dynamic Vehicle Items & Calculation Engine ──
     let rawItems: VehicleLineItem[] = [];
-    if (options.items && options.items.length > 0) {
+    if (options.quotation) {
+        rawItems = [{
+            id: 1,
+            model: options.quotation.vehicleModel,
+            qty: options.quotation.quantity,
+            unitPrice: options.quotation.basePrice,
+        }];
+    } else if (options.items && options.items.length > 0) {
         rawItems = options.items;
     } else if (request?.items && request.items.length > 0) {
         rawItems = request.items;
-    } else if (requestId === "ORD-1001") {
-        rawItems = [
-            { id: 1, model: "Renault Kiger", variant: "RXE MT Petrol", qty: 20, unitPrice: 750000 },
-            { id: 2, model: "Renault Triber", variant: "RXZ Easy-R AMT", qty: 15, unitPrice: 650000 },
-            { id: 3, model: "Renault Duster", variant: "RXZ Turbo CVT", qty: 15, unitPrice: 800000 },
-        ];
     } else if (request) {
-        const qty = Math.max(1, request.totalQuantity || 1);
-        let price = 800000;
-        if (request.quotationAmount) {
-            const num = Number(request.quotationAmount.replace(/[^0-9]/g, ""));
-            if (num > 0) {
-                price = Math.round((num / 1.18) / qty);
-            }
-        }
         rawItems = [
             {
                 id: 1,
-                model: request.vehicleModel || "Renault Vehicle",
-                variant: "Standard Fleet Trim",
-                qty: qty,
-                unitPrice: price,
+                model: request.vehicleModel,
+                variant: "—",
+                qty: request.totalQuantity,
+                unitPrice: 0,
             },
-        ];
-    } else {
-        rawItems = [
-            { id: 1, model: "Renault Kiger", variant: "RXE MT Petrol", qty: 20, unitPrice: 750000 },
-            { id: 2, model: "Renault Triber", variant: "RXZ Easy-R AMT", qty: 15, unitPrice: 650000 },
-            { id: 3, model: "Renault Duster", variant: "RXZ Turbo CVT", qty: 15, unitPrice: 800000 },
         ];
     }
 
@@ -139,32 +128,30 @@ export function generateQuotationPdf(options: QuotationPdfOptions) {
         inputDiscount = Number(options.discountAmount) || 0;
     } else if (request?.discountAmount !== undefined) {
         inputDiscount = Number(request.discountAmount) || 0;
-    } else if (requestId === "ORD-1001") {
-        inputDiscount = 1750000;
     }
     const discount = Math.min(grossSubtotal, Math.max(0, inputDiscount));
     const netTaxableAmount = Math.max(0, grossSubtotal - discount);
 
     // Tax (GST)
-    const taxRate = options.taxRate ?? request?.taxRate ?? 18;
+    const taxRate = options.taxRate ?? options.quotation?.taxRate ?? request?.taxRate ?? 0;
     const gstAmount = Math.round(netTaxableAmount * (taxRate / 100));
 
     // Final Quotation Total
     const finalTotal = netTaxableAmount + gstAmount;
 
     // Advance & Balance
-    const advanceRate = options.advancePercent ?? request?.depositRate ?? 20;
+    const advanceRate = options.advancePercent ?? options.quotation?.depositRate ?? request?.depositRate ?? 0;
     const advanceAmount = Math.round(finalTotal * (advanceRate / 100));
     const balanceAmount = finalTotal - advanceAmount;
 
     // ── 3. Bank Settlement Credentials ──
     const bankDetails = {
-        beneficiaryName: options.bankDetails?.beneficiaryName || request?.bankDetails?.beneficiaryName || "Renault India Private Limited",
-        bankName: options.bankDetails?.bankName || request?.bankDetails?.bankName || "HDFC Bank Ltd.",
-        accountNumber: options.bankDetails?.accountNumber || request?.bankDetails?.accountNumber || "50200088991234",
-        ifscCode: options.bankDetails?.ifscCode || request?.bankDetails?.ifscCode || "HDFC0001234",
-        accountType: options.bankDetails?.accountType || request?.bankDetails?.accountType || "Corporate Current Account",
-        bankBranch: options.bankDetails?.bankBranch || request?.bankDetails?.bankBranch || "DLF Cyber City, Sector 24, Gurgaon - 122002",
+        beneficiaryName: options.bankDetails?.beneficiaryName || options.quotation?.bankDetails?.beneficiaryName || request?.bankDetails?.beneficiaryName || "Not provided",
+        bankName: options.bankDetails?.bankName || request?.bankDetails?.bankName || "Not provided",
+        accountNumber: options.bankDetails?.accountNumber || options.quotation?.bankDetails?.accountNumber || request?.bankDetails?.accountNumber || "Not provided",
+        ifscCode: options.bankDetails?.ifscCode || options.quotation?.bankDetails?.ifscCode || request?.bankDetails?.ifscCode || "Not provided",
+        accountType: options.bankDetails?.accountType || request?.bankDetails?.accountType || "Not provided",
+        bankBranch: options.bankDetails?.bankBranch || options.quotation?.bankDetails?.bankBranch || request?.bankDetails?.bankBranch || "Not provided",
         settlementRef: `${requestId} - ADVANCE`,
         acceptedModes: "RTGS / NEFT Inter-Bank Transfer Only",
     };

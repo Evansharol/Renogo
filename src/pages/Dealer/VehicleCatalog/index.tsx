@@ -18,6 +18,7 @@ import type { DealerOutletContext } from "../index";
 import { useFleetCart } from "../useFleetCart";
 import FleetCartDrawer from "../components/FleetCartDrawer";
 import type { OrderItem } from "../../../types/order";
+import { parseCatalogPrice } from "../../../utils/vehiclePricing";
 import "../Dealer.css";
 import "./VehicleCatalog.css";
 
@@ -140,6 +141,7 @@ export default function DealerVehicleCatalog({ onOrderRequest }: Props) {
       color: colour.name,
       colorHex: colour.hex,
       quantity: qty,
+      unitPrice: parseCatalogPrice(car.startingPrice) ?? undefined,
       image: car.image,
       startingPrice: car.startingPrice,
       specs: {

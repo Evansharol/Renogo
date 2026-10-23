@@ -5,6 +5,7 @@ export type OrderItem = {
 	color?: string;
 	colorHex?: string;
 	quantity: number;
+	unitPrice?: number;
 	image?: string;
 	startingPrice?: string;
 	specs: {

@@ -9,11 +9,10 @@ import RequestApprovalGauge from "../../../components/RequestApprovalGauge";
 import RecentDealerRequestsTable from "../../../components/RecentDealerRequestsTable";
 import SalesManagerQuickActions from "../../../components/SalesManagerQuickActions";
 
-import { getOrders } from "../../../api/orders";
 import { getQuotationByOrderId } from "../../../api/quotations";
 import { getSalesManagerDashboardData, type SalesManagerDashboardData } from "../../../api/salesManager";
 import type { Order } from "../../../types/order";
-import { transitionOrder } from "../../../api/workflow";
+import { applyWorkflowTransition, useGetOrdersQuery, useUpdateOrderMutation } from "../../../features/orders/ordersApi";
 import type { Quotation } from "../../../types/quotation";
 import SalesManagerReviewModal from "./SalesManagerReviewModal";
 
@@ -33,7 +32,8 @@ export default function SalesManagerDashboard() {
   const location = useLocation();
   const navigate = useNavigate();
   const salesManagerName = (location.state as LoginState | null)?.name ?? "Rajesh Kumar";
-  const [orders, setOrders] = useState<Order[]>([]);
+  const { data: orders = [], isLoading: ordersLoading, isError: ordersError } = useGetOrdersQuery();
+  const [updateOrder] = useUpdateOrderMutation();
   const [dashboardData, setDashboardData] = useState<SalesManagerDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -44,7 +44,6 @@ export default function SalesManagerDashboard() {
 
   useEffect(() => {
     Promise.all([
-      getOrders().catch(() => []),
       getSalesManagerDashboardData().catch(() => null),
       fetch("/api/manufacturer-dashboard.json")
         .then((response) => {
@@ -53,9 +52,8 @@ export default function SalesManagerDashboard() {
         })
         .catch(() => ({ dealerRequests: [] })),
     ])
-      .then(([loadedOrders, loadedDashboardData, allocationData]) => {
+      .then(([loadedDashboardData, allocationData]) => {
         setAllocations(allocationData.dealerRequests || []);
-        setOrders(loadedOrders);
         setDashboardData(loadedDashboardData);
       })
       .catch(() => setError("Unable to load sales manager dashboard."))
@@ -84,12 +82,12 @@ export default function SalesManagerDashboard() {
     if (!reviewOrder) return;
     const isRejected = action.startsWith("Declined:");
     try {
-      const updatedOrder = await transitionOrder(reviewOrder, {
+      const updatedOrder = applyWorkflowTransition(reviewOrder, {
         status: isRejected ? "Rejected" : "Approved by Sales Manager",
         owner: isRejected ? "Admin" : "Dealer Manager",
         remarks: action.replace(/^(Declined:|Approved and sent to Dealer Manager)\s*/, ""),
       });
-      setOrders((current) => current.map((order) => order.id === updatedOrder.id ? updatedOrder : order));
+      await updateOrder(updatedOrder).unwrap();
       closeReview();
     } catch {
       setError("Unable to save the sales manager decision.");
@@ -191,10 +189,10 @@ export default function SalesManagerDashboard() {
             </div>
           </div>
 
-          {loading && <p className="loading-state">Loading dashboard data...</p>}
-          {error && <p className="error-state" role="alert">{error}</p>}
+          {(loading || ordersLoading) && <p className="loading-state">Loading dashboard data...</p>}
+          {(error || ordersError) && <p className="error-state" role="alert">{error || "Unable to load orders."}</p>}
 
-          {!loading && (
+          {!loading && !ordersLoading && !ordersError && !error && (
             <>
               {/* Top 4 KPI Stat Cards Component */}
               <SalesManagerStatCards

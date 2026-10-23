@@ -7,8 +7,10 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import IconButton from "@mui/material/IconButton";
-import { createOrder } from "../../../api/orders";
+import { useCreateOrderMutation } from "../../../features/orders/ordersApi";
 import type { Order, OrderItem } from "../../../types/order";
+import { POPULAR_MODELS } from "../DashBoard/types";
+import { parseCatalogPrice } from "../../../utils/vehiclePricing";
 import "./CreateRequest.css";
 
 type Props = {
@@ -30,13 +32,11 @@ type VehicleRequestLine = {
 const VEHICLE_OPTIONS = ["Renault Kiger", "Renault Triber", "Renault Duster", "Renault Kwid", "Renault Arkana"];
 const VARIANT_OPTIONS = ["RXL", "RXT", "RXZ", "RXZ Turbo"];
 const COLOR_OPTIONS = ["Fiery Red", "Ice Cool White", "Caspian Blue", "Moonlight Silver", "Radiant Orange", "Metallic Black", "Glacier White"];
-const ESTIMATED_PRICES: Record<string, number> = {
-  "Renault Kiger": 950000,
-  "Renault Triber": 850000,
-  "Renault Duster": 1200000,
-  "Renault Kwid": 650000,
-  "Renault Arkana": 1450000,
-};
+const CATALOG_MODELS_BY_NAME = new Map(POPULAR_MODELS.map((model) => [model.name, model]));
+const LEGACY_MODEL_PRICES: Record<string, number> = { "Renault Arkana": 1450000 };
+
+const getModelPrice = (model: string) =>
+  parseCatalogPrice(CATALOG_MODELS_BY_NAME.get(model)?.startingPrice) ?? LEGACY_MODEL_PRICES[model] ?? 0;
 
 const createLine = (model = ""): VehicleRequestLine => ({
   id: `${Date.now()}-${Math.random()}`,
@@ -47,6 +47,7 @@ const createLine = (model = ""): VehicleRequestLine => ({
 });
 
 export default function CreateRequestDialog({ open, initialVehicle = "", dealerId, onClose, onSubmitted }: Props) {
+  const [createOrder] = useCreateOrderMutation();
   const [vehicles, setVehicles] = useState<VehicleRequestLine[]>([createLine(initialVehicle)]);
   const [deliveryDate, setDeliveryDate] = useState("");
   const [notes, setNotes] = useState("");
@@ -54,7 +55,7 @@ export default function CreateRequestDialog({ open, initialVehicle = "", dealerI
   const [validationError, setValidationError] = useState("");
 
   const estimatedTotal = useMemo(
-    () => vehicles.reduce((total, vehicle) => total + (ESTIMATED_PRICES[vehicle.model] ?? 0) * vehicle.quantity, 0),
+    () => vehicles.reduce((total, vehicle) => total + getModelPrice(vehicle.model) * vehicle.quantity, 0),
     [vehicles],
   );
   const totalQuantity = vehicles.reduce((total, vehicle) => total + vehicle.quantity, 0);
@@ -102,10 +103,15 @@ export default function CreateRequestDialog({ open, initialVehicle = "", dealerI
       variant: vehicle.variant,
       color: vehicle.color,
       quantity: vehicle.quantity,
+      startingPrice: CATALOG_MODELS_BY_NAME.get(vehicle.model)?.startingPrice,
+      unitPrice: getModelPrice(vehicle.model) || undefined,
       specs: {},
     }));
-    const newOrder: Order = {
-      id: `REQ-${Date.now()}`,
+    const datePart = orderDate.slice(0, 10).replace(/-/g, "");
+    const timePart = orderDate.slice(11, 19).replace(/:/g, "");
+    const milliseconds = orderDate.slice(20, 23);
+    const newOrder: Omit<Order, "id"> = {
+      requestNumber: `REQ-${dealerId}-${datePart}-${timePart}-${milliseconds}`,
       dealerId,
       vehicleModel: vehicles.map((vehicle) => vehicle.model).join(", "),
       quantity: totalQuantity,
@@ -135,7 +141,7 @@ export default function CreateRequestDialog({ open, initialVehicle = "", dealerI
     };
 
     try {
-      const createdOrder = await createOrder(newOrder);
+      const createdOrder = await createOrder(newOrder).unwrap();
       setSubmitting(false);
       reset();
       onSubmitted(createdOrder);
@@ -196,7 +202,7 @@ export default function CreateRequestDialog({ open, initialVehicle = "", dealerI
                   </label>
                 </div>
                 <span className="request-line-estimate">
-                  Estimated line amount: <strong>₹{((ESTIMATED_PRICES[vehicle.model] ?? 0) * vehicle.quantity).toLocaleString("en-IN")}</strong>
+                  Estimated line amount: <strong>₹{(getModelPrice(vehicle.model) * vehicle.quantity).toLocaleString("en-IN")}</strong>
                 </span>
               </div>
             ))}

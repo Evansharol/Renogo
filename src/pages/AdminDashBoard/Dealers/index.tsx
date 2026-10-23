@@ -1,13 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import DealerForm from "../../../components/Form/Admin_DealerForm";
 import Navbar from "../../../components/Navbar";
 import PeopleIcon from '@mui/icons-material/People';
 import Sidebar from "../../../components/Sidebar";
 import { createDealer, getDealers } from "../../../api/dealers";
-import { getOrders } from "../../../api/orders";
+import { useGetOrdersQuery } from "../../../features/orders/ordersApi";
 import type { Dealer } from "../../../types/dealer";
 import type { Order } from "../../../types/order";
+import { getOrderDisplayNumber } from "../../../utils/orderDisplay";
 import "./Dealers.css";
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import PendingIcon from '@mui/icons-material/Pending';
@@ -21,56 +22,52 @@ const confirmedOrderStatuses = new Set(["In Production", "Completed"]);
 
 export default function Dealers() {
 	const location = useLocation();
+	const { data: orders = [], isLoading: ordersLoading, isError: ordersError } = useGetOrdersQuery();
 	const [dealerList, setDealerList] = useState<Dealer[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState("");
 	const [isFormOpen, setIsFormOpen] = useState(false);
-	const [ordersByDealer, setOrdersByDealer] = useState<Record<string, Order[]>>({});
 	const [selectedOrderByDealer, setSelectedOrderByDealer] = useState<Record<string, string>>({});
 	const [workflowView, setWorkflowView] = useState<{ type: WorkflowView; dealerId: string; orderId?: string } | null>(null);
 	const loginState = location.state as LoginState | null;
-	const totalOrders = dealerList.reduce((total, dealer) => total + dealer.orders, 0);
-	const visibleDealerList = dealerList.filter((dealer) => (ordersByDealer[dealer.id] ?? []).length > 0);
+	const ordersByDealer = useMemo(() => orders.reduce<Record<string, Order[]>>((grouped, order) => {
+		grouped[order.dealerId] = [...(grouped[order.dealerId] ?? []), order];
+		return grouped;
+	}, {}), [orders]);
+	const visibleDealers = useMemo(() => {
+		const knownDealerIds = new Set(dealerList.map((dealer) => dealer.id));
+		const requestDealers: Dealer[] = Object.entries(ordersByDealer)
+			.filter(([dealerId]) => !knownDealerIds.has(dealerId))
+			.map(([dealerId, dealerOrders]) => ({
+				id: dealerId,
+				name: `Dealer ${dealerId}`,
+				location: "Location not provided",
+				orders: dealerOrders.length,
+				status: dealerOrders.some((order) => !confirmedOrderStatuses.has(order.status)) ? "Pending Approval" : "Order Confirmed",
+			}));
+		return [...dealerList, ...requestDealers].map((dealer) => ({
+			...dealer,
+			orders: ordersByDealer[dealer.id]?.length ?? dealer.orders,
+		}));
+	}, [dealerList, ordersByDealer]);
+	const selectedOrderIds = useMemo(() => Object.fromEntries(Object.entries(ordersByDealer).map(([dealerId, dealerOrders]) => [
+		dealerId,
+		selectedOrderByDealer[dealerId] && dealerOrders.some((order) => order.id === selectedOrderByDealer[dealerId])
+			? selectedOrderByDealer[dealerId]
+			: dealerOrders[0]?.id ?? "",
+	])), [ordersByDealer, selectedOrderByDealer]);
+	const totalOrders = orders.length;
+	const visibleDealerList = visibleDealers.filter((dealer) => (ordersByDealer[dealer.id] ?? []).length > 0);
 	const pendingRequests = visibleDealerList.filter((dealer) => {
-		const selectedOrder = (ordersByDealer[dealer.id] ?? []).find((order) => order.id === selectedOrderByDealer[dealer.id]);
+		const selectedOrder = (ordersByDealer[dealer.id] ?? []).find((order) => order.id === selectedOrderIds[dealer.id]);
 		return selectedOrder ? !confirmedOrderStatuses.has(selectedOrder.status) : true;
 	}).length;
 
 	useEffect(() => {
-		const loadDealerWorkflow = async () => {
-			const [dealers, orders] = await Promise.all([getDealers(), getOrders()]);
-			const ordersByDealerId = orders.reduce<Record<string, Order[]>>((grouped, order) => {
-				grouped[order.dealerId] = [...(grouped[order.dealerId] ?? []), order];
-				return grouped;
-			}, {});
-			const knownDealerIds = new Set(dealers.map((dealer) => dealer.id));
-			const requestDealers: Dealer[] = Object.entries(ordersByDealerId)
-				.filter(([dealerId]) => !knownDealerIds.has(dealerId))
-				.map(([dealerId, dealerOrders]) => ({
-					id: dealerId,
-					name: `Dealer ${dealerId}`,
-					location: "Location not provided",
-					orders: dealerOrders.length,
-					status: dealerOrders.some((order) => !confirmedOrderStatuses.has(order.status)) ? "Pending Approval" : "Order Confirmed",
-				}));
-			const mergedDealers = [...dealers, ...requestDealers].map((dealer) => ({
-				...dealer,
-				orders: ordersByDealerId[dealer.id]?.length ?? dealer.orders,
-			}));
-			setDealerList(mergedDealers);
-			setOrdersByDealer(ordersByDealerId);
-			setSelectedOrderByDealer((current) => Object.fromEntries(Object.entries(ordersByDealerId).map(([dealerId, dealerOrders]) => [
-				dealerId,
-				current[dealerId] && dealerOrders.some((order) => order.id === current[dealerId]) ? current[dealerId] : dealerOrders[0]?.id ?? "",
-			])));
-		};
-		loadDealerWorkflow()
+		getDealers()
+			.then(setDealerList)
 			.catch(() => setError("Unable to load dealers. Start JSON Server with npm run server."))
 			.finally(() => setIsLoading(false));
-		const refreshTimer = window.setInterval(() => {
-			loadDealerWorkflow().catch(() => setError("Unable to refresh dealer workflow data."));
-		}, 5000);
-		return () => window.clearInterval(refreshTimer);
 	}, []);
 
 	const handleAddDealer = async (dealer: Parameters<typeof createDealer>[0]) => {
@@ -85,11 +82,11 @@ export default function Dealers() {
 
 	const closeWorkflowView = () => setWorkflowView(null);
 	const openWorkflowView = (type: WorkflowView, dealerId: string) => {
-		setWorkflowView({ type, dealerId, orderId: selectedOrderByDealer[dealerId] });
+		setWorkflowView({ type, dealerId, orderId: selectedOrderIds[dealerId] });
 	};
 
-	if (isLoading) return <div className="admin-layout"><Sidebar /><div className="admin-content"><Navbar adminName={loginState?.name ?? "Amelia Martin"} role="Administrator" /><main className="admin-main dealers-main"><p>Loading dealers...</p></main></div></div>;
-	if (error) return <div className="admin-layout"><Sidebar /><div className="admin-content"><Navbar adminName={loginState?.name ?? "Amelia Martin"} role="Administrator" /><main className="admin-main dealers-main"><p>{error}</p></main></div></div>;
+	if (isLoading || ordersLoading) return <div className="admin-layout"><Sidebar /><div className="admin-content"><Navbar adminName={loginState?.name ?? "Amelia Martin"} role="Administrator" /><main className="admin-main dealers-main"><p>Loading dealers...</p></main></div></div>;
+	if (error || ordersError) return <div className="admin-layout"><Sidebar /><div className="admin-content"><Navbar adminName={loginState?.name ?? "Amelia Martin"} role="Administrator" /><main className="admin-main dealers-main"><p role="alert">{error || "Unable to load orders."}</p></main></div></div>;
 
 	return (
 		<div className="admin-layout">
@@ -115,15 +112,15 @@ export default function Dealers() {
 										<th>Track Request</th>
 										</tr>
 									</thead>
-						        <tbody>{visibleDealerList.map((dealer) => { const dealerOrders = ordersByDealer[dealer.id] ?? [];
-									const selectedOrder = dealerOrders.find((order) => order.id === selectedOrderByDealer[dealer.id]);
+							<tbody>{visibleDealerList.map((dealer) => { const dealerOrders = ordersByDealer[dealer.id] ?? [];
+								const selectedOrder = dealerOrders.find((order) => order.id === selectedOrderIds[dealer.id]);
 									const isOrderConfirmed = selectedOrder ? confirmedOrderStatuses.has(selectedOrder.status) : false;
 									return <tr key={dealer.id}>
 										<td className="dealer-id">{dealer.id}</td>
 										<td><strong>{dealer.name}</strong>
 										<span className="dealer-location">{dealer.location}</span></td>
-										<td><select className="order-select" aria-label={`Select order for ${dealer.name}`} value={selectedOrderByDealer[dealer.id] ?? ""} onChange={(event) => setSelectedOrderByDealer((current) => ({ ...current, [dealer.id]: event.target.value }))}>
-											<option value="">No orders</option>{dealerOrders.map((order) => <option value={order.id} key={order.id}>{order.requestNumber ?? order.id} · {order.vehicleModel}</option>)}</select></td>
+										<td><select className="order-select" aria-label={`Select order for ${dealer.name}`} value={selectedOrderIds[dealer.id] ?? ""} onChange={(event) => setSelectedOrderByDealer((current) => ({ ...current, [dealer.id]: event.target.value }))}>
+											<option value="">No orders</option>{dealerOrders.map((order) => <option value={order.id} key={order.id}>{getOrderDisplayNumber(order)} · {order.vehicleModel}</option>)}</select></td>
 											<td>
 												<span className={`request-status ${isOrderConfirmed ? "approved" : "pending"}`}>
 													<span aria-hidden="true">{isOrderConfirmed ? "✓" : "!"}</span>
@@ -131,9 +128,9 @@ export default function Dealers() {
 												</span>
 											</td>
 											<td>
-												<button className="workflow-link details-link" type="button" disabled={!selectedOrderByDealer[dealer.id]} onClick={() => openWorkflowView("details", dealer.id)}>
+												<button className="workflow-link details-link" type="button" disabled={!selectedOrderIds[dealer.id]} onClick={() => openWorkflowView("details", dealer.id)}>
 												<span>View</span><small>Profile &amp; orders</small></button></td>
-												<td><button className="workflow-link approval-link" type="button" disabled={!selectedOrderByDealer[dealer.id]} onClick={() => openWorkflowView("approval", dealer.id)}>
+												<td><button className="workflow-link approval-link" type="button" disabled={!selectedOrderIds[dealer.id]} onClick={() => openWorkflowView("approval", dealer.id)}>
 												<span>View</span><small>Production status</small></button></td></tr>; 
 											})}
 										</tbody>

@@ -18,6 +18,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import CloseIcon from "@mui/icons-material/Close";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import type { DmRequest } from "../../types";
+import { getOrderDisplayNumber } from "../../../../utils/orderDisplay";
 
 export const STATUS_TABS = [
     "All",
@@ -214,7 +215,7 @@ export default function RequestsTablePanel({
                                         }}
                                     >
                                         <TableCell sx={{ fontWeight: 700, color: "#2563eb", fontSize: "12.5px", whiteSpace: "nowrap" }}>
-                                            {req.requestNumber ?? req.id}
+                                            {req.requestNumber ?? getOrderDisplayNumber(req)}
                                         </TableCell>
                                         <TableCell sx={{ color: "#374151", fontSize: "12.5px", fontWeight: 600, whiteSpace: "nowrap" }}>
                                             {req.dealerId || "DLR-10024"}

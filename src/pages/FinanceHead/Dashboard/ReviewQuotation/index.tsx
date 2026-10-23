@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { createQuotation, updateQuotation } from "../../../../api/quotations";
-import { transitionOrder } from "../../../../api/workflow";
 import type { Order } from "../../../../types/order";
 import type { Quotation } from "../../../../types/quotation";
 import AvailabilityProgressBar from "../../../../components/AvailabilityProgressBar";
 import { generateFinanceHeadQuotationPdf } from "../../utils/generateQuotationPdf";
+import { applyWorkflowTransition, useUpdateOrderMutation } from "../../../../features/orders/ordersApi";
+import { getOrderDisplayNumber } from "../../../../utils/orderDisplay";
+import { parseCatalogPrice } from "../../../../utils/vehiclePricing";
 
 export type VehicleStock = {
     name: string;
@@ -32,13 +34,40 @@ type ReviewQuotationProps = {
 };
 
 export default function ReviewQuotation({ order, quotation, manufacturerRequest, vehicleStock, onQuotationChange, onOrderStatusChange, onClose }: ReviewQuotationProps) {
+    const catalogUnitPrice = useMemo(() => {
+        const items = order.items ?? [];
+        const pricedItems = items.map((item) => ({
+            quantity: item.quantity,
+            unitPrice: item.unitPrice && item.unitPrice > 0
+                ? item.unitPrice
+                : parseCatalogPrice(item.startingPrice),
+        }));
+        if (pricedItems.length && pricedItems.every((item) => item.unitPrice !== null && item.unitPrice !== undefined)) {
+            const totalQuantity = pricedItems.reduce((total, item) => total + item.quantity, 0);
+            if (totalQuantity > 0) {
+                return Math.round(pricedItems.reduce(
+                    (total, item) => total + item.quantity * (item.unitPrice ?? 0),
+                    0,
+                ) / totalQuantity);
+            }
+        }
+        return order.quantity > 0 && order.estimatedTotal
+            ? Math.round(order.estimatedTotal / order.quantity)
+            : 0;
+    }, [order]);
+    const [updateOrder] = useUpdateOrderMutation();
     const [isEditingBank, setIsEditingBank] = useState(false);
+    const [isEditingPrice, setIsEditingPrice] = useState(false);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
     const [actionMessage, setActionMessage] = useState("");
-    const [basePrice, setBasePrice] = useState(quotation?.basePrice ?? 0);
-    const [taxRate, setTaxRate] = useState(quotation?.taxRate ?? 18);
-    const [depositRate, setDepositRate] = useState(quotation?.depositRate ?? 20);
-    const [paymentTerms, setPaymentTerms] = useState(quotation?.paymentTerms ?? "30 days from quotation date");
+    const [basePriceOverride, setBasePriceOverride] = useState<number | null>(null);
+    const [taxRateOverride, setTaxRateOverride] = useState<number | null>(null);
+    const [depositRateOverride, setDepositRateOverride] = useState<number | null>(null);
+    const [paymentTermsOverride, setPaymentTermsOverride] = useState<string | null>(null);
+    const basePrice = basePriceOverride ?? quotation?.basePrice ?? catalogUnitPrice;
+    const taxRate = taxRateOverride ?? quotation?.taxRate ?? 18;
+    const depositRate = depositRateOverride ?? quotation?.depositRate ?? 20;
+    const paymentTerms = paymentTermsOverride ?? quotation?.paymentTerms ?? "30 days from quotation date";
     const normalizeModel = (model: string) => model.replace(/^Renault\s+/i, "").trim().toLowerCase();
     const requestedModels = order.items?.map((item) => normalizeModel(item.model)) ?? [normalizeModel(order.vehicleModel)];
     const matchingVehicleStock = vehicleStock.filter((vehicle) => requestedModels.includes(normalizeModel(vehicle.name)));
@@ -52,10 +81,13 @@ export default function ReviewQuotation({ order, quotation, manufacturerRequest,
     const availableStock = Math.min(colorStock, requestedQuantity);
     const toManufacture = Math.max(0, requestedQuantity - availableStock);
     const stockPercentage = requestedQuantity ? Math.round((availableStock / requestedQuantity) * 100) : 0;
-    const totalPrice = quotation ? quotation.basePrice * quotation.quantity : basePrice * requestedQuantity;
-    const taxAmount = quotation ? totalPrice * quotation.taxRate / 100 : totalPrice * taxRate / 100;
+    const activeBasePrice = quotation && !isEditingPrice ? quotation.basePrice : basePrice;
+    const activeTaxRate = quotation && !isEditingPrice ? quotation.taxRate : taxRate;
+    const activeDepositRate = quotation && !isEditingPrice ? quotation.depositRate : depositRate;
+    const totalPrice = activeBasePrice * requestedQuantity;
+    const taxAmount = totalPrice * activeTaxRate / 100;
     const quotationTotal = totalPrice + taxAmount;
-    const advancePayment = quotation ? quotationTotal * quotation.depositRate / 100 : quotationTotal * depositRate / 100;
+    const advancePayment = quotationTotal * activeDepositRate / 100;
     const formatCurrency = (value: number) => `₹${value.toLocaleString("en-IN")}`;
     const description = `${order.status} • ${matchingVehicleStock.map((vehicle) => `${vehicle.variant} ${vehicle.transmission}`).join(", ") || "Vehicle details from order"}`;
 
@@ -98,6 +130,7 @@ export default function ReviewQuotation({ order, quotation, manufacturerRequest,
                     status: "Draft",
                 });
             onQuotationChange(saved);
+            setIsEditingPrice(false);
             setActionMessage("Quotation amount saved.");
         } catch {
             setActionMessage("Unable to save quotation amount.");
@@ -109,11 +142,12 @@ export default function ReviewQuotation({ order, quotation, manufacturerRequest,
         try {
             const updatedQuotation = await updateQuotation(quotation.id, { status: "Quotation Sent" });
             onQuotationChange(updatedQuotation);
-            const updatedOrder = await transitionOrder(order, {
+            const updatedOrder = applyWorkflowTransition(order, {
                 status: "Pending Sales Manager Approval",
                 owner: "Sales Manager",
                 remarks: "Quotation generated and sent for sales manager approval.",
             });
+            await updateOrder(updatedOrder).unwrap();
             onOrderStatusChange(updatedOrder);
             setActionMessage("Quotation sent to Sales Manager.");
         } catch {
@@ -159,7 +193,7 @@ export default function ReviewQuotation({ order, quotation, manufacturerRequest,
                     <h3 className="financehead-section-title">Dealer &amp; Request Details</h3>
                     <div className="financehead-details">
                         <span>Dealer ID<strong>{order.dealerId}</strong></span>
-                        <span>Order ID<strong>{order.requestNumber ?? order.id}</strong></span>
+                        <span>Order ID<strong>{getOrderDisplayNumber(order)}</strong></span>
                         <span>Vehicle Model<strong>{order.vehicleModel}</strong></span>
                         <span>Quantity<strong>{order.quantity}</strong></span>
                     </div>
@@ -168,8 +202,8 @@ export default function ReviewQuotation({ order, quotation, manufacturerRequest,
                         <div className="financehead-breakdown-wrapper">
                             <table className="financehead-breakdown-table">
                                 <thead><tr><th>#</th><th>Vehicle / Variant / Description</th><th>Quantity</th><th>Unit Price</th><th>Total Price</th></tr></thead>
-                                <tbody><tr><td>1</td><td><strong>{quotation?.vehicleModel ?? order.vehicleModel}</strong><span>{description}</span></td><td>{order.quantity}</td><td>{quotation ? formatCurrency(quotation.basePrice) : "Not available"}</td><td>{quotation ? formatCurrency(totalPrice) : "Not available"}</td></tr></tbody>
-                                {quotation && <tfoot><tr><th colSpan={4}>Total Vehicle Price</th><th>{formatCurrency(totalPrice)}</th></tr></tfoot>}
+                                <tbody><tr><td>1</td><td><strong>{quotation?.vehicleModel ?? order.vehicleModel}</strong><span>{description}</span></td><td>{order.quantity}</td><td>{activeBasePrice > 0 ? formatCurrency(activeBasePrice) : "Not available"}</td><td>{totalPrice > 0 ? formatCurrency(totalPrice) : "Not available"}</td></tr></tbody>
+                                {activeBasePrice > 0 && <tfoot><tr><th colSpan={4}>Total Vehicle Price</th><th>{formatCurrency(totalPrice)}</th></tr></tfoot>}
                             </table>
                         </div>
                     </section>
@@ -184,16 +218,34 @@ export default function ReviewQuotation({ order, quotation, manufacturerRequest,
                         <div className="financehead-allocation-costs"><span>Available stock cost<strong>{formatCurrency(quotation ? availableStock * quotation.basePrice : 0)}</strong></span><span>Manufacturing cost<strong>{formatCurrency(quotation ? toManufacture * quotation.basePrice : 0)}</strong></span></div>
                     </section>
                     <section className="financehead-drawer-card">
-                        <h3>Pricing &amp; Finance</h3>
-                        {!quotation && <div className="financehead-quote-editor">
-                            <p className="financehead-quote-editor-note">Enter the unit amount to prepare the finance quotation.</p>
-                            <label>Unit price per vehicle<input type="number" min="1" value={basePrice || ""} onChange={(event) => setBasePrice(Number(event.target.value))} /></label>
-                            <label>Tax %<input type="number" min="0" value={taxRate} onChange={(event) => setTaxRate(Number(event.target.value))} /></label>
-                            <label>Advance %<input type="number" min="0" max="100" value={depositRate} onChange={(event) => setDepositRate(Number(event.target.value))} /></label>
-                            <label>Payment terms<input value={paymentTerms} onChange={(event) => setPaymentTerms(event.target.value)} /></label>
-                            <button type="button" className="financehead-save-button" onClick={saveQuotation}>Create Finance Quotation</button>
+                        <div className="financehead-card-heading">
+                            <div><h3>Pricing &amp; Finance</h3>{quotation && <p>Review or adjust the saved finance quotation.</p>}</div>
+                            {quotation && !isEditingPrice && <button type="button" className="financehead-link-button" onClick={() => setIsEditingPrice(true)}>Edit Pricing</button>}
+                        </div>
+                        {(!quotation || isEditingPrice) && <div className="financehead-quote-editor">
+                            <p className="financehead-quote-editor-note">
+                                {catalogUnitPrice > 0
+                                    ? `Catalog unit price: ${formatCurrency(catalogUnitPrice)}. Edit the amount if needed.`
+                                    : "Catalog price is unavailable for this request. Enter a unit amount to prepare the quotation."}
+                            </p>
+                            <label>Unit price per vehicle<input type="number" min="1" value={basePrice || ""} onChange={(event) => setBasePriceOverride(Number(event.target.value))} /></label>
+                            <label>Tax %<input type="number" min="0" value={taxRate} onChange={(event) => setTaxRateOverride(Number(event.target.value))} /></label>
+                            <label>Advance %<input type="number" min="0" max="100" value={depositRate} onChange={(event) => setDepositRateOverride(Number(event.target.value))} /></label>
+                            <label>Payment terms<input value={paymentTerms} onChange={(event) => setPaymentTermsOverride(event.target.value)} /></label>
+                            <div className="financehead-quote-editor-actions">
+                                <button type="button" className="financehead-save-button" onClick={saveQuotation}>
+                                    {quotation ? "Save Pricing Changes" : "Create Finance Quotation"}
+                                </button>
+                                {quotation && <button type="button" className="financehead-secondary-button" onClick={() => {
+                                    setBasePriceOverride(null);
+                                    setTaxRateOverride(null);
+                                    setDepositRateOverride(null);
+                                    setPaymentTermsOverride(null);
+                                    setIsEditingPrice(false);
+                                }}>Cancel</button>}
+                            </div>
                         </div>}
-                        {quotation && <div className="financehead-quote">
+                        {quotation && !isEditingPrice && <div className="financehead-quote">
                             <span>Unit price<strong>{formatCurrency(quotation.basePrice)}</strong></span><span>Vehicle total<strong>{formatCurrency(totalPrice)}</strong></span><span>Tax ({quotation.taxRate}%)<strong>{formatCurrency(taxAmount)}</strong></span><span>Total quotation<strong>{formatCurrency(quotationTotal)}</strong></span><span>Advance ({quotation.depositRate}%)<strong>{formatCurrency(advancePayment)}</strong></span><span>Payment terms<strong>{quotation.paymentTerms}</strong></span><span>GST number<strong>{quotation.gstNumber}</strong></span>
                         </div>}
                         {!quotation && <p className="financehead-no-quote">No quotation has been provided for this order yet.</p>}

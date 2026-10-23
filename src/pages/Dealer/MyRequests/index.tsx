@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLocation, useOutletContext, useSearchParams } from "react-router-dom";
 import SearchIcon from "@mui/icons-material/Search";
 import { formatDate, getDisplayRequestNumber, statusBadgeClass } from "../utils";
 import type { DealerOutletContext } from "../index";
+import { getRequestRowDomId, useRequestRowFocus } from "../../../hooks/useRequestRowFocus";
 import "../../Dealer/Dealer.css";
 import "./MyRequests.css";
 
@@ -11,24 +12,15 @@ export default function DealerMyRequests() {
   const location = useLocation();
   const queryStatus = searchParams.get("status");
   const stateStatus = (location.state as { initialStatus?: string } | null)?.initialStatus;
-  const initialStatus = queryStatus ?? stateStatus ?? "all";
+  const targetRequestId = searchParams.get("requestId") ?? undefined;
+  const initialStatus = targetRequestId ? "all" : queryStatus ?? stateStatus ?? "all";
 
   const { orders, onViewOrder } = useOutletContext<DealerOutletContext>();
-  const [search,  setSearch]  = useState("");
+  const [search,  setSearch]  = useState(targetRequestId ?? "");
   const [model,   setModel]   = useState("all");
-  const [status,  setStatus]  = useState(initialStatus);
-
-  useEffect(() => {
-    const q = searchParams.get("status");
-    const s = (location.state as { initialStatus?: string } | null)?.initialStatus;
-    const target = q ?? s;
-    if (target !== undefined && target !== null) {
-      setStatus(target);
-    }
-  }, [searchParams, location.state]);
+  const status = initialStatus;
 
   const handleStatusChange = (newStatus: string) => {
-    setStatus(newStatus);
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
       if (newStatus === "all") {
@@ -61,6 +53,7 @@ export default function DealerMyRequests() {
     }
     return matchSearch && matchModel && matchStatus;
   });
+  useRequestRowFocus(targetRequestId, filtered.map((order) => order.id));
 
   return (
     <div className="dealer-my-requests-view">
@@ -114,7 +107,11 @@ export default function DealerMyRequests() {
               <tr><td colSpan={7} className="no-records-cell">No vehicle requests match the selected filters.</td></tr>
             ) : (
               filtered.map((o) => (
-                <tr key={o.id}>
+                <tr
+                  key={o.id}
+                  id={getRequestRowDomId(o.id)}
+                  className={o.id === targetRequestId ? "notification-target-row" : undefined}
+                >
                   <td className="id-font"><strong>{getDisplayRequestNumber(o)}</strong></td>
                   <td><strong>{o.vehicleModel}</strong></td>
                   <td>{o.quantity} units</td>

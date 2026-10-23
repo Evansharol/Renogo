@@ -8,28 +8,19 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import { sectionCardStyle, tableHeadStyle, tableBodyStyle } from "../modalStyles";
+import type { Order } from "../../../../../types/order";
 
-export default function RecentActivitySection() {
-    const activityRows = [
-        {
-            date: "22 Apr 2025 10:45 AM",
-            action: "Request Approved",
-            by: "Sales Manager",
-            remarks: "Quotation finalized and forwarded to dealer manager",
-        },
-        {
-            date: "18 Apr 2025 04:20 PM",
-            action: "Request Submitted",
-            by: "Rahul Mehta (Salesman)",
-            remarks: "Fleet request created for 3 vehicle models",
-        },
-        {
-            date: "18 Apr 2025 04:15 PM",
-            action: "Request Drafted",
-            by: "Rahul Mehta (Salesman)",
-            remarks: "Initial request saved",
-        },
-    ];
+export default function RecentActivitySection({ order }: { order?: Order }) {
+    const activityRows = [...(order?.workflowHistory ?? [])]
+        .reverse()
+        .map((entry) => ({
+            date: Number.isNaN(new Date(entry.timestamp).getTime())
+                ? "—"
+                : new Date(entry.timestamp).toLocaleString("en-GB"),
+            action: entry.status,
+            by: entry.owner,
+            remarks: entry.remarks || "—",
+        }));
 
     return (
         <Box sx={sectionCardStyle}>
@@ -58,6 +49,9 @@ export default function RecentActivitySection() {
                                 <TableCell sx={{ ...tableBodyStyle, color: "#64748b" }}>{row.remarks}</TableCell>
                             </TableRow>
                         ))}
+                        {activityRows.length === 0 && (
+                            <TableRow><TableCell colSpan={4} sx={tableBodyStyle}>No workflow activity is recorded for this request.</TableCell></TableRow>
+                        )}
                     </TableBody>
                 </Table>
             </TableContainer>

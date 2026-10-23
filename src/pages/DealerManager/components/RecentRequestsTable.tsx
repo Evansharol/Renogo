@@ -14,6 +14,8 @@ import TableRow from "@mui/material/TableRow";
 import Chip from "@mui/material/Chip";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import type { DmRequest } from "../types";
+import { getOrderDisplayNumber } from "../../../utils/orderDisplay";
+import { getRequestRowDomId, useRequestRowFocus } from "../../../hooks/useRequestRowFocus";
 import RequestDetailsModal from "./RequestDetailsModal/RequestDetailsModal";
 
 const STATUS_STYLES: Record<DmRequest["status"], { bg: string; color: string }> = {
@@ -34,16 +36,19 @@ type RecentRequestsTableProps = {
     requests: DmRequest[];
     title?: string;
     showViewAll?: boolean;
+    highlightedRequestId?: string;
 };
 
 export default function RecentRequestsTable({
     requests,
     title = "Recent Requests",
     showViewAll = true,
+    highlightedRequestId,
 }: RecentRequestsTableProps) {
     const navigate = useNavigate();
     const [selectedRequest, setSelectedRequest] = useState<DmRequest | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    useRequestRowFocus(highlightedRequestId, requests.map((request) => request.id));
 
     const handleOpenDetails = (req: DmRequest) => {
         setSelectedRequest(req);
@@ -131,13 +136,19 @@ export default function RecentRequestsTable({
                                     return (
                                         <TableRow
                                             key={req.id}
+                                            id={getRequestRowDomId(req.id)}
                                             sx={{
                                                 "&:last-child td": { borderBottom: 0 },
                                                 "&:hover": { background: "#fafbfc" },
+                                                ...(req.id === highlightedRequestId ? {
+                                                    background: "#dbeafe",
+                                                    outline: "2px solid #2563eb",
+                                                    outlineOffset: "-2px",
+                                                } : {}),
                                             }}
                                         >
                                             <TableCell sx={{ fontWeight: 700, color: "#2563eb", fontSize: "12.5px", whiteSpace: "nowrap" }}>
-                                                {req.requestNumber ?? req.id}
+                                                {req.requestNumber ?? getOrderDisplayNumber(req)}
                                             </TableCell>
                                             <TableCell sx={{ color: "#374151", fontSize: "12.5px", fontWeight: 600, whiteSpace: "nowrap" }}>
                                                 {req.dealerId || "DLR-10024"}

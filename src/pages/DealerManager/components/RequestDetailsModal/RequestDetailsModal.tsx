@@ -1,13 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
+import Alert from "@mui/material/Alert";
 import CloseIcon from "@mui/icons-material/Close";
 import type { DmRequest } from "../../types";
-import { getOrders, updateOrder } from "../../../../api/orders";
-import { transitionOrder } from "../../../../api/workflow";
+import type { Quotation } from "../../../../types/quotation";
+import { getQuotationByOrderId } from "../../../../api/quotations";
+import { ordersToDmRequests } from "../../../../api/dmRequests";
+import { getOrderQuotation } from "../../utils/orderQuotation";
+import { applyWorkflowTransition, useGetOrdersQuery, useUpdateOrderMutation } from "../../../../features/orders/ordersApi";
+import { getOrderDisplayNumber } from "../../../../utils/orderDisplay";
 
 // Modular Subcomponents
 import ModalHeaderBanner from "./components/ModalHeaderBanner";
@@ -29,15 +34,77 @@ type RequestDetailsModalProps = {
 };
 
 export default function RequestDetailsModal({ open, onClose, request, onRequestUpdated }: RequestDetailsModalProps) {
-    const [acknowledged, setAcknowledged] = useState(false);
+    const { data: orders = [], isError: ordersError, isLoading: ordersLoading } = useGetOrdersQuery();
+    const [updateOrder] = useUpdateOrderMutation();
+    const requestId = request?.id ?? "";
+    const selectedOrder = orders.find((candidate) => candidate.id === requestId);
+    const activeRequest = selectedOrder ? ordersToDmRequests([selectedOrder])[0] ?? request : request;
+    const [acknowledging, setAcknowledging] = useState(false);
+    const [actionError, setActionError] = useState({ requestId: "", message: "" });
     const [isBankDetailsOpen, setIsBankDetailsOpen] = useState(false);
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-    const [paymentSubmitted, setPaymentSubmitted] = useState(
-        request?.paymentStatus === "Submitted" || request?.paymentStatus === "Completed"
-    );
-    const [orderConfirmed, setOrderConfirmed] = useState(request?.status === "Completed");
+    const [quotationState, setQuotationState] = useState<{
+        orderId: string;
+        quotation: Quotation | null;
+        error: string;
+    }>({ orderId: "", quotation: null, error: "" });
 
-    const requestId = request?.id || "FR-2026-0048";
+    const displayRequestId = request ? getOrderDisplayNumber(request) : requestId;
+    const quotation = quotationState.orderId === selectedOrder?.id ? quotationState.quotation : null;
+    const selectedOrderId = selectedOrder?.id;
+    const quotationLoading = Boolean(open && (ordersLoading || (selectedOrderId && quotationState.orderId !== selectedOrderId)));
+    const quotationTotals = getOrderQuotation(quotation);
+    const acknowledged = Boolean(activeRequest && activeRequest.status !== "Awaiting Acknowledgement");
+    const paymentSubmitted = activeRequest?.paymentStatus === "Submitted" || activeRequest?.paymentStatus === "Completed";
+    const orderConfirmed = activeRequest?.status === "Completed";
+
+    useEffect(() => {
+        if (!open || !selectedOrderId) return;
+
+        let isCurrent = true;
+        getQuotationByOrderId(selectedOrderId)
+            .then((loadedQuotation) => {
+                if (isCurrent) {
+                    setQuotationState({
+                        orderId: selectedOrderId,
+                        quotation: loadedQuotation,
+                        error: "",
+                    });
+                }
+            })
+            .catch((error: unknown) => {
+                if (isCurrent) {
+                    setQuotationState({
+                        orderId: selectedOrderId,
+                        quotation: null,
+                        error: error instanceof Error ? error.message : "Unable to load the quotation.",
+                    });
+                }
+            });
+
+        return () => {
+            isCurrent = false;
+        };
+    }, [open, selectedOrderId]);
+    const handleAcknowledge = async () => {
+        setAcknowledging(true);
+        setActionError({ requestId, message: "" });
+        try {
+            if (ordersError) throw new Error("Unable to load orders. Please try again.");
+            const order = orders.find((candidate) => candidate.id === requestId);
+            if (!order) throw new Error("The request could not be found.");
+            const updatedOrder = applyWorkflowTransition(order, {
+                status: "Awaiting Payment",
+                owner: "Dealer Manager",
+                remarks: "Dealer Manager acknowledged the quotation and terms.",
+            });
+            await updateOrder(updatedOrder).unwrap();
+        } catch (error) {
+            setActionError({ requestId, message: error instanceof Error ? error.message : "Unable to acknowledge the request." });
+        } finally {
+            setAcknowledging(false);
+        }
+    };
 
     return (
         <>
@@ -94,13 +161,18 @@ export default function RequestDetailsModal({ open, onClose, request, onRequestU
                 <DialogContent sx={{ p: 3, backgroundColor: "#f8fafc" }}>
                     <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
                         {/* 1. Request Header Banner */}
+                        {ordersError && <Alert severity="error">Unable to load the selected request. Please try again.</Alert>}
+                        {!ordersLoading && !ordersError && request && !selectedOrder && (
+                            <Alert severity="warning">This request could not be found in the current order data.</Alert>
+                        )}
                         <ModalHeaderBanner
-                            requestId={requestId}
-                            request={request}
+                            requestId={displayRequestId}
+                            request={activeRequest}
+                            quotation={quotation}
                         />
 
                         {/* 2. Top 4 Metric Info Cards */}
-                        <ModalMetricCards request={request} />
+                        <ModalMetricCards request={activeRequest} order={selectedOrder} quotation={quotation} />
 
                         {/* 3. Request Status Stepper */}
                         <RequestStatusStepper
@@ -116,71 +188,85 @@ export default function RequestDetailsModal({ open, onClose, request, onRequestU
                                 gap: 2,
                             }}
                         >
-                            <RequestSummarySection request={request} />
+                            <RequestSummarySection request={activeRequest} order={selectedOrder} />
                             <ManufacturerBankDetails
-                                requestId={requestId}
+                                requestId={displayRequestId}
+                                quotation={quotation}
                                 onViewExactDetails={() => setIsBankDetailsOpen(true)}
                             />
                         </Box>
 
                         {/* 5. Final Quotation */}
                         <FinalQuotationSection
-                            requestId={requestId}
-                            request={request}
-                            quotationNo={`QTN-${requestId}`}
+                            requestId={displayRequestId}
+                            request={activeRequest}
+                            order={selectedOrder}
+                            quotation={quotation}
+                            isLoading={quotationLoading}
+                            quotationNo={quotation?.id}
                         />
 
                         {/* 6. Recent Activity */}
-                        <RecentActivitySection />
+                        <RecentActivitySection order={selectedOrder} />
 
                         {/* 7. Dealer Manager Actions Bar (Horizontal) */}
                         <ManagerActionsBar
                             acknowledged={acknowledged || paymentSubmitted}
-                            onAcknowledge={() => setAcknowledged(true)}
+                            acknowledging={acknowledging}
+                            onAcknowledge={() => void handleAcknowledge()}
                             onViewPaymentDetails={() => setIsBankDetailsOpen(true)}
                             onUploadPaymentProof={() => setIsUploadModalOpen(true)}
                             paymentSubmitted={paymentSubmitted}
+                            canUploadPayment={Boolean(quotationTotals) && !quotationLoading}
                         />
+                        {quotationState.error && quotationState.orderId === selectedOrder?.id && (
+                            <Typography role="status" sx={{ color: "#64748b", fontSize: "13px" }}>
+                                Quotation could not be loaded: {quotationState.error}
+                            </Typography>
+                        )}
+                        {actionError.requestId === requestId && actionError.message && (
+                            <Typography role="alert" sx={{ color: "#dc2626", fontSize: "13px" }}>{actionError.message}</Typography>
+                        )}
                     </Box>
                 </DialogContent>
             </Dialog>
 
             {/* ── Exact Bank Details Popup Modal ── */}
             <ExactBankDetailsModal
+                key={requestId}
                 open={isBankDetailsOpen}
                 onClose={() => setIsBankDetailsOpen(false)}
-                requestId={requestId}
-                request={request}
+                requestId={displayRequestId}
+                quotation={quotation}
                 onProceedToUpload={() => setIsUploadModalOpen(true)}
             />
 
             {/* ── Upload Payment Proof & Receipt Modal ── */}
             <UploadPaymentProofModal
+                key={`${requestId}-${quotationTotals?.advanceAmount ?? "unquoted"}`}
                 open={isUploadModalOpen}
                 onClose={() => setIsUploadModalOpen(false)}
-                requestId={requestId}
-                request={request}
+                requestId={displayRequestId}
+                defaultAmount={quotationTotals?.advanceAmount.toLocaleString("en-IN")}
                 onSuccess={async (details) => {
-                    setPaymentSubmitted(true);
-                    setAcknowledged(true);
-                    const order = (await getOrders()).find((candidate) => candidate.id === requestId);
-                    if (order) {
-                        const transitionedOrder = await transitionOrder(order, {
-                            status: "Completed",
-                            owner: "Admin",
-                            remarks: `Payment proof ${details.fileName} submitted and acknowledgement completed. UTR: ${details.utr}.`,
-                        });
-                        await updateOrder({
-                            ...transitionedOrder,
-                            paymentProof: {
-                                fileName: details.fileName,
-                                submittedAt: new Date().toISOString(),
-                                remarks: `UTR: ${details.utr}; Amount: ${details.amount}`,
-                            },
-                        });
-                        setOrderConfirmed(true);
-                        onRequestUpdated?.(requestId);
-                    }
+                    if (ordersError) throw new Error("Unable to load orders. Please try again.");
+                    const order = orders.find((candidate) => candidate.id === requestId);
+                    if (!order) throw new Error("The request could not be found.");
+                    const transitionedOrder = applyWorkflowTransition(order, {
+                        status: "Completed",
+                        owner: "Admin",
+                        remarks: `Payment proof ${details.fileName} submitted and acknowledgement completed. UTR: ${details.utr}.`,
+                    });
+                    await updateOrder({
+                        ...transitionedOrder,
+                        paymentProof: {
+                            fileName: details.fileName,
+                            submittedAt: new Date().toISOString(),
+                            remarks: `UTR: ${details.utr}; Amount: ${details.amount}`,
+                        },
+                    }).unwrap();
+                    setActionError({ requestId, message: "" });
+                    onRequestUpdated?.(requestId);
                 }}
             />
         </>
