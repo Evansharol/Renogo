@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"; // store data
 import { useLocation } from "react-router-dom"; // get data from previous page
 import Navbar from "../../../components/Navbar";
 import Sidebar from "../../../components/Sidebar";
+import { getLoginState } from "../../../auth/auth";
 import GroupIcon from '@mui/icons-material/Group';
 import HowToRegIcon from '@mui/icons-material/HowToReg';
 import ClearIcon from '@mui/icons-material/Clear';
@@ -14,27 +15,7 @@ import "./UserManagement.css";
 
 type LoginState = { name?: string };
 
-/*const initialUsers: User[] = [
-	{ id: "USR-1001", name: "Amelia Martin", email: "amelia.martin@renogo.com", role: "Administrator", password: "admin123", status: "Active" },
-	{ id: "USR-1002", name: "Louis Bernard", email: "louis.bernard@renogo.com", role: "Manufacturer", password: "manufacturer123", status: "Active" },
-	{ id: "USR-1003", name: "Sofia Garcia", email: "sofia.garcia@renogo.com", role: "Dealer", password: "dealer123", status: "Inactive" },
-	{ id: "USR-1004", name: "Noah Wilson", email: "noah.wilson@renogo.com", role: "Finance Head", password: "financehead123", status: "Active" },
-];
-
-const loadUsers = () => {
-	const storedUsers = localStorage.getItem("managed-users");
-	if (!storedUsers) return initialUsers;
-
-	try {
-		return JSON.parse(storedUsers) as User[];
-	} catch {
-		return initialUsers;
-	}
-};
-*/
-
 export default function Usermg() {
-//	const [users, setUsers] = useState<User[]>(loadUsers);
 	const [users, setUsers] = useState<User[]>([]);
 	const [error, setError] = useState("");
 	const [searchTerm, setSearchTerm] = useState(() => localStorage.getItem("user-search") ?? "");
@@ -43,37 +24,11 @@ export default function Usermg() {
 	const [editingUser, setEditingUser] = useState<User | null>(null);
 	const location = useLocation();
 	const loginState = location.state as LoginState | null;
-	const adminName = loginState?.name ?? "Amelia Martin";
+	const adminName = loginState?.name ?? getLoginState()?.name ?? "User";
 	const roles = [...new Set(users.map((user) => user.role).filter(Boolean))];
 	const activeUsers = users.filter((user) => user.status === "Active").length;
 	const inactiveUsers = users.length - activeUsers;
 
-/*	useEffect(() => {
-		getUsers()
-			.then((apiUsers) => {
-				if (Array.isArray(apiUsers) && apiUsers.length > 0) {
-					setUsers(apiUsers);
-					localStorage.setItem("managed-users", JSON.stringify(apiUsers));
-				}
-			})
-			.catch(() => {
-				// Fallback to localStorage / initialUsers when json-server is not running
-			});
-	}, []); */
-
-/*	useEffect(() => {
-		fetch("/spring-api/")
-			.then((response) => {
-				if (!response.ok) {
-					throw new Error(`Failed to load users: ${response.status}`);
-				}
-				return response.json();
-    })
-    .then((users) => setUsers(users))
-    .catch((error) => {
-      console.error("Unable to load users from Spring Boot:", error);
-    });
-}, []); */
 	useEffect(() => {
 		getUsers()
 			.then((apiUsers) => {
@@ -85,38 +40,6 @@ export default function Usermg() {
 			});
 	}, []);
 
-	/*useEffect(() => {
-		localStorage.setItem("user-search", searchTerm);
-	}, [searchTerm]);
-
-	useEffect(() => {
-		localStorage.setItem("managed-users", JSON.stringify(users));
-	}, [users]);
-
-	const handleSaveUser = async (user: User) => {
-		const userToSave: User = {
-			...user,
-		};
-
-		if (editingUser) {
-			try {
-				const saved = await updateUser(userToSave);
-				setUsers((currentUsers) => currentUsers.map((currentUser) => (currentUser.id === editingUser.id ? saved : currentUser)));
-			} catch {
-				setUsers((currentUsers) => currentUsers.map((currentUser) => (currentUser.id === editingUser.id ? userToSave : currentUser)));
-			}
-		} else {
-			try {
-				const saved = await createUser(userToSave);
-				setUsers((currentUsers) => [...currentUsers, saved]);
-			} catch {
-				setUsers((currentUsers) => [...currentUsers, userToSave]);
-			}
-		}
-		setEditingUser(null);
-		setIsUserFormOpen(false);
-	};
-	*/
 	const handleSaveUser = async (user: User) => {
 		const userToSave: User = {
 			...user,
@@ -160,12 +83,6 @@ export default function Usermg() {
 			setError(error instanceof Error ? error.message : "Unable to delete user");
 		}
 	};
-
-/*	const filteredUsers = users.filter((user) => {
-		const matchesSearch = user.id.toLowerCase().includes(searchTerm.toLowerCase());
-		const matchesRole = selectedRole === "All Roles" || user.role === selectedRole;
-		return matchesSearch && matchesRole;
-	}); */
 
 	const filteredUsers = users.filter((user) => {
 		const matchesSearch = String(user.id ?? "")

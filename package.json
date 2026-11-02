@@ -7,6 +7,7 @@
     "dev": "vite",
     "server": "json-server -s backend backend/db.json --port 5000",
     "build": "tsc -b && vite build",
+    "test": "node --experimental-strip-types --test src/auth/auth.test.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },

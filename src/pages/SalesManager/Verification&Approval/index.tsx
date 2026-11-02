@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { apiFetch, getLoginState } from "../../../auth/auth";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
@@ -31,7 +32,7 @@ type AllocationResponse = { dealerRequests: Allocation[] };
 
 export default function SalesManagerVerificationApproval() {
   const location = useLocation();
-  const salesManagerName = (location.state as LoginState | null)?.name ?? "Rajesh Kumar";
+  const salesManagerName = (location.state as LoginState | null)?.name ?? getLoginState()?.name ?? "User";
   const targetRequestId = new URLSearchParams(location.search).get("requestId") ?? undefined;
 
   const { data: orders = [], isLoading: loading, isError: ordersError } = useGetOrdersQuery();
@@ -54,7 +55,7 @@ export default function SalesManagerVerificationApproval() {
   });
 
   useEffect(() => {
-    fetch("/api/manufacturer-dashboard.json")
+    apiFetch("/api/manufacturer-dashboard.json")
       .then((res) => {
         if (!res.ok) throw new Error("Unable to load manufacturer allocations.");
         return res.json() as Promise<AllocationResponse>;

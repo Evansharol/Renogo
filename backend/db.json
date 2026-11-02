@@ -847,6 +847,207 @@
         "manufacturerStatus": "Fully Allocated",
         "updatedAt": "2026-10-23T05:44:38.390Z"
       }
+    },
+    {
+      "requestNumber": "REQ-D001-20261026-045322-294",
+      "dealerId": "D001",
+      "vehicleModel": "Renault Kiger - RXZ Turbo (10)",
+      "quantity": 10,
+      "status": "Approved by Sales Manager",
+      "currentOwner": "Dealer Manager",
+      "workflowHistory": [
+        {
+          "status": "Dealer Request Created",
+          "timestamp": "2026-10-26T04:53:22.294Z",
+          "owner": "Dealer"
+        },
+        {
+          "status": "Pending Manufacturer Review",
+          "timestamp": "2026-10-26T04:53:22.294Z",
+          "owner": "Manufacturer"
+        },
+        {
+          "status": "Stock Allocated by Manufacturer",
+          "timestamp": "2026-10-26T04:53:47.256Z",
+          "owner": "Manufacturer",
+          "remarks": "Allocated 10 units from stock and 0 units to manufacture."
+        },
+        {
+          "status": "Pending Finance Quotation",
+          "timestamp": "2026-10-26T04:53:47.256Z",
+          "owner": "Finance Head"
+        },
+        {
+          "status": "Pending Sales Manager Approval",
+          "timestamp": "2026-10-26T04:55:27.175Z",
+          "owner": "Sales Manager",
+          "remarks": "Quotation generated and sent for sales manager approval."
+        },
+        {
+          "status": "Approved by Sales Manager",
+          "timestamp": "2026-10-26T04:55:51.341Z",
+          "owner": "Dealer Manager",
+          "remarks": ""
+        }
+      ],
+      "notifications": [
+        {
+          "role": "Manufacturer",
+          "message": "New dealer request is ready for review.",
+          "createdAt": "2026-10-26T04:53:22.294Z",
+          "read": false
+        },
+        {
+          "role": "Manufacturer",
+          "message": "REQ-D001-20261026-045322-294 is ready for Manufacturer",
+          "createdAt": "2026-10-26T04:53:47.256Z",
+          "read": false
+        },
+        {
+          "role": "Finance Head",
+          "message": "REQ-D001-20261026-045322-294 is ready for Finance Head",
+          "createdAt": "2026-10-26T04:53:47.256Z",
+          "read": false
+        },
+        {
+          "role": "Sales Manager",
+          "message": "REQ-D001-20261026-045322-294 is ready for Sales Manager",
+          "createdAt": "2026-10-26T04:55:27.175Z",
+          "read": false
+        },
+        {
+          "role": "Dealer Manager",
+          "message": "REQ-D001-20261026-045322-294 is ready for Dealer Manager",
+          "createdAt": "2026-10-26T04:55:51.341Z",
+          "read": false
+        }
+      ],
+      "orderDate": "2026-10-26T04:53:22.294Z",
+      "etaDelivery": "2026-10-31",
+      "items": [
+        {
+          "id": "kiger-rxz-turbo-moonlight-silver",
+          "model": "Renault Kiger",
+          "variant": "RXZ Turbo",
+          "color": "Moonlight Silver",
+          "colorHex": "#C0C0C8",
+          "quantity": 10,
+          "unitPrice": 599000,
+          "image": "/src/assets/dealer/kiger.jpg",
+          "startingPrice": "₹ 5.99 Lakh*",
+          "specs": {
+            "engine": "1.0L Turbo Petrol",
+            "transmission": "5-Speed MT / CVT",
+            "fuel": "Petrol",
+            "seating": "5 Seater"
+          }
+        }
+      ],
+      "estimatedTotal": 5990000,
+      "id": "plc5KR_xV3s",
+      "allocation": {
+        "available": 10,
+        "toManufacture": 0,
+        "manufacturerStatus": "Fully Allocated",
+        "updatedAt": "2026-10-26T04:53:47.256Z"
+      }
+    },
+    {
+      "requestNumber": "REQ-D001-20261026-092231-055",
+      "dealerId": "D001",
+      "vehicleModel": "Renault Kiger - RXZ Turbo (15), Renault Kwid - RXT (5)",
+      "quantity": 20,
+      "status": "Pending Finance Quotation",
+      "currentOwner": "Finance Head",
+      "workflowHistory": [
+        {
+          "status": "Dealer Request Created",
+          "timestamp": "2026-10-26T09:22:31.055Z",
+          "owner": "Dealer"
+        },
+        {
+          "status": "Pending Manufacturer Review",
+          "timestamp": "2026-10-26T09:22:31.055Z",
+          "owner": "Manufacturer"
+        },
+        {
+          "status": "Stock Allocated by Manufacturer",
+          "timestamp": "2026-10-26T09:23:26.163Z",
+          "owner": "Manufacturer",
+          "remarks": "Allocated 20 units from stock and 0 units to manufacture."
+        },
+        {
+          "status": "Pending Finance Quotation",
+          "timestamp": "2026-10-26T09:23:26.163Z",
+          "owner": "Finance Head"
+        }
+      ],
+      "notifications": [
+        {
+          "role": "Manufacturer",
+          "message": "New dealer request is ready for review.",
+          "createdAt": "2026-10-26T09:22:31.055Z",
+          "read": false
+        },
+        {
+          "role": "Manufacturer",
+          "message": "REQ-D001-20261026-092231-055 is ready for Manufacturer",
+          "createdAt": "2026-10-26T09:23:26.163Z",
+          "read": false
+        },
+        {
+          "role": "Finance Head",
+          "message": "REQ-D001-20261026-092231-055 is ready for Finance Head",
+          "createdAt": "2026-10-26T09:23:26.163Z",
+          "read": false
+        }
+      ],
+      "orderDate": "2026-10-26T09:22:31.055Z",
+      "etaDelivery": "2026-10-31",
+      "items": [
+        {
+          "id": "kiger-rxz-turbo-moonlight-silver",
+          "model": "Renault Kiger",
+          "variant": "RXZ Turbo",
+          "color": "Moonlight Silver",
+          "colorHex": "#C0C0C8",
+          "quantity": 15,
+          "unitPrice": 599000,
+          "image": "/src/assets/dealer/kiger.jpg",
+          "startingPrice": "₹ 5.99 Lakh*",
+          "specs": {
+            "engine": "1.0L Turbo Petrol",
+            "transmission": "5-Speed MT / CVT",
+            "fuel": "Petrol",
+            "seating": "5 Seater"
+          }
+        },
+        {
+          "id": "kwid-rxt-fiery-red",
+          "model": "Renault Kwid",
+          "variant": "RXT",
+          "color": "Fiery Red",
+          "colorHex": "#C1201F",
+          "quantity": 5,
+          "unitPrice": 469000,
+          "image": "/src/assets/dealer/kwid.jpg",
+          "startingPrice": "₹ 4.69 Lakh*",
+          "specs": {
+            "engine": "1.0L SCe Smart Drive",
+            "transmission": "5-Speed MT / AMT",
+            "fuel": "Petrol",
+            "seating": "5 Seater City Hatch"
+          }
+        }
+      ],
+      "estimatedTotal": 11330000,
+      "id": "06fVnyzCfMg",
+      "allocation": {
+        "available": 20,
+        "toManufacture": 0,
+        "manufacturerStatus": "Fully Allocated",
+        "updatedAt": "2026-10-26T09:23:26.163Z"
+      }
     }
   ],
   "quotations": [
@@ -1006,6 +1207,25 @@
       "id": "p9M1Lh0QpK8",
       "dealerId": "D001",
       "orderId": "nzhUlx1XQ20",
+      "vehicleModel": "Renault Kiger - RXZ Turbo (10)",
+      "quantity": 10,
+      "basePrice": 599000,
+      "taxRate": 18,
+      "depositRate": 20,
+      "gstNumber": "GST-PENDING",
+      "paymentTerms": "30 days from quotation date",
+      "bankDetails": {
+        "beneficiaryName": "Renault India Private Limited",
+        "accountNumber": "Finance account details pending",
+        "ifscCode": "IFSC-PENDING",
+        "bankBranch": "Renault India Commercial Banking"
+      },
+      "status": "Quotation Sent"
+    },
+    {
+      "id": "W8SHh6h6XDk",
+      "dealerId": "D001",
+      "orderId": "plc5KR_xV3s",
       "vehicleModel": "Renault Kiger - RXZ Turbo (10)",
       "quantity": 10,
       "basePrice": 599000,

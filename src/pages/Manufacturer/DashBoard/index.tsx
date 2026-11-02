@@ -3,6 +3,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { apiFetch, getLoginState } from "../../../auth/auth";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import ArrowForwardOutlinedIcon from "@mui/icons-material/ArrowForwardOutlined";
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
@@ -108,16 +109,14 @@ const toDealerRequest = (order: Order): DealerRequest => {
 export default function DealerPortal() {
   const location = useLocation();
 
-  // Resolve dealer identity: route state → localStorage → defaults
-  const stored     = localStorage.getItem("loginState");
-  const loginState = (location.state as LoginState | null) ?? (stored ? JSON.parse(stored) as LoginState : null);
-  const manufacturerName = loginState?.name ?? "Noah Wilson";
+  const loginState = (location.state as LoginState | null) ?? getLoginState();
+  const manufacturerName = loginState?.name ?? "User";
   const { data: orders = [], isLoading: ordersLoading, isError: ordersError } = useGetOrdersQuery();
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [dashboardError, setDashboardError] = useState("");
 
   useEffect(() => {
-    fetch("/api/manufacturer-dashboard.json").then((response) => {
+    apiFetch("/api/manufacturer-dashboard.json").then((response) => {
         if (!response.ok) throw new Error(`Unable to load dashboard data (${response.status})`);
         return response.json() as Promise<DashboardData>;
       })

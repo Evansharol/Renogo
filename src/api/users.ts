@@ -1,4 +1,5 @@
 import type { User } from "../types/user";
+import { apiFetch } from "../auth/auth";
 
 const API_URL = "/spring-api/api/users";
 
@@ -27,7 +28,7 @@ async function getErrorMessage(response: Response): Promise<string> {
 }
 
 export async function getUsers(): Promise<User[]> {
-    const response = await fetch(API_URL);
+    const response = await apiFetch(API_URL);
     if (!response.ok) {
         throw new Error(`Failed to load users: ${response.statusText}`);
     }
@@ -36,7 +37,7 @@ export async function getUsers(): Promise<User[]> {
 }
 
 export async function getUserById(id: string): Promise<User> {
-    const response = await fetch(`${API_URL}/${encodeURIComponent(id)}`);
+    const response = await apiFetch(`${API_URL}/${encodeURIComponent(id)}`);
     if (!response.ok) {
         throw new Error(`User not found: ${response.statusText}`);
     }
@@ -44,7 +45,7 @@ export async function getUserById(id: string): Promise<User> {
 }
 
 export async function createUser(user: User): Promise<User> {
-    const response = await fetch(API_URL, {
+    const response = await apiFetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -65,7 +66,7 @@ export async function createUser(user: User): Promise<User> {
 }
 
 export async function updateUser(user: User): Promise<User> {
-    const response = await fetch(`${API_URL}/${encodeURIComponent(user.id)}`, {
+    const response = await apiFetch(`${API_URL}/${encodeURIComponent(user.id)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(user),
@@ -77,7 +78,7 @@ export async function updateUser(user: User): Promise<User> {
 }
 
 export async function deleteUser(id: string): Promise<void> {
-    const response = await fetch(`${API_URL}/${encodeURIComponent(id)}`, {
+    const response = await apiFetch(`${API_URL}/${encodeURIComponent(id)}`, {
         method: "DELETE",
     });
     if (!response.ok) {

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { apiFetch, getLoginState } from "../../../auth/auth";
 
 import Navbar from "../../../components/Navbar";
 import Sidebar from "../../../components/Sidebar";
@@ -31,7 +32,7 @@ type AllocationResponse = { dealerRequests: Allocation[] };
 export default function SalesManagerDashboard() {
   const location = useLocation();
   const navigate = useNavigate();
-  const salesManagerName = (location.state as LoginState | null)?.name ?? "Rajesh Kumar";
+  const salesManagerName = (location.state as LoginState | null)?.name ?? getLoginState()?.name ?? "User";
   const { data: orders = [], isLoading: ordersLoading, isError: ordersError } = useGetOrdersQuery();
   const [updateOrder] = useUpdateOrderMutation();
   const [dashboardData, setDashboardData] = useState<SalesManagerDashboardData | null>(null);
@@ -45,7 +46,7 @@ export default function SalesManagerDashboard() {
   useEffect(() => {
     Promise.all([
       getSalesManagerDashboardData().catch(() => null),
-      fetch("/api/manufacturer-dashboard.json")
+      apiFetch("/api/manufacturer-dashboard.json")
         .then((response) => {
           if (!response.ok) throw new Error("Unable to load manufacturer allocations.");
           return response.json() as Promise<AllocationResponse>;

@@ -1,5 +1,8 @@
 import LogoutIcon from "@mui/icons-material/Logout";
 import { useNavigate } from "react-router-dom";
+import { useAppDispatch } from "../../app/hooks";
+import { clearAuthSession, getLoginState } from "../../auth/auth";
+import { ordersApi } from "../../features/orders/ordersApi";
 import RecentRequestsNotification from "../RecentRequestsNotification";
 
 import "./Navbar.css";
@@ -13,12 +16,12 @@ type NavbarProps = {
 
 export default function Navbar({ adminName, role: roleProp }: NavbarProps) {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
-  const storedLoginState = localStorage.getItem("loginState");
-  const loginState = storedLoginState ? JSON.parse(storedLoginState) as { name?: string; role?: string; dealerId?: string } : {};
+  const loginState = getLoginState();
 
-  const name = adminName || loginState.name || "User";
-  const role = roleProp || loginState.role || "User";
+  const name = adminName || loginState?.name || "User";
+  const role = roleProp || loginState?.role || "User";
 
   const getInitials = (fullName: string) => {
     const parts = fullName.trim().split(" ");
@@ -33,14 +36,15 @@ export default function Navbar({ adminName, role: roleProp }: NavbarProps) {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("loginState");
+    clearAuthSession();
+    dispatch(ordersApi.util.resetApiState());
     navigate("/", { replace: true });
   };
 
   return (
     <nav className="navbar">
       <div className="navbar-actions">
-        <RecentRequestsNotification role={role} dealerId={loginState.dealerId} />
+        <RecentRequestsNotification role={role} dealerId={loginState?.dealerId} />
         <div className="navbar-user-profile">
           <div className="navbar-user-avatar">
             {getInitials(name)}

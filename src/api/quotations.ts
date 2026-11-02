@@ -1,9 +1,10 @@
 import type { Quotation } from "../types/quotation";
+import { apiFetch } from "../auth/auth";
 
 const API_URL = "/api";
 
 export async function createQuotation(quotation: Quotation): Promise<Quotation> {
-	const response = await fetch(`${API_URL}/quotations`, {
+	const response = await apiFetch(`${API_URL}/quotations`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(quotation),
@@ -13,7 +14,7 @@ export async function createQuotation(quotation: Quotation): Promise<Quotation> 
 }
 
 export async function getQuotationByDealerId(dealerId: string): Promise<Quotation> {
-	const response = await fetch(`${API_URL}/quotations?dealerId=${encodeURIComponent(dealerId)}`);
+	const response = await apiFetch(`${API_URL}/quotations?dealerId=${encodeURIComponent(dealerId)}`);
 
 	if (!response.ok) {
 		throw new Error("Failed to load quotation");
@@ -30,7 +31,7 @@ export async function getQuotationByDealerId(dealerId: string): Promise<Quotatio
 }
 
 export async function getQuotationByOrderId(orderId: string): Promise<Quotation> {
-	const response = await fetch(`${API_URL}/quotations?orderId=${encodeURIComponent(orderId)}`);
+	const response = await apiFetch(`${API_URL}/quotations?orderId=${encodeURIComponent(orderId)}`);
 
 	if (!response.ok) {
 		throw new Error("Failed to load quotation");
@@ -47,7 +48,7 @@ export async function getQuotationByOrderId(orderId: string): Promise<Quotation>
 }
 
 export async function updateQuotation(id: string, changes: Partial<Quotation>): Promise<Quotation> {
-	const response = await fetch(`${API_URL}/quotations/${encodeURIComponent(id)}`, {
+	const response = await apiFetch(`${API_URL}/quotations/${encodeURIComponent(id)}`, {
 		method: "PATCH",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(changes),

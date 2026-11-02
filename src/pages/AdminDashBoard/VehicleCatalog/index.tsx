@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { apiFetch, getLoginState } from "../../../auth/auth";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
@@ -26,7 +27,7 @@ type Vehicle = {
 export default function Admindb() {
     const location = useLocation();
     const loginState = location.state as LoginState | null;
-    const adminName = loginState?.name ?? "Amelia Martin";
+    const adminName = loginState?.name ?? getLoginState()?.name ?? "User";
     const [selectedModel, setSelectedModel] = useState("all");
     const [selectedVariant, setSelectedVariant] = useState("all");
     const [selectedColor, setSelectedColor] = useState("all");
@@ -38,7 +39,7 @@ export default function Admindb() {
     useEffect(() => {
         const loadVehicles = async () => {
             try {
-                const response = await fetch("/api/vehicle.json");
+                const response = await apiFetch("/api/vehicle.json");
                 if (!response.ok) {
                     throw new Error(`Unable to load vehicle catalog (${response.status})`);
                 }

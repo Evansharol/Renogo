@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";   /*Provides styling and layout of page to react boilerplate code */
 import { useLocation, useNavigate } from "react-router-dom";
+import { getLoginState } from "../../auth/auth";
 import Navbar from "../Navbar";
 import Sidebar from "../Sidebar";
 import "./WorkFlow.css";
@@ -11,7 +12,7 @@ type LocationState = { name?: string };
 export default function WorkflowShell({ title, subtitle, dealerLabel, children, isModal = false, onClose }: WorkflowShellProps) {
 	const navigate = useNavigate();
 	const location = useLocation();
-	const state = location.state as LocationState | null;
+	const state = (location.state as LocationState | null) ?? getLoginState();
 
 	if (isModal) {
 		return <div className="workflow-modal-overlay" role="presentation" onClick={onClose}>
@@ -29,7 +30,7 @@ export default function WorkflowShell({ title, subtitle, dealerLabel, children, 
 	return <div className="workflow-layout">
 		<Sidebar />
 		<div className="admin-content">
-			<Navbar adminName={state?.name ?? "Amelia Martin"} role="Administrator" />
+			<Navbar adminName={state?.name ?? getLoginState()?.name ?? "User"} role="Administrator" />
 			<main className="workflow-main">
 				<button className="workflow-back" type="button" onClick={() => navigate("/dealers")}>← Back to Dealers</button>
 				<header className="workflow-page-header"><div>

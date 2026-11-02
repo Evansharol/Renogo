@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { getLoginState } from "../../../auth/auth";
 import AvailableModels from "../../../components/AvailableModels";
 import Navbar from "../../../components/Navbar";
 import RequestStatus from "../../../components/RequestStatus";
@@ -16,7 +17,7 @@ type LoginState = {
 export default function Admindb() {
     const location = useLocation();
     const loginState = location.state as LoginState | null;
-    const adminName = loginState?.name ?? "Amelia Martin";
+    const adminName = loginState?.name ?? getLoginState()?.name ?? "User";
     const { data: orders = [], isLoading: ordersLoading, isError: ordersError } = useGetOrdersQuery();
     const [dealers, setDealers] = useState<Dealer[]>([]);
     const [dealersLoading, setDealersLoading] = useState(true);

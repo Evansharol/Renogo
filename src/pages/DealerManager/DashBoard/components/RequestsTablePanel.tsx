@@ -19,14 +19,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import type { DmRequest } from "../../types";
 import { getOrderDisplayNumber } from "../../../../utils/orderDisplay";
-
-export const STATUS_TABS = [
-    "All",
-    "Awaiting Acknowledgement",
-    "Ready for Payment",
-    "Payment Submitted",
-    "Completed",
-];
+import { STATUS_TABS } from "./statusTabs";
 
 const STATUS_STYLES: Record<DmRequest["status"], { bg: string; color: string }> = {
     "Awaiting Acknowledgement": { bg: "#fef9c3", color: "#854d0e" },

@@ -7,6 +7,7 @@
 import { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
+import { getLoginState } from "../../auth/auth";
 
 import Sidebar from "../../components/Sidebar";
 import Navbar from "../../components/Navbar";
@@ -45,12 +46,10 @@ export type DealerOutletContext = {
 export default function DealerPortal() {
   const location = useLocation();
 
-  // Resolve dealer identity: route state → localStorage → defaults
-  const stored     = localStorage.getItem("loginState");
-  const loginState = (location.state as LoginState | null) ?? (stored ? JSON.parse(stored) as LoginState : null);
-  const dealerName     = loginState?.name     ?? "Dinesh Kumar";
-  const dealerId       = loginState?.dealerId ?? "D001";
-  const dealerLocation = loginState?.location ?? "Chennai, TN";
+  const loginState = (location.state as LoginState | null) ?? getLoginState();
+  const dealerName     = loginState?.name ?? "User";
+  const dealerId       = loginState?.dealerId ?? loginState?.userId ?? "";
+  const dealerLocation = loginState?.location ?? "";
 
   const { data: orders = [], isLoading: isOrdersLoading, isError: isOrdersError } = useGetDealerOrdersQuery(dealerId);
   const [selectedOrder,  setSelectedOrder]  = useState<Order | null>(null);

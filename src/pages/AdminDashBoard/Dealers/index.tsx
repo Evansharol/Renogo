@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { getLoginState } from "../../../auth/auth";
 import DealerForm from "../../../components/Form/Admin_DealerForm";
 import Navbar from "../../../components/Navbar";
 import PeopleIcon from '@mui/icons-material/People';
@@ -23,13 +24,13 @@ const confirmedOrderStatuses = new Set(["In Production", "Completed"]);
 export default function Dealers() {
 	const location = useLocation();
 	const { data: orders = [], isLoading: ordersLoading, isError: ordersError } = useGetOrdersQuery();
+	const loginState = (location.state as LoginState | null) ?? getLoginState();
 	const [dealerList, setDealerList] = useState<Dealer[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState("");
 	const [isFormOpen, setIsFormOpen] = useState(false);
 	const [selectedOrderByDealer, setSelectedOrderByDealer] = useState<Record<string, string>>({});
 	const [workflowView, setWorkflowView] = useState<{ type: WorkflowView; dealerId: string; orderId?: string } | null>(null);
-	const loginState = location.state as LoginState | null;
 	const ordersByDealer = useMemo(() => orders.reduce<Record<string, Order[]>>((grouped, order) => {
 		grouped[order.dealerId] = [...(grouped[order.dealerId] ?? []), order];
 		return grouped;
@@ -85,14 +86,14 @@ export default function Dealers() {
 		setWorkflowView({ type, dealerId, orderId: selectedOrderIds[dealerId] });
 	};
 
-	if (isLoading || ordersLoading) return <div className="admin-layout"><Sidebar /><div className="admin-content"><Navbar adminName={loginState?.name ?? "Amelia Martin"} role="Administrator" /><main className="admin-main dealers-main"><p>Loading dealers...</p></main></div></div>;
-	if (error || ordersError) return <div className="admin-layout"><Sidebar /><div className="admin-content"><Navbar adminName={loginState?.name ?? "Amelia Martin"} role="Administrator" /><main className="admin-main dealers-main"><p role="alert">{error || "Unable to load orders."}</p></main></div></div>;
+	if (isLoading || ordersLoading) return <div className="admin-layout"><Sidebar /><div className="admin-content"><Navbar adminName={loginState?.name ?? getLoginState()?.name ?? "User"} role="Administrator" /><main className="admin-main dealers-main"><p>Loading dealers...</p></main></div></div>;
+	if (error || ordersError) return <div className="admin-layout"><Sidebar /><div className="admin-content"><Navbar adminName={loginState?.name ?? getLoginState()?.name ?? "User"} role="Administrator" /><main className="admin-main dealers-main"><p role="alert">{error || "Unable to load orders."}</p></main></div></div>;
 
 	return (
 		<div className="admin-layout">
 			<Sidebar />
 			<div className="admin-content">
-				<Navbar adminName={loginState?.name ?? "Amelia Martin"} role="Administrator" />
+				<Navbar adminName={loginState?.name ?? getLoginState()?.name ?? "User"} role="Administrator" />
 				<main className="admin-main dealers-main">
 					<div className="page-heading"><div><h1>Dealer Management</h1><p>Manage dealers and move their orders through the fleet workflow.</p></div></div>
 					<section className="dealer-summary-grid" aria-label="Dealer summary">

@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { Order, WorkflowHistoryEntry, WorkflowStage } from "../../types/order";
 import { getOrderDisplayNumber } from "../../utils/orderDisplay";
+import { addAuthHeader, handleUnauthorized } from "../../auth/auth";
 
 export type WorkflowTransition = {
 	status: WorkflowStage;
@@ -34,9 +35,18 @@ export function applyWorkflowTransition(order: Order, transition: WorkflowTransi
 	};
 }
 
+const rawBaseQuery = fetchBaseQuery({
+	baseUrl: "/api",
+	prepareHeaders: addAuthHeader,
+});
+
 export const ordersApi = createApi({
 	reducerPath: "ordersApi",
-	baseQuery: fetchBaseQuery({ baseUrl: "/api" }),
+	baseQuery: async (args, api, extraOptions) => {
+		const result = await rawBaseQuery(args, api, extraOptions);
+		if (result.error?.status === 401) handleUnauthorized();
+		return result;
+	},
 	tagTypes: ["Order"],
 	endpoints: (builder) => ({
 		getOrders: builder.query<Order[], void>({

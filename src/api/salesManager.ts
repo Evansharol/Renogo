@@ -2,6 +2,7 @@ import type { StatCardData } from "../components/SalesManagerStatCards";
 import type { ApprovalBreakdown } from "../components/RequestApprovalGauge";
 import type { DisplayRequest } from "../components/RecentDealerRequestsTable";
 import type { ActionItem } from "../components/SalesManagerQuickActions";
+import { apiFetch } from "../auth/auth";
 
 export type SalesManagerDashboardData = {
   stats: StatCardData[];
@@ -13,10 +14,10 @@ export type SalesManagerDashboardData = {
 
 export async function getSalesManagerDashboardData(): Promise<SalesManagerDashboardData> {
   try {
-    const response = await fetch("/api/sales-manager-dashboard.json");
+    const response = await apiFetch("/api/sales-manager-dashboard.json");
     if (!response.ok) {
       // Fallback for static dev without backend proxy
-      const staticRes = await fetch("/api/sales-manager-dashboard.json");
+      const staticRes = await apiFetch("/api/sales-manager-dashboard.json");
       if (!staticRes.ok) throw new Error("Failed to fetch dashboard data");
       return (await staticRes.json()) as SalesManagerDashboardData;
     }

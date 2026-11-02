@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { useLocation } from "react-router-dom";
+import { apiFetch, getLoginState } from "../../../auth/auth";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
@@ -35,7 +36,7 @@ const isRejected = (status: string) => /reject|decline/.test(status.toLowerCase(
 
 export default function FinanceheadDashboard() {
     const location = useLocation();
-    const financeheadName = (location.state as LoginState | null)?.name ?? "Louis Bernard";
+    const financeheadName = (location.state as LoginState | null)?.name ?? getLoginState()?.name ?? "User";
     const targetRequestId = new URLSearchParams(location.search).get("requestId") ?? undefined;
     const { data: allOrders = [], isLoading: ordersLoading, isError: ordersError } = useGetOrdersQuery();
     const [manufacturerRequests, setManufacturerRequests] = useState<ManufacturerRequest[]>([]);
@@ -53,11 +54,11 @@ export default function FinanceheadDashboard() {
 
     useEffect(() => {
         Promise.all([
-            fetch("/api/manufacturer-dashboard.json").then((response) => {
+            apiFetch("/api/manufacturer-dashboard.json").then((response) => {
                 if (!response.ok) throw new Error("Unable to load manufacturer allocations.");
                 return response.json() as Promise<ManufacturerDashboard>;
             }),
-            fetch("/api/vehicle.json").then((response) => {
+            apiFetch("/api/vehicle.json").then((response) => {
                 if (!response.ok) throw new Error("Unable to load vehicle stock.");
                 return response.json() as Promise<VehicleStock[]>;
             }),

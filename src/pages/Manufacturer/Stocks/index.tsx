@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { apiFetch, getLoginState } from "../../../auth/auth";
 import AddIcon from "@mui/icons-material/Add";
 import Navbar from "../../../components/Navbar";
 import Sidebar from "../../../components/Sidebar";
@@ -50,7 +51,7 @@ export default function ManufacturerStocks() {
   const [editVehicleQuantity, setEditVehicleQuantity] = useState("");
 
   useEffect(() => {
-    fetch("/api/vehicle.json")
+    apiFetch("/api/vehicle.json")
       .then((response) => response.json() as Promise<Stock[]>)
       .then(setStocks)
       .catch(() => setStocks([]));
@@ -173,9 +174,8 @@ export default function ManufacturerStocks() {
   };
 
   const location = useLocation();
-  const stored = localStorage.getItem("loginState");
-  const loginState = (location.state as LoginState | null) ?? (stored ? JSON.parse(stored) as LoginState : null);
-  const manufacturerName = loginState?.name ?? "Noah Wilson";
+  const loginState = (location.state as LoginState | null) ?? getLoginState();
+  const manufacturerName = loginState?.name ?? "User";
 
   const addVehicle = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
